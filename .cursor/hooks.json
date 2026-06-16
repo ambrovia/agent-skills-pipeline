@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      { "command": "bash hooks/session-start.sh cursor" }
+    ],
+    "postToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "command": "bash hooks/edit-streak.sh cursor" }
+    ]
+  }
+}

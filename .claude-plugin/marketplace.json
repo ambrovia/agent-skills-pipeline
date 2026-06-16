@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "agent-pipeline",
+  "description": "Structured, multi-agent software development pipeline for Claude Code.",
+  "owner": {
+    "name": "Ambrovia",
+    "url": "https://github.com/ambrovia"
+  },
+  "plugins": [
+    {
+      "name": "pipeline",
+      "source": {
+        "source": "github",
+        "repo": "ambrovia/agent-skills-pipeline"
+      },
+      "description": "Work packages run through design → critique → build → review → retro → ship, driven by planner/reviewer/builder persona subagents. 15 skills + 3 personas.",
+      "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
+      "license": "Apache-2.0",
+      "keywords": ["skills", "agents", "pipeline", "tdd", "review", "ship", "work-packages", "retro", "compound", "lore"]
+    }
+  ]
+}

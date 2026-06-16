@@ -1,0 +1,10 @@
+# Generated release artifacts
+/dist/
+
+# Runtime pipeline state (created in consuming repos, never committed here)
+/.pipeline/
+
+# Deps / build
+node_modules/
+*.log
+.DS_Store

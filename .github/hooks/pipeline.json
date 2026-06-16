@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "bash hooks/session-start.sh copilot",
+        "command": "bash hooks/session-start.sh copilot"
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "edit|write|patch|replace|create",
+        "type": "command",
+        "bash": "bash hooks/edit-streak.sh copilot",
+        "command": "bash hooks/edit-streak.sh copilot"
+      }
+    ]
+  }
+}

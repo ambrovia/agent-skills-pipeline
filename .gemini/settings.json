@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash hooks/session-start.sh gemini" }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": "write_file|replace|edit",
+        "hooks": [
+          { "type": "command", "command": "bash hooks/edit-streak.sh gemini" }
+        ]
+      }
+    ]
+  }
+}

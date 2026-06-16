@@ -1,0 +1,31 @@
+# pipeline.config.yml — the ONLY repo-specific file the skills need.
+# Copy this to pipeline.config.yml and edit. Skills read these values instead of
+# hardcoding anything (they reference them as {{verify}}, {{vcs}}, ...).
+
+# The single command that must pass before a work package can ship.
+# Tests for a library, `terraform plan` + policy for infra, E2E for an app —
+# what "green" means is up to you, as long as one command produces it.
+verify: "npm run verify"
+
+# Where the code lives. Used to scope reviews.
+paths:
+  source: ["src/**"]
+  tests: ["**/*.test.*"]
+  docs: ["docs/**"]
+
+# Path + conventions of your design system. null → the design + design-critique
+# + visual-polish phases are skipped (backend / infra / library repos).
+designSystem: null
+# designSystem:
+#   path: "src/design-system"
+#   tokens: "src/design-system/tokens.css"
+
+# Version control + where "ship" opens PRs and waits for CI. github | gitlab | none
+vcs: github
+
+# Model ROLES, not vendor ids. Each tool maps these to its own models.
+# high = most capable (design, review). fast = quick (build).
+models:
+  design: high
+  review: high
+  build: fast
