@@ -86,6 +86,11 @@ function Catalog() {
 
 function ComponentPage({ module: mod }: { module: (typeof modules)[0] }) {
   const storyRootRef = useRef<HTMLDivElement>(null);
+  const [storyRootReady, setStoryRootReady] = useState(false);
+
+  useEffect(() => {
+    setStoryRootReady(true);
+  }, []);
 
   return (
     <div className="page">
@@ -93,19 +98,21 @@ function ComponentPage({ module: mod }: { module: (typeof modules)[0] }) {
       <h1>{mod.title}</h1>
       <div className="stories" ref={storyRootRef}>
         {mod.variants.map((v) => (
-          <section key={v.name}>
-            <h2>{pascalToSpaced(v.name)}</h2>
+          <section key={v.name} className="demo-section" data-variant={v.name}>
+            <h2 className="demo-section-title">{pascalToSpaced(v.name)}</h2>
             <StoryErrorBoundary>
               <v.render />
             </StoryErrorBoundary>
           </section>
         ))}
       </div>
-      <AnnotationOverlay
-        story={mod.title}
-        variant={mod.variants[0]?.name ?? ""}
-        storyRoot={storyRootRef.current}
-      />
+      {storyRootReady && storyRootRef.current && (
+        <AnnotationOverlay
+          story={mod.title}
+          variant={mod.variants[0]?.name ?? ""}
+          storyRoot={storyRootRef.current}
+        />
+      )}
     </div>
   );
 }

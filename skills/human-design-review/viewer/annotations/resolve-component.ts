@@ -5,15 +5,36 @@ interface ReactFiberNode {
   return: ReactFiberNode | null;
 }
 
+function ownText(node: Element): string {
+  let text = "";
+  for (const child of node.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) text += child.textContent ?? "";
+  }
+  return text.trim();
+}
+
 function buildElementDescriptor(node: Element): string {
   const tag = node.tagName.toLowerCase();
   const classes = Array.from(node.classList)
     .slice(0, 3)
     .map((c) => `.${c}`)
     .join("");
-  const text = node.textContent?.trim() ?? "";
-  const shortText = text.length > 0 && text.length <= 30 ? ` "${text}"` : "";
-  return `${tag}${classes}${shortText}`;
+
+  const hints: string[] = [];
+  for (const attr of ["role", "aria-label", "type", "placeholder", "data-ds-component", "name", "href"]) {
+    const val = node.getAttribute(attr);
+    if (val) { hints.push(`${attr}=${val}`); break; }
+  }
+
+  const direct = ownText(node);
+  if (direct.length > 0 && direct.length <= 40) {
+    hints.push(`"${direct}"`);
+  } else if (direct.length > 40) {
+    hints.push(`"${direct.slice(0, 37)}…"`);
+  }
+
+  const detail = hints.length > 0 ? ` ${hints.join(" ")}` : "";
+  return `${tag}${classes}${detail}`;
 }
 
 export function resolveComponentTarget(node: Element): AnnotationTarget {

@@ -1,349 +1,179 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePicker } from "./use-picker.js";
+import { HighlightLayer } from "./highlight-overlay.js";
+import { InspectorRail } from "./inspector-rail.js";
 import { resolveComponentTarget } from "./resolve-component.js";
+import { computeAnchor } from "./resolve-anchor.js";
+import { isRectOffscreen, measureRect } from "./use-element-rect.js";
 import type { AnnotationState, AnnotationTarget } from "./types.js";
 
-export interface AnnotationOverlayProps {
+interface AnnotationOverlayProps {
   story: string;
   variant: string;
-  storyRoot: HTMLElement | null;
+  storyRoot: HTMLElement;
 }
 
-export function AnnotationOverlay({
-  story,
-  variant,
-  storyRoot,
-}: AnnotationOverlayProps): React.JSX.Element {
-  const [armed, setArmed] = useState(false);
-  const [selected, setSelected] = useState<AnnotationTarget | null>(null);
+function variantForElement(el: HTMLElement, fallback: string): string {
+  const section = el.closest(".demo-section[data-variant]");
+  if (section) {
+    const v = section.getAttribute("data-variant");
+    if (v) return v;
+  }
+  const titleSection = el.closest(".demo-section");
+  if (titleSection) {
+    const title = titleSection.querySelector(".demo-section-title");
+    if (title?.textContent) return title.textContent.trim();
+  }
+  return fallback;
+}
+
+export function AnnotationOverlay({ story, variant, storyRoot }: AnnotationOverlayProps) {
+  const picker = usePicker(storyRoot);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [state, setState] = useState<AnnotationState | null>(null);
-  const [showList, setShowList] = useState(false);
+  const [annoState, setAnnoState] = useState<AnnotationState | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [measureKey, setMeasureKey] = useState(0);
+  const armButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  const pillRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const armRef = useRef<HTMLButtonElement>(null);
-  const hoveredRef = useRef<Element | null>(null);
-  const capturedElRef = useRef<Element | null>(null);
-  const listenerCleanupRef = useRef<(() => void) | null>(null);
-
-  const fetchState = useCallback((): void => {
-    void fetch("/__annotations")
+  useEffect(() => {
+    fetch("/__annotations")
       .then((r) => r.json())
-      .then((data: { state: AnnotationState }) => setState(data.state))
+      .then((data: { state: AnnotationState }) => setAnnoState(data.state))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    fetchState();
-  }, [fetchState]);
-
-  const currentRound = state?.currentRound ?? 1;
-  const currentRoundData = state?.rounds.find((r) => r.round === currentRound);
-  const noteCount = currentRoundData?.annotations.length ?? 0;
-
-  const applyHoverOutline = useCallback((el: Element | null): void => {
-    if (hoveredRef.current && hoveredRef.current !== el) {
-      hoveredRef.current.classList.remove("anno-hover");
-    }
-    if (el) {
-      el.classList.add("anno-hover");
-    }
-    hoveredRef.current = el ?? null;
-  }, []);
-
-  const clearHoverOutline = useCallback((): void => {
-    applyHoverOutline(null);
-  }, [applyHoverOutline]);
-
-  const applyCapturedOutline = useCallback((el: Element | null): void => {
-    if (capturedElRef.current) {
-      capturedElRef.current.classList.remove("anno-selected");
-    }
-    capturedElRef.current = el;
-    if (el) {
-      el.classList.add("anno-selected");
-    }
-  }, []);
-
-  const isOwnNode = useCallback((target: EventTarget | null): boolean => {
-    if (!(target instanceof Element)) return false;
-    return !!(
-      pillRef.current?.contains(target) ||
-      popoverRef.current?.contains(target)
-    );
-  }, []);
-
-  const disarm = useCallback((): void => {
-    setArmed(false);
-    clearHoverOutline();
-    if (listenerCleanupRef.current) {
-      listenerCleanupRef.current();
-      listenerCleanupRef.current = null;
-    }
-  }, [clearHoverOutline]);
-
-  const arm = useCallback((): void => {
-    setArmed(true);
-    if (!storyRoot) return;
-
-    const handleMouseMove = (e: MouseEvent): void => {
-      if (isOwnNode(e.target)) {
-        clearHoverOutline();
-        return;
-      }
-      if (e.target instanceof Element) {
-        applyHoverOutline(e.target);
-      }
-    };
-
-    const handleCapturingClick = (e: MouseEvent): void => {
-      storyRoot.removeEventListener("mousemove", handleMouseMove);
-      storyRoot.removeEventListener("click", handleCapturingClick, true);
-      listenerCleanupRef.current = null;
-      setArmed(false);
-      clearHoverOutline();
-
-      if (isOwnNode(e.target)) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (e.target instanceof Element) {
-        const resolved = resolveComponentTarget(e.target);
-        applyCapturedOutline(e.target);
-        setSelected(resolved);
-        setNote("");
-        setError(null);
-      }
-    };
-
-    storyRoot.addEventListener("mousemove", handleMouseMove);
-    storyRoot.addEventListener("click", handleCapturingClick, true);
-
-    listenerCleanupRef.current = (): void => {
-      storyRoot.removeEventListener("mousemove", handleMouseMove);
-      storyRoot.removeEventListener("click", handleCapturingClick, true);
-    };
-  }, [
-    storyRoot,
-    isOwnNode,
-    applyHoverOutline,
-    clearHoverOutline,
-    applyCapturedOutline,
-  ]);
+    const observer = new ResizeObserver(() => {
+      setMeasureKey((k) => k + 1);
+    });
+    observer.observe(storyRoot);
+    return () => observer.disconnect();
+  }, [storyRoot]);
 
   useEffect(() => {
-    return (): void => {
-      listenerCleanupRef.current?.();
-    };
+    document.body.classList.add("anno-active");
+    return () => document.body.classList.remove("anno-active");
   }, []);
 
   useEffect(() => {
-    if (selected) {
-      setTimeout(() => textareaRef.current?.focus(), 0);
+    const gutter = collapsed ? "72px" : "344px";
+    document.body.style.setProperty("--anno-rail-gutter", gutter);
+    return () => {
+      document.body.style.removeProperty("--anno-rail-gutter");
+    };
+  }, [collapsed]);
+
+  useEffect(() => {
+    if (picker.reHighlightEl) {
+      const rect = measureRect(picker.reHighlightEl);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (isRectOffscreen(rect, vw, vh)) {
+        picker.reHighlightEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
-  }, [selected]);
+  }, [picker.reHighlightEl]);
 
-  const handlePopoverKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>): void => {
-      if (e.key !== "Tab") return;
-      const popover = popoverRef.current;
-      if (!popover) return;
-
-      const focusable = Array.from(
-        popover.querySelectorAll<HTMLElement>(
-          "textarea, button:not(:disabled)",
-        ),
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-
-      if (e.shiftKey) {
-        if (active === first) {
-          e.preventDefault();
-          last?.focus();
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (picker.selected) {
+          picker.clearSelection();
+        } else if (picker.armed) {
+          picker.disarm();
         }
-      } else if (active === last) {
-        e.preventDefault();
-        first?.focus();
       }
-    },
-    [],
-  );
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && picker.selected && note.trim()) {
+        handleSave();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [picker.selected, picker.armed, note]);
 
-  const handleSave = useCallback(async (): Promise<void> => {
-    if (!selected || saving) return;
+  const handleSave = useCallback(async () => {
+    if (!picker.selected || !note.trim()) return;
     setSaving(true);
     setError(null);
+    const target: AnnotationTarget = {
+      ...picker.selected.target,
+      anchor: computeAnchor(picker.selected.el, storyRoot),
+    };
+    const elementVariant = variantForElement(picker.selected.el, variant);
     try {
-      const payload = { story, variant, note, target: selected };
       const res = await fetch("/__annotations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ story, variant: elementVariant, note: note.trim(), target }),
       });
-      if (!res.ok) throw new Error("Server error");
       const data = (await res.json()) as { state: AnnotationState };
-      setState(data.state);
-      if (capturedElRef.current) {
-        capturedElRef.current.classList.remove("anno-selected");
-        capturedElRef.current.classList.add("anno-saved");
-        capturedElRef.current = null;
-      }
-      setSelected(null);
+      setAnnoState(data.state);
+      picker.clearSelection();
       setNote("");
-    } catch {
-      setError("Couldn't save — the viewer middleware may be down. Retry?");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSaving(false);
     }
-  }, [selected, saving, story, variant, note]);
+  }, [picker.selected, note, story, variant, storyRoot]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === "Escape") {
-        if (selected) {
-          applyCapturedOutline(null);
-          setSelected(null);
-          setNote("");
-          setError(null);
-          armRef.current?.focus();
-        } else if (armed) {
-          disarm();
-          armRef.current?.focus();
-        }
-      }
-      if (selected && e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        void handleSave();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [selected, armed, disarm, handleSave, applyCapturedOutline]);
-
-  const toggleArm = (): void => {
-    if (armed) disarm();
-    else arm();
-  };
-
-  const handleNewIteration = async (): Promise<void> => {
-    if (noteCount === 0) return;
+  const handleNewIteration = useCallback(async () => {
     try {
       const res = await fetch("/__annotations/round", { method: "POST" });
       const data = (await res.json()) as { state: AnnotationState };
-      setState(data.state);
-      setShowList(false);
-    } catch {
-      // best-effort
-    }
-  };
+      setAnnoState(data.state);
+    } catch {}
+  }, []);
+
+  const round = annoState?.currentRound ?? 1;
+  const currentRoundAnnotations =
+    annoState?.rounds.find((r) => r.round === round)?.annotations ?? [];
+
+  const reHighlightLabel = picker.reHighlightEl
+    ? resolveComponentTarget(picker.reHighlightEl).component
+    : "";
 
   return (
     <>
-      <div ref={pillRef} className="anno-pill">
-        <button
-          ref={armRef}
-          type="button"
-          className={`anno-btn${armed ? " anno-btn--active" : ""}`}
-          aria-pressed={armed}
-          onClick={toggleArm}
-        >
-          {armed ? "Selecting…" : "Select"}
-        </button>
-
-        <span className="anno-round">Round {currentRound}</span>
-
-        <button
-          type="button"
-          className="anno-btn"
-          aria-label={`Round ${currentRound}, ${noteCount} notes`}
-          onClick={() => setShowList((v) => !v)}
-        >
-          {noteCount} {noteCount === 1 ? "note" : "notes"}
-        </button>
-
-        <button
-          type="button"
-          className="anno-btn"
-          disabled={noteCount === 0}
-          onClick={() => void handleNewIteration()}
-        >
-          New iteration
-        </button>
-      </div>
-
-      {selected !== null && (
-        <div
-          ref={popoverRef}
-          className="anno-popover"
-          role="dialog"
-          aria-modal="true"
-          onKeyDown={handlePopoverKeyDown}
-        >
-          <div
-            className="anno-target"
-            title={`${selected.component} · ${selected.element}`}
-          >
-            <span className="anno-target-component">{selected.component}</span>{" "}
-            &middot;{" "}
-            <span className="anno-target-element">{selected.element}</span>
-          </div>
-
-          <textarea
-            ref={textareaRef}
-            value={note}
-            placeholder="What should change about this element?"
-            onChange={(e) => setNote(e.target.value)}
-            rows={4}
-          />
-
-          {error !== null && <div className="anno-error">{error}</div>}
-
-          <div className="anno-popover-actions">
-            <button
-              type="button"
-              className="anno-btn anno-save"
-              disabled={saving}
-              onClick={() => void handleSave()}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-            <button
-              type="button"
-              className="anno-btn"
-              onClick={() => {
-                applyCapturedOutline(null);
-                setSelected(null);
-                setNote("");
-                setError(null);
-                armRef.current?.focus();
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+      <InspectorRail
+        picker={picker}
+        round={round}
+        annotations={currentRoundAnnotations}
+        note={note}
+        onNoteChange={setNote}
+        onSave={handleSave}
+        saving={saving}
+        error={error}
+        onNewIteration={handleNewIteration}
+        collapsed={collapsed}
+        onToggleCollapsed={() => setCollapsed((c) => !c)}
+        armButtonRef={armButtonRef}
+      />
+      {picker.armed && picker.hover && (
+        <HighlightLayer
+          key={`hover-${measureKey}`}
+          el={picker.hover.el}
+          label={`${picker.hover.target.component} · ${picker.hover.target.element}`}
+          tone="hover"
+        />
       )}
-
-      {showList && currentRoundData && currentRoundData.annotations.length > 0 && (
-        <div className="anno-list-panel">
-          <ul className="anno-list">
-            {currentRoundData.annotations.map((a) => (
-              <li key={a.id}>
-                <span className="anno-list-component">
-                  {a.target.component}
-                </span>{" "}
-                &mdash; {a.note}
-              </li>
-            ))}
-          </ul>
-        </div>
+      {picker.selected && !picker.hover && (
+        <HighlightLayer
+          key={`selected-${measureKey}`}
+          el={picker.selected.el}
+          label={`${picker.selected.target.component} · ${picker.selected.target.element}`}
+          tone="selected"
+        />
+      )}
+      {picker.reHighlightEl && (
+        <HighlightLayer
+          key={`rehighlight-${measureKey}`}
+          el={picker.reHighlightEl}
+          label={`${reHighlightLabel} · ${resolveComponentTarget(picker.reHighlightEl).element}`}
+          tone="rehighlight"
+        />
       )}
     </>
   );

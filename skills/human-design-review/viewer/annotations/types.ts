@@ -1,7 +1,14 @@
+export interface AnnotationAnchor {
+  path: number[];
+  component: string;
+  element: string;
+}
+
 export interface AnnotationTarget {
   component: string;
   dsComponent: string | null;
   element: string;
+  anchor?: AnnotationAnchor;
 }
 
 export interface Annotation {
