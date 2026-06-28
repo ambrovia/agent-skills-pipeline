@@ -46,50 +46,42 @@ Settle the goal in your own words, then confirm it with the maintainer:
 
 Ask only the few questions that would change the goal or its scope; lead with your read, and if an answer moves the scope, settle the goal before anything downstream.
 
-**Then, only if the work introduces or reshapes a load-bearing noun, flag it** for Phase 1. If it only reuses nouns already settled in `{{paths.docs}}`, skip Phase 1.
+## Phase 1 — Plan backwards
 
-## Phase 1 — Pin any new noun (only if the work introduces one)
-
-Keep this light — refinement is about value, not building a taxonomy. For each new or reshaped noun, settle just enough that design and architecture don't drift:
-
-- A one-sentence definition of what it is.
-- What it is explicitly **not**, where it could be confused with an adjacent term — so the name stays unique (`grep` `{{paths.docs}}` for collisions).
-- Any hard rule it must honor — an invariant that, if broken downstream, breaks the noun.
-
-Stop there. No cardinality / lifecycle / composition matrices, no alias tables — pin only what keeps the noun distinct and unambiguous.
+State the goal as the user/dev guide that would explain the feature once it shipped — what a user can now do or see, or how a developer uses the capability. Working back from that end state pressure-tests the goal: if the guide is hard to write, the goal isn't sharp yet. Keep this draft — `/human-concept-review` reviews it, and `/write-docs` later reconciles it into `{{paths.docs}}` against what actually shipped.
 
 ## Phase 2 — Write requirements.md and emit DOC-CLASS
 
-Write `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), any new noun's definition + hard rules, the guide draft (below), and the DOC-CLASS line. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
+Write `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), the **Guide draft** from Phase 1, and the `DOC-CLASS` line. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
 
-**Plan backwards — draft the guide.** The clearest way to state a requirement is to write the user/dev documentation that explains what's being built, as if it shipped. Include in `requirements.md` a **Guide draft** section in the user/dev-guide voice (what the user will be able to do or see, or — for a dev-facing capability — how a developer will use it). This draft is the story the requirement tells; `/human-concept-review` reviews it, and `/write-docs` later reconciles it into `{{paths.docs}}` against the as-built reality.
-
-**Emit the `DOC-CLASS` line.** At the top of `requirements.md`, emit one machine-greppable line forecasting how much this work package will rewrite the user/dev guides — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
+**Emit the `DOC-CLASS` line** at the top of `requirements.md` — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
 
 ```
 DOC-CLASS: significant|minor|none
 ```
 
-`significant` = a new user/dev-guide page or a large rewrite of an existing one (the guide draft above is substantial and new). `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
+`significant` = a new user/dev-guide page or a large rewrite. `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
 
-## Phase 3 — Challenge it (in-session self-critique)
+## Phase 3 — Clarify any nouns (only if the work introduces one)
 
-Switch to adversarial thinking. Challenge your own requirement — not the downstream design or plan:
+If the work introduces or reshapes a load-bearing noun, pin it — lightly. For each, settle just enough that design and architecture don't drift on what it means:
 
-- Is the value concrete (names who benefits and how), or generic?
-- Is success observable, or vibes?
-- Are the non-goals real exclusions, or filler?
-- Is the guide draft something a real user/dev could follow?
-- If it introduced a noun: is the definition unambiguous and the term free of collisions?
+- A one-sentence definition of what it is.
+- What it is explicitly **not**, where it could be confused with an adjacent term — so the name stays unique (`grep` `{{paths.docs}}` for collisions).
+- Any hard rule it must honor — an invariant that, if broken downstream, breaks the noun.
 
-Address critical issues. Max 1 round. The requirement is now **locked** — `/design` and `/architecture` take it as fixed input and explore *inside* it, never reshape it.
+Stop there: a distinct, unambiguous noun, not a data model. No cardinality / lifecycle / composition matrices, no alias tables.
+
+## Reviewed by the reviewer
+
+The refinement is evaluated by a separate reviewer via `/refine-critique`, not self-reviewed — producer and evaluator stay separate, as for `/design` and `/architecture`. Once it clears the bar the goal is **locked**: `/design` and `/architecture` take it as fixed input and explore *inside* it, never reshape it.
 
 ## Done when
 
 - `requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, and — if the work introduced a noun — its definition + hard rules.
 - The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
 - A "Required reading" section names the specific docs downstream agents must read.
-- Phase 3 self-critique ran; no spec/doc contradiction is left silent.
+- `/refine-critique` has cleared the bar; no spec/doc contradiction is left silent.
 
 ## What this skill does NOT do
 
