@@ -37,7 +37,7 @@ A work package is the **smallest deliverable end-to-end change** that has its ow
 **It is NOT:**
 - An implementation plan. No file paths, no type signatures, no chosen libraries, no migration steps. Those belong in `/architecture`'s output, written *after* this work package is registered.
 - A design exploration. No component layouts, no spacing decisions, no copy. Those come from `/design` after registration. (If no design system is configured — `pipeline.config designSystem: null` — there is no design step at all.)
-- A per-work-package requirement. The value, noun shape, and guide draft are `/refine`'s output, produced at build time — not here. This skill settles the track's *strategic frame* (via the questionnaire); it does not run `/refine`.
+- A per-work-package requirement. Value, noun shape, and guide draft are `/refine`'s output at build time. This skill settles only the track's *strategic frame*.
 - A research / investigation / exploration deliverable. "Research X," "explore the space," "produce findings" has no observable outcome — and balloons into a composite the moment it has to ship something. Research is an *input* to scoping, not a unit of work: it happens in this skill (the existing-implementation check / an Explore agent) or in `/refine`, and its conclusions shape the ACs. Register the work package that *acts on* the research, not the research itself.
 - A backlog item. If it has no AC, it is not a work package.
 
@@ -45,11 +45,9 @@ A work package is the **smallest deliverable end-to-end change** that has its ow
 
 ## Strategic-framing questionnaire (run first, before registering anything)
 
-Work-planning starts with a **high-level conversation about what this track is about** — the
-cheapest place to get the frame right. Run it as a questionnaire: a few sharp questions, your
-proposed read first, the maintainer confirms or redirects. The goal is to nail the track at a
-strategic altitude, not to design any single work package (per-work-package requirement
-sharpening is `/refine`'s job, later). Ask only what's unsettled; lead with your read.
+Settle **what this track is about** at a strategic altitude — a few sharp questions, your read
+first, the maintainer confirms or redirects. Not per-work-package design; that's `/refine`,
+later. Ask only what's unsettled.
 
 1. **Value & frame.** "What is this track fundamentally about — what value does it generate, and what's the one boundary / primitive / load-bearing noun it establishes? My read: …"
 2. **Shape of the work.** "What are the work packages this breaks into, roughly?" For each, classify two things up front:
@@ -67,7 +65,7 @@ The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground 
 
 1. **Track letter is valid.** Must match an existing `.pipeline/work-packages/<track>.md` or be a deliberate new track (in which case create the track file first with the same scope-rules section other tracks use).
 2. **Work-package ID is unique.** Read `.pipeline/pipeline-manifest.yml`; the generated ID (e.g. `L30`) must not collide with any existing entry.
-3. **Strategic-frame gate.** The track's **strategic frame** — what the whole track is about, its load-bearing primitive / boundary, the frame every work package shares — must be defined enough *before* registering. Run the strategic-framing questionnaire (see below) to settle it; it lives in `{{paths.docs}}` ground truth. If the frame is vague, contested, or has open conceptual questions, **hold** — name the open questions and resolve them — do not paper over it. The *per-work-package* requirement is NOT settled here: that is `/refine`'s job at build time, flagged via the **Refinement** gate. A work package that introduces or reshapes its *own* noun does not block registration; flag it so the pipeline runs `/refine` first. This mirrors the runtime gate enforced in `/pipeline` (`blocked: concept-missing` if a WP reaches build with no `{{paths.docs}}` frame).
+3. **Strategic-frame gate.** The track's **strategic frame** — its load-bearing primitive / boundary and the frame every work package shares — must be defined in `{{paths.docs}}` before registering. Run the strategic-framing questionnaire to settle it; if it's vague or contested, **hold** and resolve the open questions. A per-WP noun needing its own `/refine` does not block registration — flag the **Refinement** gate so the pipeline runs it at build time. `/pipeline` enforces this at runtime (`blocked: concept-missing` if a WP reaches build with no frame).
 4. **Justification check.** The work package must have a clear answer to: "Who specifically benefits, and what's the cost of NOT building this?" If the only argument is "it would be nice," "other products have it," or "the research says so," the work package is not justified. Features are complexity — every one makes the system harder to understand, maintain, and explain. The burden of proof is on the work package to earn its existence. Refuse to register if the justification is weak.
 5. **Existing-implementation check.** Before writing the spec, search `{{paths.source}}` for the capability being proposed. Read the relevant source files — schemas, routes, services, UI pages. If the feature largely exists, the spec must document what's already built (in a "What exists today" paragraph) and identify only the genuine gap. Proposing to build something that already exists is the #1 failure mode in work-planning. When in doubt, spawn an Explore agent to audit the relevant subsystem.
 6. **Dependencies are real blockers.** For each declared dependency, write one sentence justifying *why* this work package cannot start until that one is `done`. "Logically related" is not a blocker — it just serializes the scheduler. If you cannot articulate the blocker, drop the dep.

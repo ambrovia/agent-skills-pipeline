@@ -13,23 +13,14 @@ user-invocable: true
 They catch when the wrong thing gets built. Tests written after code just confirm
 what exists — they encode bugs as expected behavior.
 
-This skill is **TDD discipline only**. It does not decide *what kinds* of tests
-exist, *which layers* to cover, or *how* to structure them — that is
-project-specific and lives in the `testing` rule. The one rule this skill makes
-universal: **every acceptance criterion gets a test, written first, that fails
-before the code exists.**
-
 ## Project rules
 
-How this repo tests is defined in `pipeline.config rules` — read it and treat it
-as **binding**. It, not this skill, decides test kinds, layout, fixtures, and the
-real-vs-mock policy:
+Follow the project's `testing` rule as binding — it, not this skill, fixes the test
+kinds, layers, fixtures, and mock policy:
 
-- **`{{rules.testing}}`** — which kinds/layers of test to cover, the fixture /
-  setup pattern, and what may be mocked. Follow it exactly. If the repo declares
-  no `testing` rule, fall back to the universal default: prove each criterion's
-  observable behavior through the code's public interface, mocking only
-  nondeterministic externals.
+- **`{{rules.testing}}`** — which kinds/layers to cover, the fixture pattern, what
+  may be mocked. If undeclared: prove each criterion's observable behavior through
+  the public interface, mocking only nondeterministic externals.
 
 ## When this runs
 

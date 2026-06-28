@@ -1,6 +1,6 @@
 ---
 name: refine
-description: "Sharpen one work package's user requirement before design and architecture. Probe the noun, ask what value the work generates (the cheapest clarification point), and draft the user/dev guide that tells the story of what's being built. Run as the first pre-build act on any work package whose goal is unclear or that introduces/reshapes a load-bearing noun."
+description: "Sharpen one work package's user requirement before design and architecture. Probe the noun, ask what value the work generates, and draft the user/dev guide that tells the story of what's being built. Run as the first pre-build act on any work package whose goal is unclear or that introduces/reshapes a load-bearing noun."
 phase: 1
 persona: planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -11,7 +11,7 @@ user-invocable: true
 
 First of a work package's three pre-build acts: **refine → design → architecture**. Upstream of `/design` and `/architecture`. Answers **"what value does this generate, and what IS the thing it generates?"** — the layer where a container is distinguished from an element, a snapshot from an output, a commitment from a task, a measured cost from an elapsed duration. Requirements are the part that is *expensive to change*; they ripple through every downstream variant in design and every contract in architecture. Get them right, then let design and architecture explore freely within them.
 
-**Per-work-package only.** The *strategic frame* of a whole track — its boundary, primitive, and shared load-bearing nouns — is settled in `/work-planning` (its strategic-framing questionnaire) plus `{{paths.docs}}` ground truth, not here. `/refine` inherits that frame as a fixed input and must not contradict it; it sharpens this one work package's requirement.
+**Per-work-package only.** Inherit the track's *strategic frame* (boundary, primitive, shared nouns — set in `/work-planning` + `{{paths.docs}}`) as fixed input; never contradict it. Sharpen this one work package's requirement.
 
 **Skip when:** the requirement is already sharp and locked in `{{paths.docs}}` and the work package doesn't reshape it. Read the relevant doc sections first; if they answer Phase 1 without contradiction, skip.
 
@@ -51,7 +51,7 @@ Only **New + Reshaped** nouns enter the rest of this skill. Stable nouns are inp
 
 ## Phase 1 — Probe the essence
 
-**Lead with value (the cheapest question).** Before the noun probes, settle the requirement itself: **"What value does this work package generate, and for whom? My read: …"** This is the one question always worth asking when a maintainer is reachable — it is far cheaper to correct a misread requirement here than after design or build. If the answer reshapes scope, fix the requirement before probing the noun.
+**Lead with value.** Before the noun probes, settle the requirement: **"What value does this work package generate, and for whom? My read: …"** Always ask this when a maintainer is reachable. If the answer reshapes scope, fix the requirement before probing the noun.
 
 For each New / Reshaped noun, walk the decision tree. Pick only the probes that are actually unsettled — skip the ones where the spec or existing docs already pin the answer. For each remaining probe, propose your read with the evidence you have, then ask the human (or, in autonomous mode, the reviewer running on {{models.review}}) to confirm, override, or dig deeper. Issue all probes for one noun in a single parallel batch — independent probes don't need separate round-trips, and the cost adds up across seven essentials × N nouns.
 
@@ -185,12 +185,12 @@ The requirement is now **locked**. Downstream acts (`/design`, `/architecture`) 
 ## What this skill does NOT do
 
 - It does not design, define an architecture, or write tests or code. That's `/design`, `/architecture`, `/write-tests`, `/write-code`.
-- It does not settle the track's strategic frame — that is `/work-planning`'s job.
+- It does not settle the track's strategic frame (`/work-planning` does).
 
 ## Anti-patterns
 
 - Skipping to design before sharpening the requirement.
-- Skipping the value question when a maintainer is reachable — it is the cheapest correction point.
+- Skipping the value question when a maintainer is reachable.
 - Requirement by code (the type is one expression of the requirement, not the requirement).
 - Empty rejection list.
 - Vibes-only definitions.

@@ -20,7 +20,7 @@ Inspired by the "design shotgun" (three variants on a comparison board) and *Des
 
 ## Project rules
 
-This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
 
 - **`{{rules.design-system}}`** — component budget, tokens, reuse-before-build, promotion rules these variants must honor.
 - **`{{rules.frontend}}`** — client / UI conventions.

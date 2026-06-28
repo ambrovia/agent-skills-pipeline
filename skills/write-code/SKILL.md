@@ -21,7 +21,7 @@ demands it.
 
 ## Project rules
 
-This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
 
 - **`{{rules.code}}`** — language / type / style conventions the implementation must follow.
 - **`{{rules.frontend}}`** — client / UI conventions (if this touches UI).

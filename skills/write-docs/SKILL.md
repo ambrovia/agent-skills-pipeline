@@ -15,7 +15,7 @@ This skill applies to writing AND reviewing documentation. It is backed by empir
 
 ## Project rules
 
-This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
 
 - **`{{rules.docs}}`** — the project's documentation voice & conventions.
 

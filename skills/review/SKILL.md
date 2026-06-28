@@ -17,7 +17,7 @@ Six lenses plus an acceptance-criteria completeness audit, one session. Three po
 
 ## Project rules
 
-This repo can steer review through `pipeline.config rules`. Read EVERY declared slot below that applies to the change and audit against it as **binding** — a project-rule violation is a finding, and a project rule overrides this skill's generic guidance on conflict. Skip slots the repo left null.
+Audit against every `pipeline.config rules` slot below as binding — a violation is a finding; skip undeclared slots.
 
 - **`{{rules.code}}`** — language / type / style conventions.
 - **`{{rules.testing}}`** — test conventions, layout, lane/fixture policy.
