@@ -100,7 +100,7 @@ Watch for subtle incompleteness:
 | Error handling | Trigger the error path in a test (bad input → asserted error) |
 | FK / constraints | Insert violating data and show it is rejected |
 
-For UI criteria, look at pixels, not code. Missing end-to-end coverage for a UI criterion is **NOT DONE**.
+For UI criteria, look at pixels, not code. A UI criterion with no executable proof that it works (by whatever test kind the project's `testing` rule prescribes) is **NOT DONE**.
 
 ## Output format
 

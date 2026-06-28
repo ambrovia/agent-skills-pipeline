@@ -84,6 +84,7 @@ Also review for:
 - **Type safety** — escape hatches (untyped values, unsafe casts, suppression comments, non-null assertions). Count them. Each one is a finding.
 - **Coupling** — shared mutable state, import cycles, god objects.
 - **Test quality** — happy-path-only tests, tautologies, tests that mock everything.
+- **Mocked system-under-test** — an integration with an external system (LLM/agent harness or CLI, third-party API) proven only by a stubbed/scripted/mocked stand-in for that very system is a false green: it tests the wrapper, not the integration. The proof must exercise the real thing; an absent binary/credential must surface as unproven, not skip to green.
 - **Performance** — N+1 queries, unbounded lists, missing indexes, allocations in hot/render loops.
 
 ---
