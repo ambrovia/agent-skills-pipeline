@@ -72,16 +72,12 @@ If the work introduces or reshapes a load-bearing noun, pin it — lightly. For 
 
 Stop there: a distinct, unambiguous noun, not a data model. No cardinality / lifecycle / composition matrices, no alias tables.
 
-## Reviewed by the reviewer
-
-The refinement is evaluated by a separate reviewer via `/refine-critique`, not self-reviewed — producer and evaluator stay separate, as for `/design` and `/architecture`. Once it clears the bar the goal is **locked**: `/design` and `/architecture` take it as fixed input and explore *inside* it, never reshape it.
-
 ## Done when
 
 - `requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, and — if the work introduced a noun — its definition + hard rules.
 - The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
 - A "Required reading" section names the specific docs downstream agents must read.
-- `/refine-critique` has cleared the bar; no spec/doc contradiction is left silent.
+- No spec/doc contradiction is left silent.
 
 ## What this skill does NOT do
 
