@@ -38,6 +38,7 @@ A work package is the **smallest deliverable end-to-end change** that has its ow
 - An implementation plan. No file paths, no type signatures, no chosen libraries, no migration steps. Those belong in `/architecture`'s output, written *after* this work package is registered.
 - A design exploration. No component layouts, no spacing decisions, no copy. Those come from `/design` after registration. (If no design system is configured — `pipeline.config designSystem: null` — there is no design step at all.)
 - A per-work-package requirement. The value, noun shape, and guide draft are `/refine`'s output, produced at build time — not here. This skill settles the track's *strategic frame* (via the questionnaire); it does not run `/refine`.
+- A research / investigation / exploration deliverable. "Research X," "explore the space," "produce findings" has no observable outcome — and balloons into a composite the moment it has to ship something. Research is an *input* to scoping, not a unit of work: it happens in this skill (the existing-implementation check / an Explore agent) or in `/refine`, and its conclusions shape the ACs. Register the work package that *acts on* the research, not the research itself.
 - A backlog item. If it has no AC, it is not a work package.
 
 ---
@@ -176,6 +177,7 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
 - The work package would create a cycle with an existing dependency. The manifest validator will catch it; do not register.
 - The work package is sized S but has >3 AC or touches >1 subsystem. Re-size to M, or split.
 - A maintainer asks to register work packages under a track whose **strategic frame** is undefined or too vague to give a stable frame. Hold and resolve it via the strategic-framing questionnaire; flag the open questions. (A per-WP noun that needs its own `/refine` is fine — defer it via the **Refinement** gate; it does not block registration.)
+- The work package's deliverable is **findings, a recommendation, or a prototype** rather than a shipped feature or observable change. A research-only WP has no testable AC and isn't a unit of work. Tell the maintainer to do the research first (in this skill or `/refine`), then register the WP that *acts on* it.
 
 ---
 
