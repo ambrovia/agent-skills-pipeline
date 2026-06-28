@@ -1,6 +1,6 @@
 ---
 name: refine
-description: "Clarify why a work package exists before design and architecture: sharpen the goal — the user value, the product impact, what success looks like, and what's out of scope — then draft the user/dev guide that tells that story. Pin any new domain noun it introduces as a trailing step. Run as the first pre-build act on any work package whose goal or value isn't yet sharp."
+description: "Clarify a work package's goal before design and architecture: the user value it delivers, the impact it should have, what success looks like, and what's out of scope; then draft the user/dev guide that tells that story. Pin any new domain noun it introduces as a later step. Run as the first pre-build act on any work package whose goal isn't yet sharp."
 phase: 1
 persona: planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -9,99 +9,199 @@ user-invocable: true
 
 # Refine — sharpen the goal
 
-First of a work package's three pre-build acts: **refine → design → architecture**. Refinement clarifies **why this work package exists and what counts as success** — the user value it generates and the product impact it should have — scoped sharply enough that design and architecture can't wander. A fuzzy goal is the most expensive thing to get wrong: it ripples through every design variant and every architecture contract downstream. Sharpen the goal, then let design and architecture explore freely toward it.
+First of a work package's three pre-build acts: **refine → design → architecture**. It clarifies the **goal** — the user value the work delivers, the product impact it should have, and what success looks like — and bounds the scope, so design and architecture build toward a sharp target. A fuzzy goal is the most expensive thing to get wrong: it ripples through every design variant and every architecture contract. Sharpen the goal first; pinning the shape of any new domain noun the work introduces is a later step, and only when it introduces one.
 
-Pinning the exact domain nouns the work introduces matters too, but it is **downstream of a sharp goal** — do it once the goal is settled, and only when the work actually introduces or reshapes one.
+**Per-work-package only.** Inherit the track's *strategic frame* (boundary, primitive, shared nouns — set in `/work-planning` + `{{paths.docs}}`) as fixed input; never contradict it. Sharpen this one work package's requirement.
 
-**Per-work-package only.** Inherit the track's *strategic frame* (boundary, primitive, shared nouns — set in `/work-planning` + `{{paths.docs}}`) as fixed input; never contradict it. Sharpen this one work package's goal.
-
-**Skip when:** the goal is already sharp — the spec's value, success, and scope are unambiguous — and the work introduces no new or reshaped noun. Read the relevant `{{paths.docs}}` sections first; if they leave nothing open, skip.
+**Skip when:** the goal is already sharp — value, success, and scope are unambiguous — and the work introduces no new or reshaped noun. Read the relevant `{{paths.docs}}` sections first; if they leave nothing open, skip.
 
 This skill is design-system-agnostic and applies to any work-package type. It runs even when `pipeline.config` sets `designSystem: null`.
 
 ## When this runs
 
-Phase 1, the first pre-build act for a work package whose goal, value, or scope isn't yet sharp (or that introduces / reshapes a load-bearing noun). Before `/design`, `/architecture`, `/write-tests`, `/write-code`.
+Phase 1, the first pre-build act for a work package whose goal is unclear or that introduces / reshapes a primitive / domain concept / load-bearing noun. Before `/design`, `/architecture`, `/write-tests`, `/write-code`.
 
 ## What it produces
 
-- `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement (**always**): the sharpened goal, the guide draft, and the `DOC-CLASS` line. The fixed input `/design` and `/architecture` read.
-- A ground-truth doc under `{{paths.docs}}` when the work reshapes an existing layer — the **specific** file, never a generic folder dump.
+- `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement output (**always**). Carries the `DOC-CLASS` line and the guide draft. This is what `/design` and `/architecture` read as a fixed input.
+- A ground-truth doc under `{{paths.docs}}` when the requirement reshapes an existing layer (create or update the **specific** file — never a generic folder dump).
+- An update to the matching canonical-shapes / contract doc under `{{paths.docs}}` so downstream work packages reference it without re-inventing.
 
 ## Required reading (do this first)
 
-1. The work package in `.pipeline/work-packages/<id>.md` — what it asks for and why.
-2. The track's strategic frame in `{{paths.docs}}` — the value and boundary this WP serves.
-3. Any canonical-shapes / contract doc under `{{paths.docs}}` for a noun the work touches.
+1. The work package in `.pipeline/work-packages/<id>.md` (or `.pipeline/work-packages/<id>/`) — what it asks for and why.
+2. Existing canonical-shapes / contract docs under `{{paths.docs}}` — does the noun already have a contract?
+3. List `{{paths.docs}}` to identify relevant topic folders, then read each topic's index and drill into the specific files that match the noun.
 
-If the spec contradicts a locked requirement or `{{paths.docs}}`, that is **CRITICAL** — surface it; never silently re-define.
+**Output a "Required reading" section** in your requirements doc, listing the specific doc files downstream agents (`/design`, `/architecture`, `/pipeline`) must read for this work package.
 
-## Phase 1 — Sharpen the goal
+If the spec contradicts an existing requirements / concept doc, that is **CRITICAL**. Surface it; never silently re-define.
 
-The heart of this skill. Settle each below in your own words first, then confirm with the maintainer:
+## Phase 0 — Sharpen the goal
 
-- **Value & audience.** What value does this generate, and for whom? This is the one question always worth asking when a maintainer is reachable — a misread goal is far cheaper to fix here than after build.
-- **Success.** What is observably true when this succeeds — what can a user or the system do that they couldn't before?
-- **Why now.** The problem or impact it addresses, and the cost of not doing it.
-- **Scope & non-goals.** What this deliberately does *not* do. The exclusions are as load-bearing as the inclusions.
+Settle the goal in your own words, then confirm it with the maintainer:
 
-**Ask few, sharp questions.** Only ask what would actually change the goal or scope — a handful of decisive questions beat a long checklist answered with shrugs. Lead with your read; if an answer reshapes scope, fix the goal before going further. When the maintainer is reachable, surface one question at a time; in autonomous mode, write your best answer into `requirements.md` and let `/architecture`'s spec-alignment scoring catch a miss.
+- **Value & audience** — what value this delivers, and to whom. The one question always worth asking a reachable maintainer; a misread goal is far cheaper to correct here than after the build.
+- **Success** — what a user or the system can observably do once this ships that they couldn't before.
+- **Scope** — what the work deliberately leaves out; the exclusions bound it as much as the inclusions.
 
-## Phase 2 — Pin the nouns (only if the work introduces or reshapes one)
+Ask only the few questions that would change the goal or its scope; lead with your read, and if an answer moves the scope, settle the goal before anything downstream.
 
-Skip this entirely when the work introduces no new domain noun. Otherwise, for each noun the sharpened goal introduces or reshapes, pin what it IS and ISN'T so design and architecture build on solid ground. Cover only the points the spec or `{{paths.docs}}` leaves open:
+**Then identify any new noun — only when the work introduces or reshapes one.** Name the noun(s) the spec keeps using (often one central noun and 2-3 satellites), give each a one-line working definition, and check each against the specific docs from Required reading and any canonical-shapes contracts under `{{paths.docs}}`.
 
-- **Identity & properties.** What kind of thing is it (container? event? snapshot? relationship? capability?), and what must every instance have to be one at all?
-- **Rejection list.** At least three things it is NOT — adjacent concepts, tempting extensions, patterns from elsewhere — each with the reason it's excluded. "We don't do X because Y"; Y is the load-bearing part.
-- **Composition & lifecycle.** What it carries, attaches to, or is referenced by; the states it moves through.
-- **Authority.** Who owns, produces, and mutates it; where the source of truth lives.
-- **Contracts.** Cardinality, closure (open vs closed vocabulary), mutability, identity, and any hard rule that, if broken downstream, means the noun was broken.
-- **Vocabulary.** One canonical term; list the aliases not to use, collision-checked against `{{paths.docs}}` (`grep` to verify).
+Classify each noun:
 
-The planner turns these into types, schemas, and guards in `/architecture`; here you commit to the *shape*, not the implementation.
+- **New primitive** — not in the system yet; this work package introduces it.
+- **Reshaped concept** — exists, but the work package changes what it means or what it commits to (e.g. redefining "cost" as measured token usage rather than elapsed time).
+- **Stable concept** — exists and the work package uses it as-is. No refinement needed.
 
-## Phase 3 — Draft the guide and emit DOC-CLASS
+Only **New + Reshaped** nouns enter the rest of this skill. Stable nouns are inputs.
 
-**Plan backwards — draft the guide.** The clearest statement of a goal is the user/dev documentation that would explain the shipped result. Add a **Guide draft** section to `requirements.md` in the user/dev-guide voice — what a user can now do or see, or how a developer uses the capability. `/human-concept-review` reviews this draft; `/write-docs` later reconciles it into `{{paths.docs}}` against as-built reality.
+## Phase 1 — Probe the essence
 
-**Emit the `DOC-CLASS` line** at the top of `requirements.md` — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
+Only when Phase 0 identified a New / Reshaped noun. For each, walk the decision tree. Propose your read with the evidence you have, then ask the human (or, in autonomous mode, the reviewer running on {{models.review}}) to confirm, override, or dig deeper. Issue all probes for one noun in a single parallel batch — independent probes don't need separate round-trips.
+
+**Ask only what's unsettled.** Probe a point only when the answer would change the noun's shape; skip whatever the spec or existing docs already settle.
+
+The seven essential probes (adapt; don't ask all of them — pick what's actually unsettled):
+
+1. **Identity.** "What IS a `<noun>` in one sentence — what kind of thing is it (container? event? snapshot? relationship? capability?)? My read: …"
+2. **Essential properties.** "What properties must every `<noun>` have for it to be a `<noun>` at all (vs accidental properties some have)? My read: …"
+3. **Rejection list.** "What is a `<noun>` *not*? What adjacent thing is tempting to fold in but is actually a different concept? My read: `<noun>` is not X because Y."
+4. **Composition.** "What other concepts does a `<noun>` carry, host, or attach to? My read: a `<noun>` attaches to {hosts}, carries {payload}, is referenced by {references}."
+5. **Lifecycle.** "What states does a `<noun>` move through, and what causes each transition? My read: …"
+6. **Authority.** "Who owns / produces / mutates a `<noun>`? Where does the source of truth live? My read: …"
+7. **Vocabulary collision.** "Does `<noun>` clash with an existing term in any specific doc under `{{paths.docs}}` (including canonical-shapes contracts)? Is it used inconsistently inside this same work package? My read: …"
+
+Stop probing when the requirement is sharp, not when you run out of questions. Three to seven branches is typical for a new primitive; one or two for a reshape.
+
+If a maintainer is reachable, surface each probe one at a time (never batch a human). In autonomous mode, propose your answer in `requirements.md` and let `/architecture`'s in-session spec-alignment scoring catch it later if you got it wrong.
+
+## Phase 2 — Probe the rejection list
+
+The list of what a thing ISN'T is as load-bearing as what it IS. Explicit rejections (the features and behaviours the system deliberately does *not* have) aren't taste — they're requirement-level decisions about what the system is not.
+
+For each New / Reshaped noun, write down at least three things it is NOT:
+
+- Adjacent concepts it could be confused with → why they're different.
+- Tempting extensions → why they don't belong in this requirement.
+- Existing patterns seen elsewhere → why we're rejecting them here.
+
+Each rejection carries a reason. "We don't do X because Y" — **Y is the load-bearing part.**
+
+## Phase 3 — Lock the vocabulary
+
+Pick one canonical term per concept. List the aliases that are *not* allowed:
+
+- Other terms used in the same work package for the same thing (collapse to one).
+- Terms from prior systems / existing code that mean something different (rename or rescope).
+- Translations, if the system is multilingual — mark which language is authoritative.
+
+Format inline in `requirements.md`:
+
+```md
+| Term | Definition | Aliases not to use |
+|---|---|---|
+| **&lt;noun&gt;** | One-sentence definition — what kind of thing it is. | alias-a, alias-b |
+| **&lt;satellite-noun&gt;** | Element inside a &lt;noun&gt;; one-sentence definition. | alias-c, alias-d |
+```
+
+If the project later adopts a `/domain-glossary` skill, this table becomes one of its inputs.
+
+## Phase 4 — Probe the contracts
+
+Requirements commit the system to contracts. Make them explicit, one line each:
+
+- **Cardinality contracts.** Does every `<noun>` attach to exactly one host? Many? Zero or one? Choose and write it.
+- **Closure contracts.** Is the type vocabulary closed (adding a variant requires a requirements-doc update first) or open (callers extend freely)?
+- **Mutability contracts.** Once created, what's immutable? What can change? Who can change it?
+- **Identity contracts.** What gives a `<noun>` its identity — opaque ID, content hash, deterministic key?
+- **Hard rules.** Anything that, if violated downstream, means the implementation has broken the requirement. State it as an invariant (e.g. "the on-disk format stays the canonical source; derived views are never persisted").
+
+The planner later turns these into types, schemas, and guards in `/architecture`. Refinement commits to the *shape*, not the implementation.
+
+## Phase 5 — Write the requirements doc (with the backwards-planned guide draft) and update ground truth
+
+The output is a requirements doc, not a chat summary. Write to:
+
+- `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement output (**always**). The fixed input `/design` and `/architecture` read.
+- A specific ground-truth file under `{{paths.docs}}` if the requirement reshapes an existing layer. Update or create the **specific** file — do not write to a generic folder.
+- An update to the matching canonical-shapes (or sibling contract) doc under `{{paths.docs}}` so downstream work packages reference it without re-inventing.
+
+**Plan backwards — draft the guide.** The clearest way to state a requirement is to write the user/dev documentation that explains what's being built, as if it shipped. Include in `requirements.md` a **Guide draft** section in the user/dev-guide voice (what the user will be able to do or see, or — for a dev-facing capability — how a developer will use it). This draft is the story the requirement tells; `/human-concept-review` reviews it, and `/write-docs` later reconciles it into `{{paths.docs}}` against the as-built reality.
+
+**Emit the `DOC-CLASS` line.** At the top of `requirements.md`, emit one machine-greppable line forecasting how much this work package will rewrite the user/dev guides — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
 
 ```
 DOC-CLASS: significant|minor|none
 ```
 
-`significant` = a new user/dev-guide page or a large rewrite. `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
+`significant` = a new user/dev-guide page or a large rewrite of an existing one (the guide draft above is substantial and new). `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
 
-## Phase 4 — Challenge it (in-session self-critique)
+Doc structure (adapt sections that aren't relevant; don't pad):
 
-Adversarially challenge your own requirement — not the downstream design or plan:
+```md
+## <Noun> primitive
 
-- Is the value concrete (names who benefits and how), or generic?
-- Is success observable, or vibes?
-- Are the non-goals real exclusions, or filler?
-- (If it introduced a noun) is the rejection list distinct things, and do the contracts hand-wave on cardinality / closure / mutability / identity?
-- Is the guide draft something a real user/dev could follow?
+**Definition.** One sentence — what kind of thing it is.
 
-Address critical issues. Max 1 round. The goal is now **locked** — `/design` and `/architecture` explore *inside* it, never reshape it.
+**Essential properties.** Bullet list. What every <noun> has.
+
+**What it is not.** Bullet list. The rejection list with reasons.
+
+**Composition.** What it attaches to, carries, is referenced by.
+
+**Lifecycle.** States and transitions, if any.
+
+**Authority.** Who owns / produces / mutates.
+
+**Vocabulary.** Term table (canonical + aliases not to use).
+
+**Contracts.** Cardinality, closure, mutability, identity, hard rules.
+
+**Rationale.** The maintainer reframe or design tension that drove this shape
+(one paragraph). Future agents need to know WHY, not just WHAT, so they don't
+re-litigate.
+```
+
+## Phase 6 — Challenge the requirement (in-session self-critique)
+
+Switch to adversarial thinking. Challenge your own requirement — NOT the downstream design or plan:
+
+- Is the value statement concrete (names who benefits and how), or generic?
+- Is the rejection list a real list of distinct things, or three flavours of one thing?
+- Does the canonical term collide with an existing term in the codebase or in any specific doc under `{{paths.docs}}`? (`grep` to verify.)
+- Are the contracts complete, or do they hand-wave on cardinality / closure / mutability / identity?
+- Is the guide draft something a real user/dev could follow, or hand-wave?
+- Is the rationale concrete (cites a maintainer reframe, a constraint, a prior bug) or generic ("for clarity")?
+- Did the ground-truth update touch the right files?
+
+Address critical issues. Max 1 round.
+
+The requirement is now **locked**. Downstream acts (`/design`, `/architecture`) take it as a fixed input — they explore *inside* it, never reshape it.
 
 ## Done when
 
-- `requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope/non-goals), a guide draft, and — if the work introduced a noun — its shape and contracts.
-- The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
-- Phase 4 self-critique ran; no spec/doc contradiction is left silent.
+- `.pipeline/work-packages/<id>/requirements.md` exists with the `DOC-CLASS` line, value statement, definition, essential properties, rejection list, composition, lifecycle, authority, vocabulary table, contracts, rationale, and a guide draft.
+- The relevant ground-truth and canonical-shapes docs under `{{paths.docs}}` are created or updated (when applicable).
+- A "Required reading" section names the specific docs downstream agents must read.
+- Phase 6 self-critique ran and critical issues are addressed.
+- No spec/doc contradiction is left silent.
 
 ## What this skill does NOT do
 
-- It does not design, architect, or write tests/code. That's `/design`, `/architecture`, `/write-tests`, `/write-code`.
+- It does not design, define an architecture, or write tests or code. That's `/design`, `/architecture`, `/write-tests`, `/write-code`.
 - It does not settle the track's strategic frame (`/work-planning` does).
 
 ## Anti-patterns
 
-- Jumping to nouns or design before the goal is sharp.
-- A goal with no stated value, success condition, or non-goals.
+- Skipping to design before sharpening the requirement.
 - Skipping the value question when a maintainer is reachable.
-- Empty rejection list on a genuinely new noun.
-- Re-litigating the goal in `/design` or `/architecture`.
+- Requirement by code (the type is one expression of the requirement, not the requirement).
+- Empty rejection list.
+- Vibes-only definitions.
+- Re-litigating the requirement in `/design` or `/architecture`.
+- Padding the probe list — ask only what's unsettled, then issue the survivors as one batch, not seven separate round-trips.
 
 ## Target
 
