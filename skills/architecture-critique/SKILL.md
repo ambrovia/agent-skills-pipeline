@@ -45,7 +45,9 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
 ## The critique loop
 
 ```
-1. Read the plan
+1. Read the plan — and independently re-verify every load-bearing factual claim it makes
+   about the codebase (tables, routes, components, precedent shapes) by grep/read, citing
+   file:line; treat "verified against code" as a hypothesis, not proof
 2. Challenge it adversarially (over-engineering, missing deps, AC gaps, scope creep,
    missing security/abuse cases, missing protected-test list, route-checklist gaps)
 3. Score it (0-10) against the 9 dimensions below
