@@ -18,20 +18,29 @@ UX/UI counterpart to `/architecture`. Architecture decides *how* (file paths, sc
 
 Inspired by the "design shotgun" (three variants on a comparison board) and *Design It Twice* (from "A Philosophy of Software Design") — parallel sub-agents under different constraints, then broad → variants → spec → embodied artifacts.
 
+## Project rules
+
+This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+
+- **`{{rules.design-system}}`** — component budget, tokens, reuse-before-build, promotion rules these variants must honor.
+- **`{{rules.frontend}}`** — client / UI conventions.
+- **`{{rules.aesthetics}}`** — the project's aesthetic quality bar.
+- **`{{rules.visual}}`** — visual fidelity / regression policy.
+
 ## When this runs
 
-- **In the pipeline:** planner persona, after `/concept` and before `/architecture`.
+- **In the pipeline:** planner persona, after `/refine` and before `/architecture`.
 - **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
 - **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 2 critique on the existing `approved.md`.
 
-**Fixed input from `/concept`:** the relevant concept output is the conceptual model these variants must respect. Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the concept, that's a `/concept` issue, not a design issue.
+**Fixed input from `/refine`:** the relevant requirement output is the conceptual model these variants must respect. Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue, not a design issue.
 
 ## Inputs
 
 Read all of the following in one parallel batch of Read calls — these files are independent (anchor-scoped where possible):
 
 1. The work package in `.pipeline/work-packages/<id>.md`.
-2. The per-work-package concept output at `.pipeline/progress/<work-package-id>/concept.md` and the specific docs under `{{paths.docs}}` it cites in its **Required reading**. The concept tells you which existing layout / component-budget files matter — do not browse `{{paths.docs}}` directly.
+2. The per-work-package requirement output at `.pipeline/work-packages/<id>/requirements.md` and the specific docs under `{{paths.docs}}` it cites in its **Required reading**. The requirement tells you which existing layout / component-budget files matter — do not browse `{{paths.docs}}` directly.
 3. The design system's principles, aesthetics, and conventions docs under `{{designSystem.path}}`, plus the tokens at `{{designSystem.tokens}}`.
 4. Any project aesthetic-quality / visual-parity rules the design system docs point to.
 5. If a `design/` directory already exists for this work package under `.pipeline/progress/<work-package-id>/`, you may be resuming.

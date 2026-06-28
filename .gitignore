@@ -4,6 +4,9 @@
 # Runtime pipeline state (created in consuming repos, never committed here)
 /.pipeline/
 
+# Runtime annotation output from the human-concept-review viewer
+.annotations/
+
 # Deps / build
 node_modules/
 *.log

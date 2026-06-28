@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: "Produce the technical plan for a work package — types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER /concept (always) and AFTER /design (when the work package has UI)."
+description: "Produce the technical plan for a work package — types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER /refine (when needed) and AFTER /design (when the work package has UI)."
 phase: 1
 persona: planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -12,12 +12,19 @@ user-invocable: true
 **Why:** A clear plan prevents wasted implementation time. Without architectural planning, the builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The reviewer catches errors before they become expensive rework.
 
 **Fixed inputs (do NOT re-litigate):**
-- Concept doc from `/concept` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
+- Requirements doc from `/refine` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
 - Approved design from `/design` (UI work packages), at the path the design step wrote it (e.g. `.pipeline/progress/<id>` or alongside the work package). If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
 
-**Doc discovery:** Read the "Required reading" from `/concept` output if available. Otherwise list `{{paths.docs}}` to identify relevant topic folders. **Output a "Required reading" section in the plan** listing the specific doc files the engineer must read before implementing. This is the natural filter — downstream skills read only what the plan prescribes.
+**Doc discovery:** Read the "Required reading" from `/refine` output if available. Otherwise list `{{paths.docs}}` to identify relevant topic folders. **Output a "Required reading" section in the plan** listing the specific doc files the engineer must read before implementing. This is the natural filter — downstream skills read only what the plan prescribes.
 
-If the spec contradicts an existing concept doc, stop — that's a `/concept` gap.
+If the spec contradicts an existing requirements doc, stop — that's a `/refine` gap.
+
+## Project rules
+
+This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+
+- **`{{rules.architecture}}`** — architecture invariants & conventions the plan must follow.
+- **`{{rules.code}}`** — language / type / style conventions that shape the types and contracts you specify.
 
 ## Phase 0 — Interrogate the understanding
 

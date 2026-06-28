@@ -17,6 +17,12 @@ This is **not** the code-review act. Code review audits the *implemented code* a
 
 The reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
+## Project rules
+
+This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+
+- **`{{rules.architecture}}`** — the architecture invariants & conventions to score the plan against.
+
 ## When this runs
 
 - **In the pipeline:** Phase 2, after the planner completes the `architecture` act. Reviewer session.

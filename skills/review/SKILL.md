@@ -15,6 +15,18 @@ Six lenses plus an acceptance-criteria completeness audit, one session. Three po
 
 **Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context reviewer catches contract violations the implementer rationalized away, gaps the builder didn't notice, and complexity the builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. The same reviewer that scored the plan in Phase 2 carries that context forward — it arrives already knowing the contracts it is checking the code against.
 
+## Project rules
+
+This repo can steer review through `pipeline.config rules`. Read EVERY declared slot below that applies to the change and audit against it as **binding** — a project-rule violation is a finding, and a project rule overrides this skill's generic guidance on conflict. Skip slots the repo left null.
+
+- **`{{rules.code}}`** — language / type / style conventions.
+- **`{{rules.testing}}`** — test conventions, layout, lane/fixture policy.
+- **`{{rules.architecture}}`** — architecture invariants & conventions.
+- **`{{rules.design-system}}`** — component budget, tokens, reuse-before-build, promotion.
+- **`{{rules.frontend}}`** — client / UI conventions.
+- **`{{rules.visual}}`** — visual fidelity / regression policy.
+- **`{{rules.security}}`** — security policy / threat model.
+
 ## When this runs
 
 - **In the pipeline:** Phase 4, after the builder completes the build act. Reviewer session.

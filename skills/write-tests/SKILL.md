@@ -13,6 +13,12 @@ user-invocable: true
 They catch when the wrong thing gets built. Tests written after code just confirm
 what exists — they encode bugs as expected behavior.
 
+## Project rules
+
+This repo can steer this skill through `pipeline.config rules`. Before you act, read any of these declared slots that apply and treat them as **binding** — where a project rule conflicts with this skill's generic guidance, the project rule wins. A slot the repo left null is simply absent: skip it, never block on it.
+
+- **`{{rules.testing}}`** — what counts as a test in this repo, test layout, and the real-vs-mock / fixture / lane policy. Follow it exactly.
+
 ## When this runs
 
 Phase 3 (build), as the first thing a builder does on a work package — before any
