@@ -13,6 +13,12 @@ Write or revise user-facing documentation (product pages, guides, feature docs) 
 
 This skill applies to writing AND reviewing documentation. It is backed by empirical research, not opinion.
 
+## Project rules
+
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
+
+- **`{{rules.docs}}`** — the project's documentation voice & conventions.
+
 ## When this runs
 
 - A work package's acceptance criteria include user-facing docs or copy.

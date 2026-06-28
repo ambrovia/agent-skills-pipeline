@@ -36,7 +36,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 /plugin install pipeline@agent-pipeline
 ```
 
-Skills become `/pipeline:concept`, `/pipeline:review`, … and the orchestrator `/pipeline`.
+Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `/pipeline`.
 
 ### Cursor · Copilot · Gemini · Codex — copy the files
 
@@ -51,6 +51,27 @@ These tools read `SKILL.md` from their own directory. Copy `skills/` (and `agent
 
 > `.agents/skills/` is the shared standard for all of these. **Claude Code is the exception** — it reads `.claude/skills/`, so use the plugin (or copy into `.claude/`).
 
+### opencode — install script
+
+opencode has no plugin marketplace: skills and agents are discovered from disk, and plugins are JS modules — so there's no single bundle to install. One script drops every piece where opencode looks. From a clone of this repo:
+
+```text
+scripts/install-opencode.sh            # into the current project
+scripts/install-opencode.sh ../my-app  # into another project
+scripts/install-opencode.sh --global   # into ~/.config/opencode
+```
+
+It installs:
+
+| Piece | Goes to | Why |
+|---|---|---|
+| Skills | `.agents/skills/` | opencode reads this natively (same path as the tools above) |
+| Agents | `.opencode/agents/` | opencode-format `planner` / `reviewer` / `builder` — available as `@planner`, etc. |
+| Edit-streak hook | `.opencode/plugins/pipeline.js` | nudges the orchestrator to delegate after 5 edits, via `tool.execute.after` |
+| Session-start guidance | `AGENTS.md` (managed block) | opencode's rules file — the equivalent of the session-start hook |
+
+The agents inherit your session model by default; pin one with `model: <provider>/<id>` in the agent files. The edit-streak nudge is best-effort: opencode doesn't expose the orchestrator/subagent split at the tool layer, so (unlike Claude) it can't skip a subagent's own edits.
+
 ## Configure
 
 Everything project-specific lives in one file. Copy [`pipeline.config.example.yml`](pipeline.config.example.yml) to `pipeline.config.yml`; skills resolve `{{key}}` from it:
@@ -61,9 +82,35 @@ designSystem: null        # null → the design phases are skipped
 vcs: github
 ```
 
+### Steer skills with project rules
+
+The skills are deliberately generic — repo-specific knowledge (test layout, where code lives, type conventions, component budget, reuse-before-build, security policy) lives in **rules**, not in forks of the skills. `pipeline.config.yml` exposes a fixed set of optional rule **slots**; point a slot at a markdown file and the skills that consult that slot read it as **binding** guidance (a project rule overrides the skill's generic advice on conflict). Leave a slot null and skills skip it.
+
+```yaml
+rules:
+  code: .claude/rules/typescript.md       # → write-code, architecture, review
+  testing: .claude/rules/testing.md        # → write-tests, review
+  design-system: .claude/rules/design.md   # → design, design-critique, write-code, review
+  security: .claude/rules/security.md      # → review
+```
+
+| Slot | Read by | Use it for |
+|---|---|---|
+| `code` | write-code, architecture, review | language / type / style conventions |
+| `testing` | write-tests, review | what counts as a test, layout, lanes/fixtures |
+| `architecture` | architecture, architecture-critique, review | architecture invariants & conventions |
+| `design-system` | design, design-critique, write-code, review | component budget, tokens, reuse-before-build, promotion |
+| `frontend` | design, write-code, review | client / UI conventions |
+| `visual` | design-critique, review | visual fidelity / regression policy |
+| `aesthetics` | design, design-critique | aesthetic quality bar |
+| `security` | review | security policy / threat model |
+| `docs` | write-docs | documentation voice & conventions |
+
+This is how one repo makes `/review` enforce its own reuse-before-build rule, or `/write-tests` follow its real-vs-mock lane policy, while another repo running the same plugin does something different — same skills, different rules. See [`pipeline.config.example.yml`](pipeline.config.example.yml) for the full slot list.
+
 ## The skills
 
-`concept` · `design` · `architecture` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `ship` · `retro` · `compound` · `lore` · `work-planning` · `pipeline`
+`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `ship` · `retro` · `compound` · `lore` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 

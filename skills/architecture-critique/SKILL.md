@@ -17,6 +17,12 @@ This is **not** the code-review act. Code review audits the *implemented code* a
 
 The reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
+## Project rules
+
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
+
+- **`{{rules.architecture}}`** — the architecture invariants & conventions to score the plan against.
+
 ## When this runs
 
 - **In the pipeline:** Phase 2, after the planner completes the `architecture` act. Reviewer session.
@@ -39,7 +45,9 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
 ## The critique loop
 
 ```
-1. Read the plan
+1. Read the plan — and independently re-verify every load-bearing factual claim it makes
+   about the codebase (tables, routes, components, precedent shapes) by grep/read, citing
+   file:line; treat "verified against code" as a hypothesis, not proof
 2. Challenge it adversarially (over-engineering, missing deps, AC gaps, scope creep,
    missing security/abuse cases, missing protected-test list, route-checklist gaps)
 3. Score it (0-10) against the 9 dimensions below

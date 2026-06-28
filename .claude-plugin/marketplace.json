@@ -13,7 +13,7 @@
         "source": "github",
         "repo": "ambrovia/agent-skills-pipeline"
       },
-      "description": "Work packages run through design → critique → build → review → retro → ship, driven by planner/reviewer/builder persona subagents. 15 skills + 3 personas.",
+      "description": "Work packages run through design → critique → build → review → retro → ship, driven by planner/reviewer/builder persona subagents. 16 skills + 3 personas.",
       "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
       "license": "Apache-2.0",
       "keywords": ["skills", "agents", "pipeline", "tdd", "review", "ship", "work-packages", "retro", "compound", "lore"]

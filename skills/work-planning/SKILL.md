@@ -37,8 +37,27 @@ A work package is the **smallest deliverable end-to-end change** that has its ow
 **It is NOT:**
 - An implementation plan. No file paths, no type signatures, no chosen libraries, no migration steps. Those belong in `/architecture`'s output, written *after* this work package is registered.
 - A design exploration. No component layouts, no spacing decisions, no copy. Those come from `/design` after registration. (If no design system is configured — `pipeline.config designSystem: null` — there is no design step at all.)
-- A concept doc. If the work package introduces or reshapes a load-bearing noun, run `/concept` first; this skill refuses to register without it.
+- A per-work-package requirement. Value, noun shape, and guide draft are `/refine`'s output at build time. This skill settles only the track's *strategic frame*.
+- A research / investigation / exploration deliverable. "Research X," "explore the space," "produce findings" has no observable outcome — and balloons into a composite the moment it has to ship something. Research is an *input* to scoping, not a unit of work: it happens in this skill (the existing-implementation check / an Explore agent) or in `/refine`, and its conclusions shape the ACs. Register the work package that *acts on* the research, not the research itself.
 - A backlog item. If it has no AC, it is not a work package.
+
+---
+
+## Strategic-framing questionnaire (run first, before registering anything)
+
+Settle **what this track is about** at a strategic altitude — a few sharp questions, your read
+first, the maintainer confirms or redirects. Not per-work-package design; that's `/refine`,
+later. Ask only what's unsettled.
+
+1. **Value & frame.** "What is this track fundamentally about — what value does it generate, and what's the one boundary / primitive / load-bearing noun it establishes? My read: …"
+2. **Shape of the work.** "What are the work packages this breaks into, roughly?" For each, classify two things up front:
+   - **Refinement?** Is the WP's goal still unclear enough that `/refine` should run before build to sharpen it? (Unclear / novel-noun → Yes; obvious extension → No.)
+   - **Load-bearing?** Is this a WP where getting the user-facing shape wrong is expensive — a new essential / base / primitive component, a large redesign, or a significant user/dev-guide rewrite? Those forecast **Human concept review = Yes**.
+3. **Frame stability.** "Is the frame stable enough that the ACs won't churn, or are there open conceptual questions to resolve first?" If unstable → hold; resolve the open questions here before registering.
+
+The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground truth (and the
+**What exists today** paragraph), and the per-WP classification lands in the **Refinement** and
+**Human concept review** fields.
 
 ---
 
@@ -46,7 +65,7 @@ A work package is the **smallest deliverable end-to-end change** that has its ow
 
 1. **Track letter is valid.** Must match an existing `.pipeline/work-packages/<track>.md` or be a deliberate new track (in which case create the track file first with the same scope-rules section other tracks use).
 2. **Work-package ID is unique.** Read `.pipeline/pipeline-manifest.yml`; the generated ID (e.g. `L30`) must not collide with any existing entry.
-3. **Concept gate.** If this work package introduces or reshapes a primitive / load-bearing noun, the relevant ground-truth doc under `{{paths.docs}}` AND any canonical-shapes contract must already exist. If not, refuse to register and tell the maintainer to run `/concept <noun>` first. This mirrors the runtime gate enforced in `/pipeline`.
+3. **Strategic-frame gate.** The track's **strategic frame** — its load-bearing primitive / boundary and the frame every work package shares — must be defined in `{{paths.docs}}` before registering. Run the strategic-framing questionnaire to settle it; if it's vague or contested, **hold** and resolve the open questions. A per-WP noun needing its own `/refine` does not block registration — flag the **Refinement** gate so the pipeline runs it at build time. `/pipeline` enforces this at runtime (`blocked: concept-missing` if a WP reaches build with no frame).
 4. **Justification check.** The work package must have a clear answer to: "Who specifically benefits, and what's the cost of NOT building this?" If the only argument is "it would be nice," "other products have it," or "the research says so," the work package is not justified. Features are complexity — every one makes the system harder to understand, maintain, and explain. The burden of proof is on the work package to earn its existence. Refuse to register if the justification is weak.
 5. **Existing-implementation check.** Before writing the spec, search `{{paths.source}}` for the capability being proposed. Read the relevant source files — schemas, routes, services, UI pages. If the feature largely exists, the spec must document what's already built (in a "What exists today" paragraph) and identify only the genuine gap. Proposing to build something that already exists is the #1 failure mode in work-planning. When in doubt, spawn an Explore agent to audit the relevant subsystem.
 6. **Dependencies are real blockers.** For each declared dependency, write one sentence justifying *why* this work package cannot start until that one is `done`. "Logically related" is not a blocker — it just serializes the scheduler. If you cannot articulate the blocker, drop the dep.
@@ -91,11 +110,17 @@ Append the spec at the bottom of the relevant `<track>.md`, with **exactly** the
 
 **Complexity.** S | M | L — drives scheduler dispatch (see sizing rule).
 
-**Acceptance criteria.** A bulleted list of observable, testable statements — see `references/writing-acs.md`. These are the single source of truth flowing through all pipeline phases: `/concept` checks scope against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
+**Pre-build gates.** Two explicit declarations so the maintainer (and `/pipeline`) know what runs *before* this WP is built, each with a one-line reason:
+- **Refinement:** `Required — run /refine first (goal unclear, or introduces/reshapes: <noun>)` | `Not required — goal is clear and reuses requirements already locked in {{paths.docs}}`.
+- **Design:** `Required — novel surface; /design multi-variant + human review` | `Light — extends <existing component/page>; single-variant /design` | `Not required — backend/infra; skip /design` (also implied when `pipeline.config designSystem: null`).
+
+**Human concept review.** Yes | No — `<one-line reason>`. Forecasts whether the founder will review the user-facing parts (the user/dev-guide draft + the design). Forecast `Yes` when the WP introduces a new essential / base / primitive component, a large redesign, OR a significant rewrite of the user/dev guides; `No` for a routine tweak, a backend/infra-only WP, or an extension of an existing component. **Advisory forecast, NOT the trigger** — the authoritative gate is `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` at review time (a WP forecast `No` that `/design` later classifies `novel` or `/refine` marks `DOC-CLASS: significant` still parks).
+
+**Acceptance criteria.** A bulleted list of observable, testable statements — see `references/writing-acs.md`. These are the single source of truth flowing through all pipeline phases: `/refine` sharpens the requirement against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
 
 **Validation scenarios.** 2–4 Given/When/Then scenarios. These are the minimum the QA gate (`/review`) will run. They must collectively cover every AC.
 
-**Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package is concept-introducing, name the noun and point at the concept doc.
+**Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package needs refinement (goal unclear or introduces/reshapes a noun), say so and name the noun so the pipeline runs `/refine` first.
 
 **Contracts / constraints.** Bullet list of hard rules the implementation must honor (e.g. "no new on-disk file format dialect", "migration is forward-only", "no emojis", "back-compat preserved at the API level not the row level"). These are guarantees the reviewer will check, separate from AC.
 
@@ -149,7 +174,8 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
 - The dependency justification reduces to "they're related" or "the same area." Drop the dep; the scheduler will serialize via `done` ordering only when truly needed.
 - The work package would create a cycle with an existing dependency. The manifest validator will catch it; do not register.
 - The work package is sized S but has >3 AC or touches >1 subsystem. Re-size to M, or split.
-- A maintainer asks to register an L work package with no concept-doc backing for a noun it introduces. Refuse, point them at `/concept`.
+- A maintainer asks to register work packages under a track whose **strategic frame** is undefined or too vague to give a stable frame. Hold and resolve it via the strategic-framing questionnaire; flag the open questions. (A per-WP noun that needs its own `/refine` is fine — defer it via the **Refinement** gate; it does not block registration.)
+- The work package's deliverable is **findings, a recommendation, or a prototype** rather than a shipped feature or observable change. A research-only WP has no testable AC and isn't a unit of work. Tell the maintainer to do the research first (in this skill or `/refine`), then register the WP that *acts on* it.
 
 ---
 

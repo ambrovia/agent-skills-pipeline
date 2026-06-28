@@ -15,6 +15,18 @@ Six lenses plus an acceptance-criteria completeness audit, one session. Three po
 
 **Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context reviewer catches contract violations the implementer rationalized away, gaps the builder didn't notice, and complexity the builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. The same reviewer that scored the plan in Phase 2 carries that context forward — it arrives already knowing the contracts it is checking the code against.
 
+## Project rules
+
+Audit against every `pipeline.config rules` slot below as binding — a violation is a finding; skip undeclared slots.
+
+- **`{{rules.code}}`** — language / type / style conventions.
+- **`{{rules.testing}}`** — test conventions, layout, lane/fixture policy.
+- **`{{rules.architecture}}`** — architecture invariants & conventions.
+- **`{{rules.design-system}}`** — component budget, tokens, reuse-before-build, promotion.
+- **`{{rules.frontend}}`** — client / UI conventions.
+- **`{{rules.visual}}`** — visual fidelity / regression policy.
+- **`{{rules.security}}`** — security policy / threat model.
+
 ## When this runs
 
 - **In the pipeline:** Phase 4, after the builder completes the build act. Reviewer session.
@@ -88,7 +100,7 @@ Watch for subtle incompleteness:
 | Error handling | Trigger the error path in a test (bad input → asserted error) |
 | FK / constraints | Insert violating data and show it is rejected |
 
-For UI criteria, look at pixels, not code. Missing end-to-end coverage for a UI criterion is **NOT DONE**.
+For UI criteria, look at pixels, not code. A UI criterion with no executable proof that it works (by whatever test kind the project's `testing` rule prescribes) is **NOT DONE**.
 
 ## Output format
 

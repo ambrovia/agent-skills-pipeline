@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+#
+# install-opencode.sh — install the agent-pipeline into a project (or globally)
+# for opencode.
+#
+# opencode has no plugin marketplace: skills and agents are discovered from disk
+# and plugins are JS modules. This script drops each piece where opencode looks.
+#
+#   skills  → .agents/skills/      (opencode reads this natively; shared with
+#                                    Cursor / Codex / Gemini / Copilot)
+#   agents  → .opencode/agents/    (opencode-format planner / reviewer / builder)
+#   plugin  → .opencode/plugins/   (the edit-streak nudge)
+#   rules   → AGENTS.md            (session-start "pipeline is active" guidance)
+#
+# Usage:
+#   scripts/install-opencode.sh [target-dir]   # project install (default: cwd)
+#   scripts/install-opencode.sh --global       # install into ~/.config/opencode
+#   scripts/install-opencode.sh --help
+#
+set -euo pipefail
+
+SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+GLOBAL=0
+TARGET="$(pwd)"
+for arg in "$@"; do
+  case "$arg" in
+    --global) GLOBAL=1 ;;
+    -h|--help) sed -n '2,/^set -euo/p' "$0" | sed 's/^#\{1,\} \{0,1\}//; /^set -euo/d'; exit 0 ;;
+    -*) echo "unknown flag: $arg" >&2; exit 2 ;;
+    *)  TARGET="$arg" ;;
+  esac
+done
+
+if [ "$GLOBAL" -eq 1 ]; then
+  SKILLS_DIR="$HOME/.config/opencode/skills"
+  AGENTS_DIR="$HOME/.config/opencode/agents"
+  PLUGINS_DIR="$HOME/.config/opencode/plugins"
+  RULES_FILE="$HOME/.config/opencode/AGENTS.md"
+  SCOPE="global (~/.config/opencode)"
+else
+  SKILLS_DIR="$TARGET/.agents/skills"
+  AGENTS_DIR="$TARGET/.opencode/agents"
+  PLUGINS_DIR="$TARGET/.opencode/plugins"
+  RULES_FILE="$TARGET/AGENTS.md"
+  SCOPE="project ($TARGET)"
+fi
+
+echo "Installing agent-pipeline for opencode → $SCOPE"
+
+# 1. Skills — one per directory, each with a SKILL.md.
+mkdir -p "$SKILLS_DIR"
+cp -R "$SRC/skills/." "$SKILLS_DIR/"
+echo "  ✓ skills   → $SKILLS_DIR"
+
+# 2. Agents — opencode-format planner / reviewer / builder.
+mkdir -p "$AGENTS_DIR"
+cp "$SRC/.opencode/agents/"*.md "$AGENTS_DIR/"
+echo "  ✓ agents   → $AGENTS_DIR"
+
+# 3. Plugin — the edit-streak nudge.
+mkdir -p "$PLUGINS_DIR"
+cp "$SRC/.opencode/plugins/pipeline.js" "$PLUGINS_DIR/"
+echo "  ✓ plugin   → $PLUGINS_DIR/pipeline.js"
+
+# 4. Session-start guidance — an idempotent managed block in AGENTS.md.
+#    (Canonical text lives in hooks/session-start.sh; kept in sync here.)
+BEGIN="<!-- agent-pipeline:begin -->"
+END="<!-- agent-pipeline:end -->"
+read -r -d '' BLOCK <<EOF || true
+$BEGIN
+## agent-pipeline
+
+agent-pipeline is active. Work in structured phases, not freeform.
+
+- Large or non-trivial changes: start with the work-planning skill to define the
+  work package, then run it through the pipeline skill. Don't freelance big changes.
+- Conceptual questions (what a thing IS or should be): use the concept skill, and
+  resolve them interactively with the user — don't settle load-bearing meaning alone.
+- Structured work uses three dedicated agents; you are the orchestrator, delegate
+  work to your team: @planner (concept/design/architecture) plans & structures
+  details; @builder implements & ships and thus does the heavy lifting; @reviewer
+  critiques and reviews.
+$END
+EOF
+
+mkdir -p "$(dirname "$RULES_FILE")"
+touch "$RULES_FILE"
+# Strip any prior block, then append the current one.
+tmp="$(mktemp)"
+awk -v b="$BEGIN" -v e="$END" '$0==b{s=1} !s{print} $0==e{s=0}' "$RULES_FILE" > "$tmp"
+# Collapse trailing blank lines from the stripped file, then append.
+{ sed -e :a -e '/^\n*$/{$d;N;ba}' "$tmp" 2>/dev/null || cat "$tmp"; printf '\n%s\n' "$BLOCK"; } > "$RULES_FILE"
+rm -f "$tmp"
+echo "  ✓ guidance → $RULES_FILE (AGENTS.md block)"
+
+cat <<EOF
+
+Done. Open the target project in opencode and restart it.
+  • skills surface via the skill tool
+  • personas are available as @planner, @reviewer, @builder
+  • the edit-streak nudge loads from the plugin automatically
+
+To pin models, set 'model: <provider>/<id>' in the agent files under $AGENTS_DIR.
+EOF

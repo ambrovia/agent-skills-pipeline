@@ -11,7 +11,7 @@ agent-pipeline is active. Work in structured phases, not freeform.
 
 - Large or non-trivial changes: start with /work-planning to define the work
   package, then run it through /pipeline. Don't freelance big changes.
-- Conceptual questions (what a thing IS or should be): use /concept, and resolve
+- Conceptual questions (what a thing IS or should be): use /refine, and resolve
   them interactively with the user — don't settle load-bearing meaning alone.
 - Structured work uses three dedicated agents; you are the orchestrator, delegate
   work to your team: planner (concept/design/architecture) plans & structures

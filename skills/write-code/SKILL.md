@@ -19,6 +19,15 @@ implementation has a concrete target. Writing the minimum code to pass keeps the
 codebase lean and prevents scope creep. Every line of code exists because a test
 demands it.
 
+## Project rules
+
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
+
+- **`{{rules.code}}`** — language / type / style conventions the implementation must follow.
+- **`{{rules.frontend}}`** — client / UI conventions (if this touches UI).
+- **`{{rules.design-system}}`** — tokens + reuse-before-build: adopt or extend existing components, don't fork them.
+- **`{{rules.testing}}`** — conventions for any tests you touch in the green phase.
+
 ## What it produces
 
 - Implementation in `{{paths.source}}` that turns the red tests green.

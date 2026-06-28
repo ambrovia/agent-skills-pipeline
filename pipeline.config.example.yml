@@ -29,3 +29,29 @@ models:
   design: high
   review: high
   build: fast
+
+# Project rules — OPTIONAL files that let THIS repo steer specific skills without
+# forking them. Each key below is a fixed rule "slot" the skills know to look for;
+# point it at a markdown file of binding project guidance and the relevant skill
+# reads it before acting (a project rule WINS over the skill's generic advice on
+# conflict). Omit / leave null any slot you don't need — skills skip absent slots
+# silently. This is how repo-specific knowledge (test layout, where code lives,
+# component budget, reuse-before-build, type conventions, security policy) reaches
+# the otherwise-generic skills. Which skill reads which slot is noted after each.
+rules:
+  code: null           # language / type / style conventions — write-code, architecture, review
+  testing: null        # what counts as a test, layout, lanes/fixtures — write-tests, review
+  architecture: null   # architecture invariants & conventions — architecture, architecture-critique, review
+  design-system: null  # component budget, tokens, reuse-before-build, promotion — design, design-critique, write-code, review
+  frontend: null       # client / UI conventions — design, write-code, review
+  visual: null         # visual fidelity / regression policy — design-critique, review
+  aesthetics: null     # aesthetic quality bar — design, design-critique
+  security: null       # security policy / threat model — review
+  docs: null           # documentation voice & conventions — write-docs
+# Example (a TS app that keeps its rules under .claude/rules/):
+#   code: .claude/rules/typescript.md
+#   testing: .claude/rules/testing.md
+#   design-system: .claude/rules/design-system.md
+#   frontend: .claude/rules/frontend.md
+#   visual: .claude/rules/visual-regression.md
+#   aesthetics: .claude/rules/aesthetic-quality.md

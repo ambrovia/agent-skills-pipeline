@@ -39,17 +39,21 @@ You own exactly `.pipeline/progress/<id>.json` for **each ID in the target, and 
 
 Record session start time.
 
-## Pre-condition: concept must already be locked
+## Pre-condition: the strategic frame must already be locked
 
-The pipeline does **not** run the concept phase. Locking what a load-bearing primitive *is*,
-what it *isn't*, and what contracts it commits the project to is upstream maintainer work that
-needs human judgment and doesn't fit an autonomous loop. Before launching, a maintainer must
-have locked the concept for any WP that introduces or reshapes a primitive — the relevant
-`{{paths.docs}}` concept section plus the shared-contracts entry must exist. The pipeline reads
-them as fixed input.
+The pipeline runs `/refine` (Phase 1) to sharpen a WP's *per-work-package* requirement, but it
+does **not** settle a track's **strategic frame** — what the whole track is about, its
+load-bearing primitive / boundary, what each primitive *is*, *isn't*, and what contracts it
+commits the project to. That is upstream maintainer work, done in `/work-planning`'s
+strategic-framing questionnaire and landed in `{{paths.docs}}` ground truth. It needs human
+judgment and doesn't fit an autonomous loop. Before launching, the strategic frame for any track
+that introduces or reshapes a primitive must exist in `{{paths.docs}}`. The pipeline (and
+`/refine`) read it as fixed input.
 
-If a WP is dispatched and concept work is missing for a new/reshaped primitive, **fail fast**:
-mark it `blocked` with reason `concept-missing` and move on. Do not redefine concepts.
+If a WP reaches the pipeline and the strategic frame is missing for a new/reshaped primitive it
+depends on, **fail fast**: mark it `blocked` with reason `concept-missing` and move on. Do not
+invent the strategic frame autonomously. (Sharpening the *per-work-package* requirement is fine —
+that's exactly what Phase 1's `/refine` does.)
 
 ## The phase loop
 
@@ -59,8 +63,9 @@ null** — see the skip rule at the end.
 
 | Phase | Persona | Model | Skills | Purpose |
 |---|---|---|---|---|
-| 1 | **planner** | `{{models.design}}` | `design` → `architecture` | Variant exploration (if UI) + technical plan. Production only. |
-| 2 | **reviewer** + **planner** | `{{models.review}}` | `design-critique` → `architecture-critique` → planner revision loop | Independent evaluation. CRITICAL/WARNING findings → planner revises, reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved plan. |
+| 1 | **planner** | `{{models.design}}` | `refine` (if needed) → `design` → `architecture` | Requirement (value + noun shape + guide draft) + variant exploration (if UI) + technical plan. Production only. `refine` runs only when the WP's goal is unclear or it introduces/reshapes a noun; skip when the requirement is already sharp in `{{paths.docs}}`. |
+| 2 | **reviewer** + **planner** | `{{models.review}}` | `refine-critique` (if `refine` ran) → `design-critique` → `architecture-critique` → planner revision loop | Independent evaluation. CRITICAL/WARNING findings → planner revises, reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved plan. |
+| 2.5 | **planner** (or orchestrator park) | conditional | `human-concept-review` | **Stakes-gated, conditional.** Runs only when `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` (a novel design or a significant guide rewrite). Interactive + founder present → founder reviews the rendered variant + guide draft, planner revises to approval. Autonomous / no founder → **park** (`status: awaiting-human-concept-review`); siblings proceed. Otherwise → skipped silently. |
 | 3 | **builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
 | 4 | **reviewer** + **builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Same reviewer from Phase 2 (warm on design/arch). Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
 | 5 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Writes to `.pipeline/retro-log/<id>.jsonl`. **Runs before ship.** |
@@ -87,7 +92,8 @@ ephemeral. See `references/spawn-contract.md` for the exact per-phase dispatch s
 - **Critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the planner,
   who revises and the reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
   are reached. If it never clears after the cap: mark `blocked` with reason
-  `concept-or-spec-misalignment` (the concept itself may need upstream work).
+  `concept-or-spec-misalignment` (the requirement may need another `/refine` pass, or the
+  strategic frame may need upstream `/work-planning` work).
 - **Review loop (Phase 4):** if the verdict is NOT DONE, send findings to the builder, who
   fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
 - **Builder BLOCKER:** if the builder hits a plan-vs-reality conflict, it raises a BLOCKER rather
@@ -106,10 +112,34 @@ wait for CI green). **Ship is the single gate: the WP is not done until ship con
 
 (Optional: projects MAY cache a signed verify attestation to skip re-running CI; off by default.)
 
+## Final outcome summary (always-on)
+
+The **last step of every run**. After ship (CI green), write ONE outcome summary per work
+package — what was *actually* built versus what was intended, how it really works, what value it
+delivers, and what's still missing. This is the run's accountability artifact, chat prose only —
+no new committed file. Lead with **what was built and what they can now do**; the pipeline
+mechanics are not the story. Per WP, four terse beats (one to two lines each, sourced, no
+fabrication):
+
+- **Goal vs actually built** — what the WP set out to deliver (from the requirement / ACs) versus
+  what shipped. Name any scope that moved.
+- **How it works now vs architecture** — the as-built behavior in plain words, and where it
+  diverged from the `/architecture` plan (if it did).
+- **User value** — what a user/dev can now do or see that they couldn't before, in plain words
+  (not the WP ID/title verbatim).
+- **Gaps** — what's deliberately deferred, unproven, or still missing against the goal. "none" is
+  a reviewable claim, not filler.
+
+Close each WP with **Status** — `PR #N · CI green · ready to merge`, or `blocked: <plain reason>`,
+or `parked: awaiting human concept review`. For a batch, a one-line lead ("3 of 4 shipped; X
+blocked on …; Y parked for concept review") then the per-WP blocks. Do **not** report phase
+numbers, persona names, critique scores, or review-round counts. Keep it scannable.
+
 ## Done when
 
 - Every WP in the target has `status: done` (shipped, CI green) **or** `status: blocked` with a
   reason — and its `.pipeline/progress/<id>.json` reflects that.
+- The final outcome summary has been emitted for the batch.
 - You never touched a progress file outside your target.
 
 ## Discipline & skip rules

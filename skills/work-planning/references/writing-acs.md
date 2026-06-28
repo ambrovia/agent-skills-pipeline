@@ -1,6 +1,6 @@
 # Writing good acceptance criteria
 
-ACs are the contract between the spec and every downstream phase. They describe **what becomes true** when the work ships — not how to build it. The pipeline phases exist to decide the how: `/concept` locks nouns, `/design` explores UX, `/architecture` plans implementation. ACs that prescribe the solution bypass those phases and produce brittle specs.
+ACs are the contract between the spec and every downstream phase. They describe **what becomes true** when the work ships — not how to build it. The pipeline phases exist to decide the how: `/refine` sharpens the requirement, `/design` explores UX, `/architecture` plans implementation. ACs that prescribe the solution bypass those phases and produce brittle specs.
 
 ## The outcome rule
 

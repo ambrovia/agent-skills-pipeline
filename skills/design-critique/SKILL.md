@@ -13,6 +13,14 @@ user-invocable: true
 
 This is the **evaluation** counterpart to `/design` (production). The reviewer persona scores what the planner produced. `/design` generates variants; `/design-critique` scores them. The reviewer's context from this critique carries forward to the Phase 4 code review — it arrives already warm on the design decisions.
 
+## Project rules
+
+Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
+
+- **`{{rules.design-system}}`** — score variants against the project's component budget, tokens, and reuse rules.
+- **`{{rules.aesthetics}}`** — the project's aesthetic quality bar.
+- **`{{rules.visual}}`** — visual fidelity / regression policy.
+
 ## When This Runs
 
 - **In the pipeline:** Phase 2, after the planner completes `/design`. Reviewer session.

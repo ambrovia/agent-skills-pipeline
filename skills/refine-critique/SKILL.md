@@ -1,0 +1,64 @@
+---
+name: refine-critique
+description: "Score a work package's refinement — the sharpened goal + guide draft from /refine — against a rubric BEFORE design and architecture. Reviewer persona: a fresh evaluator, not the planner who wrote it. Run in pipeline Phase 2 when /refine produced a requirement, or on demand to audit a requirements doc."
+phase: 2
+persona: reviewer
+applies-to: [frontend, backend, application, framework, infra]
+user-invocable: true
+---
+
+# Refine Critique — score the goal before anything is built
+
+The evaluation counterpart to `/refine`. The planner who sharpened the goal is the least able to see where it's still fuzzy, so a fresh reviewer scores it before design and architecture build on it. This is **not** `/architecture-critique` — that scores the plan; this scores the *goal and its guide draft*, upstream of any plan.
+
+## When this runs
+
+- **In the pipeline:** Phase 2, after `/refine` produced `requirements.md`, before `/design-critique` and `/architecture-critique`. Reviewer session.
+- **On explicit invocation:** audit a work package's `requirements.md`.
+- **Skip when:** `/refine` did not run for the work package (the goal was already sharp in `{{paths.docs}}`).
+
+## Required reading
+
+1. The work package in `.pipeline/work-packages/<id>.md` — what it asks for.
+2. `requirements.md` — the sharpened goal, the guide draft, and the `DOC-CLASS` line.
+3. The track's strategic frame in `{{paths.docs}}` — the value and boundary the goal must serve.
+
+## The critique loop
+
+```
+1. Read the requirement; sanity-check its claims against the spec and {{paths.docs}}
+2. Score it (0-10) against the dimensions below
+3. List findings (CRITICAL / WARNING / SUGGESTION) with the section each refers to
+4. The planner fixes the highest-priority issue IN requirements.md
+5. Re-score
+6. Repeat until score >= 7 or 3 rounds reached
+```
+
+Score ≥ 7 unlocks the goal for design and architecture. ≤ 4 sends it back to `/refine`.
+
+## Scoring dimensions (0-10 each, averaged)
+
+1. **Value** — names a concrete beneficiary and the value they get, not a generic "improve X". Smell: a value line that could be pasted onto any work package.
+2. **Success** — "done" is observable (a user or the system can do something it couldn't before), not unfalsifiable. Smell: success no test or demo could confirm.
+3. **Scope** — the non-goals are real exclusions that bound the work, not absent or filler. Smell: no out-of-scope on a work package that plainly has edges.
+4. **Guide draft** — a real user/dev could follow it; it describes the shipped result, not the mechanism. Smell: a draft that restates the spec instead of telling the reader's story.
+5. **Noun clarity** *(only if the work introduces a noun)* — one unambiguous definition, distinct from adjacent terms, no name collision in `{{paths.docs}}`. Smell: a term that already means something else.
+
+## Output format
+
+```
+## Refine Critique: <work-package-id>
+
+**Score:** <n>/10  ·  **Rounds:** <n>
+
+### CRITICAL
+### WARNING
+### SUGGESTION
+### What's working
+```
+
+Write the score and rounds to `.pipeline/progress/<id>.json` so the pipeline and retro can read them.
+
+## Target
+
+$ARGUMENTS
