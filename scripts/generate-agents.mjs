@@ -1,0 +1,190 @@
+#!/usr/bin/env node
+// Node ESM — no external dependencies (fs, path, url only).
+
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { join, dirname, basename } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
+
+const CHECK_MODE = process.argv.includes('--check');
+
+// ---------------------------------------------------------------------------
+// Frontmatter parser
+// ---------------------------------------------------------------------------
+
+function parseFrontmatter(src) {
+  // Expects the file to start with ---\n, followed by key: value lines, then ---\n
+  const lines = src.split('\n');
+  if (lines[0].trim() !== '---') throw new Error('Missing opening ---');
+
+  const meta = {};
+  let i = 1;
+  while (i < lines.length && lines[i].trim() !== '---') {
+    const line = lines[i];
+    // description is a quoted string — handle that first
+    const quotedMatch = line.match(/^(\w+):\s+"(.*)"$/);
+    if (quotedMatch) {
+      meta[quotedMatch[1]] = quotedMatch[2];
+      i++;
+      continue;
+    }
+    const plainMatch = line.match(/^(\w+):\s*(.+)$/);
+    if (plainMatch) {
+      const key = plainMatch[1];
+      const val = plainMatch[2].trim();
+      if (val === 'true') meta[key] = true;
+      else if (val === 'false') meta[key] = false;
+      else meta[key] = val;
+    }
+    i++;
+  }
+  if (lines[i].trim() !== '---') throw new Error('Missing closing ---');
+  // body starts after the closing --- line; preserve the leading blank line
+  const body = lines.slice(i + 1).join('\n');
+  return { meta, body };
+}
+
+// ---------------------------------------------------------------------------
+// Tool list builder
+// ---------------------------------------------------------------------------
+
+function buildClaudeTools(meta) {
+  // Fixed order: Read, Grep, Glob, then Bash if bash, Write if write, Edit if edit
+  const tools = ['Read', 'Grep', 'Glob'];
+  if (meta.bash) tools.push('Bash');
+  if (meta.write) tools.push('Write');
+  if (meta.edit) tools.push('Edit');
+  return tools.join(', ');
+}
+
+function modelFromCapability(capability) {
+  return capability === 'high' ? 'opus' : 'sonnet';
+}
+
+// ---------------------------------------------------------------------------
+// DO-NOT-EDIT marker
+// ---------------------------------------------------------------------------
+
+function mdMarker(name) {
+  return `<!-- GENERATED from personas/${name}.md — edit that file and run scripts/generate-agents.mjs; do not edit here. -->`;
+}
+
+function tomlMarker(name) {
+  return `# GENERATED from personas/${name}.md — edit that file and run scripts/generate-agents.mjs; do not edit here.`;
+}
+
+// ---------------------------------------------------------------------------
+// Output generators
+// ---------------------------------------------------------------------------
+
+function generateClaude(meta, body) {
+  const tools = buildClaudeTools(meta);
+  const model = modelFromCapability(meta.capability);
+  const fm = [
+    '---',
+    `name: ${meta.name}`,
+    `description: "${meta.description}"`,
+    `model: ${model}`,
+    `tools: ${tools}`,
+    '---',
+  ].join('\n');
+  return `${fm}\n\n${mdMarker(meta.name)}\n${body}`;
+}
+
+function generateOpencode(meta, body) {
+  const fmLines = [
+    '---',
+    `description: "${meta.description}"`,
+    'mode: subagent',
+  ];
+
+  // tools deny-map: only include if write or edit is false
+  const denyWrite = meta.write === false;
+  const denyEdit = meta.edit === false;
+  if (denyWrite || denyEdit) {
+    fmLines.push('tools:');
+    if (denyWrite) fmLines.push('  write: false');
+    if (denyEdit) {
+      fmLines.push('  edit: false');
+      fmLines.push('  patch: false');
+    }
+  }
+  // If BOTH write and edit are true, omit the tools key entirely.
+
+  fmLines.push('---');
+  const fm = fmLines.join('\n');
+  return `${fm}\n\n${mdMarker(meta.name)}\n${body}`;
+}
+
+function generateCodex(meta, body) {
+  // Escape any literal """ in the body (TOML multi-line basic string)
+  const escapedBody = body.replace(/"""/g, '\\"\\"\\"');
+
+  const lines = [tomlMarker(meta.name)];
+  lines.push(`name = "${meta.name}"`);
+  lines.push(`description = "${meta.description.replace(/"/g, '\\"')}"`);
+  if (meta.capability === 'high') {
+    lines.push('model_reasoning_effort = "high"');
+  }
+  lines.push('');
+  lines.push(`developer_instructions = """${escapedBody}"""`);
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+const personasDir = join(ROOT, 'personas');
+const personaFiles = readdirSync(personasDir).filter(f => f.endsWith('.md'));
+
+const outputs = []; // { path, content }
+
+for (const file of personaFiles) {
+  const src = readFileSync(join(personasDir, file), 'utf8');
+  const { meta, body } = parseFrontmatter(src);
+  const name = meta.name;
+
+  outputs.push({
+    path: join(ROOT, 'agents', `${name}.md`),
+    content: generateClaude(meta, body),
+  });
+  outputs.push({
+    path: join(ROOT, '.opencode', 'agents', `${name}.md`),
+    content: generateOpencode(meta, body),
+  });
+  outputs.push({
+    path: join(ROOT, '.codex', 'agents', `${name}.toml`),
+    content: generateCodex(meta, body),
+  });
+}
+
+if (CHECK_MODE) {
+  const outOfDate = [];
+  for (const { path, content } of outputs) {
+    if (!existsSync(path)) {
+      outOfDate.push(`MISSING: ${path}`);
+      continue;
+    }
+    const existing = readFileSync(path, 'utf8');
+    if (existing !== content) {
+      outOfDate.push(`OUT OF DATE: ${path}`);
+    }
+  }
+  if (outOfDate.length > 0) {
+    for (const msg of outOfDate) console.error(msg);
+    process.exit(1);
+  } else {
+    console.log('agents up to date');
+    process.exit(0);
+  }
+} else {
+  for (const { path, content } of outputs) {
+    writeFileSync(path, content, 'utf8');
+    console.log(`wrote: ${path}`);
+  }
+}

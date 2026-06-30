@@ -1,29 +1,55 @@
-# Persona agents — per-harness formats
+# Persona agents — one source, generated per harness
 
-These three personas (`planner`, `reviewer`, `builder`) drive the pipeline's
-producer/evaluator separation. **Agent frontmatter is harness-specific** — unlike
-skills (`../skills/`), which are neutral `SKILL.md` and run everywhere unchanged.
-There is no build step: each harness reads its own copy *as-is*, so each copy must
-already be in that harness's dialect. Keep the three in sync by hand.
+Three personas (`planner`, `reviewer`, `builder`) drive the pipeline's
+producer/evaluator separation. They are authored ONCE in `../personas/<name>.md`
+(neutral frontmatter + the prompt body) and **generated** into each harness's
+dialect by `../scripts/generate-agents.mjs`. Every generated file carries a
+`GENERATED … do not edit` marker — edit `personas/` and regenerate, never the
+outputs. Skills (`../skills/`) are neutral `SKILL.md` and need no generation —
+every harness reads that format directly.
 
-| Harness | Files | `tools` format | `model` format | Native subagents? |
-|---|---|---|---|---|
-| **Claude Code** | `agents/*.md` (this dir), registered in `.claude-plugin/plugin.json` | comma-separated **PascalCase** string: `Read, Grep, Glob, Bash, Write` | real id: `opus` / `sonnet` / `haiku` (or `inherit`) | ✅ parallel |
-| **opencode** | `.opencode/agents/*.md` | object of booleans: `tools:\n  edit: false` | `provider/id`, or omit to inherit | ✅ parallel |
-| **Codex** | — (none) | — | — | ❌ orchestrator-only |
+## Canonical source — `personas/<name>.md`
 
-## Rules
+Frontmatter is harness-neutral; the generator maps it to each tool's dialect:
 
-- **Claude (`agents/*.md`):** `tools` MUST be a PascalCase comma-separated string and
-  `model` MUST be a real Claude id. Lowercase array tools (`[read, write]`) match zero
-  tools → the subagent boots tool-less and silently no-ops; abstract tiers (`high`/`fast`)
-  are not valid Claude model ids and the spawn errors. (Both were the original drift bug.)
-- **opencode (`.opencode/agents/*.md`):** `mode: subagent` plus the boolean-object `tools`.
-- **Codex:** no persona files. Codex has no subagent primitive here, so the pipeline runs
-  as a **single orchestrator agent playing all roles inline** — producer/evaluator
-  separation is *not* available on Codex (it is parallel and real only on Claude/opencode).
-  Codex gets the shared `../skills/` + `.codex/hooks.json` only.
+| Field | Meaning |
+|---|---|
+| `capability` | `high` (planner, reviewer) or `fast` (builder) |
+| `write` / `edit` / `bash` | tool policy (read / grep / glob are always on) |
 
-After editing any Claude agent here, reinstall/update the plugin so the cache copy
-(`~/.claude/plugins/cache/agent-pipeline/.../agents/`) picks up the change, and restart
-the session — Claude loads agent definitions once at startup.
+## Generated outputs
+
+| Harness | File | Frontmatter the generator emits | Skills location |
+|---|---|---|---|
+| **Claude Code** | `agents/*.md` (registered in `.claude-plugin/plugin.json`) | `tools` PascalCase string + `model` real id (`opus` / `sonnet`) | `skills` field → `./skills` |
+| **opencode** | `.opencode/agents/*.md` | `mode: subagent` + `tools` deny-map; `model` omitted (inherit) | `.opencode/skills/` (install-time copy) |
+| **Codex** | `.codex/agents/*.toml` | `name` / `description` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` → `./skills` |
+
+Codex has native TOML subagents (project-scoped `.codex/agents/`, loaded when the
+project is trusted), so real producer/evaluator separation works there too — not
+the orchestrator-inline fallback the pipeline used before.
+
+## Changing a persona
+
+1. Edit `personas/<name>.md` — the body and/or the neutral frontmatter.
+2. Run `node scripts/generate-agents.mjs` to regenerate all nine outputs
+   (3 personas × 3 harnesses).
+3. Commit `personas/` and the regenerated files together.
+
+CI / pre-commit guard: `node scripts/generate-agents.mjs --check` exits non-zero
+if any generated file is stale, so the copies cannot silently drift.
+
+## Harness notes
+
+- **Claude:** `tools` MUST be a PascalCase comma string and `model` a real Claude
+  id — lowercase array tools match zero tools (silent no-op) and abstract tiers
+  (`high` / `fast`) are not valid model ids (spawn errors). The generator enforces both.
+- **opencode:** the loader globs `{agent,agents}`, so the plural `.opencode/agents/`
+  used here loads fine (the old singular/plural silent-no-load is fixed on current versions).
+- **Codex:** project files in `.codex/agents/` load only when the project is trusted.
+  The Codex plugin manifest has no `agents` field, so subagents ship as project files,
+  separate from the `.codex-plugin` skill bundle.
+
+After regenerating Claude agents, reinstall/update the plugin so the cache copy
+(`~/.claude/plugins/cache/agent-pipeline/.../agents/`) picks up the change, and
+restart the session — Claude loads agent definitions once at startup.

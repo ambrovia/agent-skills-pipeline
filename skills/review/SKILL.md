@@ -13,7 +13,7 @@ Read-only review. Produce findings — do **NOT** make code changes.
 
 Six lenses plus an acceptance-criteria completeness audit, one session. Three positive lenses check that the code respects its contracts. Three negative lenses check what the contracts don't cover. The design lens is skipped silently if no UI files changed (and entirely if no design system is configured — `pipeline.config` `designSystem: null`).
 
-**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context reviewer catches contract violations the implementer rationalized away, gaps the builder didn't notice, and complexity the builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. The same reviewer that scored the plan in Phase 2 carries that context forward — it arrives already knowing the contracts it is checking the code against.
+**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context reviewer catches contract violations the implementer rationalized away, gaps the builder didn't notice, and complexity the builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/plans/<id>.md` — warm from Phase 2 if the host kept the reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
 
 ## Project rules
 
@@ -39,8 +39,8 @@ Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths,
 
 ## Required reading (do ALL before reviewing code)
 
-1. The work package in `.pipeline/work-packages/<id>.md` — extract **every** acceptance criterion.
-2. The plan (the architecture act's output for this work package) — always start here, especially its **Security & abuse cases** block.
+1. The approved plan in `.pipeline/plans/<id>.md` — extract **every** acceptance criterion (the concrete, verification-method-bearing ACs live here); always start here, especially its **Security & abuse cases** block.
+2. The work package in `.pipeline/work-packages/<id>.md` — the outcome-level spec the plan refines; read it for intent and scope.
 3. The specific authoritative files named in the plan's **Required reading** section — read each end-to-end.
 4. The locked concept output for the work package, if present.
 5. The approved design output for the work package (UI work, only when a design system is configured).
@@ -73,7 +73,7 @@ Run each lens in turn. Each summary below is the trigger; the full checklist for
 
 ## AC completeness audit
 
-For each acceptance criterion from the work package, answer three questions:
+For each acceptance criterion from the approved plan, answer three questions:
 
 1. **Complete?** — find the implementation and the test that address it.
 2. **Correct?** — compare against the spec, not just "does it work".

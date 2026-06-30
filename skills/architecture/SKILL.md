@@ -83,4 +83,4 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 ## Done when
 
 - A plan exists with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
-- The plan is saved to the `.pipeline/` state convention (e.g. `.pipeline/progress/<id>.json` or alongside the work package) so downstream skills can read it.
+- The plan is saved to `.pipeline/plans/<id>.md` — the durable producer→consumer handoff that the builder and reviewer read. Write it there even when a warm planner session would otherwise carry it; downstream personas must not depend on that session existing.

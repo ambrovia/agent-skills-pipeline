@@ -11,7 +11,7 @@ user-invocable: true
 
 **Why:** The agent that created variants cannot objectively score them. Evaluation must be a different agent — the reviewer — reading the planner's output cold. True producer/evaluator separation: different personas, not just different cognitive modes. Run this on a fresh high-capability agent ({{models.review}}) that did not produce the variants.
 
-This is the **evaluation** counterpart to `/design` (production). The reviewer persona scores what the planner produced. `/design` generates variants; `/design-critique` scores them. The reviewer's context from this critique carries forward to the Phase 4 code review — it arrives already warm on the design decisions.
+This is the **evaluation** counterpart to `/design` (production). The reviewer persona scores what the planner produced. `/design` generates variants; `/design-critique` scores them. The design decisions land in the approved plan (`.pipeline/plans/<id>.md`), so the Phase 4 code review reads them there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
 ## Project rules
 

@@ -5,8 +5,9 @@ Read this before you talk yourself out of a phase.
 ## Adversarial principle: author / critic boundaries are enforced by persona separation
 
 (a) The **planner** produces (`design`, `architecture`); the **reviewer** evaluates
-(`design-critique`, `architecture-critique`) — *different agents*, true independence. (b) The same
-reviewer later reviews the code in Phase 4, already warm on the design/architecture decisions,
+(`design-critique`, `architecture-critique`) — *different agents*, true independence. (b) The
+reviewer later reviews the code in Phase 4 against the approved plan in `.pipeline/plans/<id>.md`
+(warm on those decisions if its Phase 2 session survived, reading them from the artifact if not),
 applying both positive lenses (does it respect the contracts?) and negative lenses (what would
 break it?). The reviewer's AC-completeness audit enforces the one boundary that must never live
 inside a producer session: it reads a *live* change against the spec, not the builder's notes
@@ -16,8 +17,9 @@ about the change.
 
 The agent that created a design cannot objectively score it. Moving critique to the reviewer gives
 true producer/evaluator separation — different agents, not a "cognitive mode switch" on one agent.
-Bonus: the reviewer's Phase 2 context (design decisions, architecture contracts) carries into
-Phase 4's code review, so it arrives warm on the spec it's checking code against.
+Bonus: if the host keeps the reviewer's Phase 2 session warm, those design decisions and
+architecture contracts carry into Phase 4 for free; if not, it reads them from
+`.pipeline/plans/<id>.md`. Either way it checks code against the written contract.
 
 ## Why ship runs after retro
 
@@ -37,9 +39,10 @@ One variant for routine work keeps cost down without losing the documentation va
 
 ## Token efficiency
 
-- **Spawn once, message many.** Each persona is spawned once per WP with a stable handle; reuse the
-  live session for all follow-ups where the host tool supports it. Never re-spawn a persona that's
-  still alive.
+- **Reuse warm sessions where the host supports it.** Keep a persona alive across phases and message
+  it again rather than re-spawning, to save context/cache-creation cost. Where the host has no
+  durable sessions, re-spawn freely — continuity is guaranteed by `.pipeline/` state, not the
+  session.
 - **Incremental verification.** Inside the build loop, use a fast typecheck if the project defines
   one; reserve the full `{{verify}}` for the gate before handoff.
 - **Error output is bounded.** Don't re-run the same check hoping for different output — fix the

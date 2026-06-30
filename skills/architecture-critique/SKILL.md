@@ -11,9 +11,9 @@ user-invocable: true
 
 **Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
 
-This is the **evaluation** counterpart to plan production (the `architecture` act). The reviewer persona scores what the planner produced. Architecture drafts the plan; this skill scores it. The reviewer's context from this critique carries forward to the Phase 4 code review — it arrives already knowing the plan it is checking code against.
+This is the **evaluation** counterpart to plan production (the `architecture` act). The reviewer persona scores what the planner produced. Architecture drafts the plan; this skill scores it. The approved plan lands in `.pipeline/plans/<id>.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
-This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same reviewer agent runs both, accumulating context.
+This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same reviewer persona runs both, against the approved plan in `.pipeline/plans/<id>.md` (warm context if the host kept the session, read from the artifact if not).
 
 The reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
