@@ -6,8 +6,8 @@
 # opencode has no plugin marketplace: skills and agents are discovered from disk
 # and plugins are JS modules. This script drops each piece where opencode looks.
 #
-#   skills  → .agents/skills/      (opencode reads this natively; shared with
-#                                    Cursor / Codex / Gemini / Copilot)
+#   skills  → .opencode/skills/    (opencode's own skill dir — self-contained,
+#                                    no dependency on .claude/ or shared .agents/)
 #   agents  → .opencode/agents/    (opencode-format planner / reviewer / builder)
 #   plugin  → .opencode/plugins/   (the edit-streak nudge)
 #   rules   → AGENTS.md            (session-start "pipeline is active" guidance)
@@ -39,7 +39,7 @@ if [ "$GLOBAL" -eq 1 ]; then
   RULES_FILE="$HOME/.config/opencode/AGENTS.md"
   SCOPE="global (~/.config/opencode)"
 else
-  SKILLS_DIR="$TARGET/.agents/skills"
+  SKILLS_DIR="$TARGET/.opencode/skills"
   AGENTS_DIR="$TARGET/.opencode/agents"
   PLUGINS_DIR="$TARGET/.opencode/plugins"
   RULES_FILE="$TARGET/AGENTS.md"

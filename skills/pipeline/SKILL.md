@@ -37,6 +37,11 @@ You own exactly `.pipeline/progress/<id>.json` for **each ID in the target, and 
 `.pipeline/work-packages/<track>.md`, `.pipeline/work-packages/dependency-graph.md`, and
 `.pipeline/pipeline-manifest.yml` are your read-only reference for spec and dependency graph.
 
+The planner writes the approved plan for each WP to `.pipeline/plans/<id>.md` (concept + design
+spec + architecture + acceptance criteria, as left after the Phase 2 critique loop). It is the
+durable producer→consumer handoff: the builder and reviewer read it instead of relying on a warm
+producer session.
+
 Record session start time.
 
 ## Pre-condition: the strategic frame must already be locked
@@ -67,24 +72,30 @@ null** — see the skip rule at the end.
 | 2 | **reviewer** + **planner** | `{{models.review}}` | `refine-critique` (if `refine` ran) → `design-critique` → `architecture-critique` → planner revision loop | Independent evaluation. CRITICAL/WARNING findings → planner revises, reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved plan. |
 | 2.5 | **planner** (or orchestrator park) | conditional | `human-concept-review` | **Stakes-gated, conditional.** Runs only when `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` (a novel design or a significant guide rewrite). Interactive + founder present → founder reviews the rendered variant + guide draft, planner revises to approval. Autonomous / no founder → **park** (`status: awaiting-human-concept-review`); siblings proceed. Otherwise → skipped silently. |
 | 3 | **builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
-| 4 | **reviewer** + **builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Same reviewer from Phase 2 (warm on design/arch). Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
+| 4 | **reviewer** + **builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved plan in `.pipeline/plans/<id>.md` (warm Phase 2 session reused if the host supports it). Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
 | 5 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Writes to `.pipeline/retro-log/<id>.jsonl`. **Runs before ship.** |
 | ship | **builder** | `{{models.build}}` | `ship` | Land the change: pass `{{verify}}`, open/ready the PR, wait for CI green. Not a tracked phase — the merge is proof of completion. |
 
 **Producer / evaluator separation is the whole point.** The **planner** produces; a *different*
-agent, the **reviewer**, evaluates. The reviewer's Phase 2 context (design + architecture
-decisions) carries into Phase 4's code review, so it arrives warm on the spec it checks code
-against. The reviewer's AC-completeness audit reads a *live* change against the spec — never the
-builder's notes about the change.
+agent, the **reviewer**, evaluates. In Phase 4 the reviewer checks the code against the approved
+plan in `.pipeline/plans/<id>.md` — the same contract it critiqued in Phase 2. If the host keeps
+the reviewer's Phase 2 session warm, it already holds those decisions and saves a re-read; if not,
+it reconstitutes them from the plan artifact. Same audit either way. The reviewer's AC-completeness
+audit reads a *live* change against the spec — never the builder's notes about the change.
 
 ### Spawn discipline (tool-agnostic)
 
 Spawn each persona as a **subagent in your host tool** — Claude Code agents, or
-Cursor/Codex/Gemini/Copilot subagents. **Three durable persona sessions per WP**: planner,
-reviewer, builder. **Spawn once, message many** where the tool supports it: reuse the live
-session across phases instead of re-spawning (the reviewer in Phase 4 is the same session as
-Phase 2; the builder in Phase 3 carries into Phase 4 fix-apply and ship). Re-spawning re-pays
-context/cache-creation cost — avoid it where the host tool lets you. The retro agent is
+Cursor/Codex/Gemini/Copilot subagents. Continuity travels through `.pipeline/` state (the WP spec,
+the plan artifact, progress), not through a live session — so a fresh planner, reviewer, or builder
+spawned at any phase reconstitutes from those files and produces the same result.
+
+**Session reuse is an optimization, not a requirement.** Where the host supports it (warm sessions,
+agent teams, message-an-existing-agent), keep the three personas alive across phases — the reviewer
+in Phase 4 reusing its Phase 2 session, the builder carrying Phase 3 into Phase 4 fix-apply and
+ship — to save context/cache-creation cost. Where it doesn't (no durable sessions, or subagents
+that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
+just not free. Never gate the pipeline on session reuse being available. The retro agent is always
 ephemeral. See `references/spawn-contract.md` for the exact per-phase dispatch script.
 
 ### Loop rules

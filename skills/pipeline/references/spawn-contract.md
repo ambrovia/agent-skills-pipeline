@@ -1,10 +1,14 @@
 # Per-phase dispatch script
 
 How the orchestrator drives each persona. Spawn each persona as a subagent in your host tool
-(Claude Code agents, or Cursor/Codex/Gemini/Copilot subagents). **Spawn once, message many**
-where supported: give each a stable handle (`planner-<id>`, `reviewer-<id>`, `builder-<id>`),
-then reuse the live session for every follow-up message instead of re-spawning. Re-spawning
-re-pays context/cache-creation cost; avoid it where the host tool lets you reuse a session.
+(Claude Code agents, or Cursor/Codex/Gemini/Copilot subagents). Continuity lives in `.pipeline/`
+state — the WP spec, the plan artifact (`.pipeline/plans/<id>.md`), and progress — so every phase
+works whether the persona is the same warm session or a cold re-spawn.
+
+**Where the host supports session reuse** (warm sessions, agent teams, message-an-existing-agent),
+give each persona a stable handle (`planner-<id>`, `reviewer-<id>`, `builder-<id>`) and reuse the
+live session for follow-ups to save context/cache-creation cost. **Where it doesn't**, re-spawn
+each phase and let the persona read its inputs from `.pipeline/`. Never gate a phase on reuse.
 
 Update `currentStep` in `.pipeline/progress/<id>.json` before each persona dispatch.
 
@@ -20,7 +24,8 @@ Spawn the **planner** (`{{models.design}}`).
   primitives are always novel.
 - Run `architecture`: interrogate the spec, draft the technical plan.
 
-Do **not** let the planner exit — it may be needed in Phase 2 to apply critique fixes.
+Keep the planner warm for Phase 2's critique fixes if the host supports it; otherwise it re-enters
+Phase 2 by reading the WP spec and the current plan draft from `.pipeline/plans/<id>.md`.
 
 ## Phase 2 — reviewer + planner (critique loop)
 
@@ -37,8 +42,11 @@ If the critique has CRITICAL or WARNING findings:
 2. Send the revised plan back to the **reviewer** to re-critique.
 3. Repeat until the score clears the bar **or 3 rounds are reached**.
 
-The builder receives a single clean, approved plan — not a plan plus a separate critique doc.
-Do **not** let the reviewer exit — it is reused in Phase 4.
+The planner keeps `.pipeline/plans/<id>.md` current through the critique loop; when the critique
+clears it holds the approved plan (concept + design spec + architecture + acceptance criteria). The
+builder receives a single clean, approved plan — not a plan plus a separate critique doc. Keep the
+reviewer warm for Phase 4 if the host supports it; otherwise it re-reviews cold against
+`.pipeline/plans/<id>.md`.
 
 ## Phase 3 — builder (TDD)
 
@@ -47,10 +55,10 @@ now rather than letting a stale base accumulate drift.
 
 Spawn the **builder** (`{{models.build}}`).
 
-- Run `write-tests`: read the plan, write failing tests for **all** acceptance criteria. Do
+- Run `write-tests`: read `.pipeline/plans/<id>.md`, write failing tests for **all** acceptance criteria. Do
   **not** write implementation code here — requirement definition must not be contaminated by
   implementation thinking.
-- Send `write-code`: read the plan + failing tests, write the minimum code to pass. If the
+- Send `write-code`: read `.pipeline/plans/<id>.md` + failing tests, write the minimum code to pass. If the
   implementation changes behavior documented under `{{paths.docs}}`, update those doc sections in
   the same change (doc sync). Run `{{verify}}` — must pass before handing off. (For tight inner
   loops, a fast typecheck if the project defines one; the full `{{verify}}` is the gate.) If the
@@ -63,7 +71,9 @@ Spawn the **builder** (`{{models.build}}`).
 
 ## Phase 4 — review
 
-Reuse the **reviewer** session from Phase 2 (warm on design/architecture context).
+The reviewer reads `.pipeline/plans/<id>.md` (approved design + architecture) and the live diff,
+and checks one against the other. Reuse its warm Phase 2 session if the host supports it —
+otherwise a fresh reviewer reconstitutes from the plan artifact; same review either way.
 
 - Run `review`: positive lenses (architecture, design, security) + negative lenses (adversarial,
   simplification, slop) + AC-completeness audit. The design lens is skipped silently if no UI files.
