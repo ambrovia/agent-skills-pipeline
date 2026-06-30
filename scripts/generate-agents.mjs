@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Node ESM — no external dependencies (fs, path, url only).
 
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
-import { join, dirname, basename } from 'path';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -40,7 +40,7 @@ function parseFrontmatter(src) {
     }
     i++;
   }
-  if (lines[i].trim() !== '---') throw new Error('Missing closing ---');
+  if (i >= lines.length) throw new Error('Missing closing ---');
   // body starts after the closing --- line; preserve the leading blank line
   const body = lines.slice(i + 1).join('\n');
   return { meta, body };
@@ -61,6 +61,11 @@ function buildClaudeTools(meta) {
 
 function modelFromCapability(capability) {
   return capability === 'high' ? 'opus' : 'sonnet';
+}
+
+function yamlQuote(s) {
+  // double-quoted YAML scalar: escape backslashes then double-quotes
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 // ---------------------------------------------------------------------------
@@ -85,7 +90,7 @@ function generateClaude(meta, body) {
   const fm = [
     '---',
     `name: ${meta.name}`,
-    `description: "${meta.description}"`,
+    `description: "${yamlQuote(meta.description)}"`,
     `model: ${model}`,
     `tools: ${tools}`,
     '---',
@@ -96,7 +101,7 @@ function generateClaude(meta, body) {
 function generateOpencode(meta, body) {
   const fmLines = [
     '---',
-    `description: "${meta.description}"`,
+    `description: "${yamlQuote(meta.description)}"`,
     'mode: subagent',
   ];
 
@@ -119,7 +124,9 @@ function generateOpencode(meta, body) {
 }
 
 function generateCodex(meta, body) {
-  // Escape any literal """ in the body (TOML multi-line basic string)
+  // Escape any literal """ in the body so the TOML multi-line basic string stays valid.
+  // NOTE: when this fires, the on-disk developer_instructions bytes differ from the persona
+  // body, but a TOML parser re-derives the original — semantic, not byte, identity.
   const escapedBody = body.replace(/"""/g, '\\"\\"\\"');
 
   const lines = [tomlMarker(meta.name)];
@@ -184,6 +191,7 @@ if (CHECK_MODE) {
   }
 } else {
   for (const { path, content } of outputs) {
+    mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, content, 'utf8');
     console.log(`wrote: ${path}`);
   }
