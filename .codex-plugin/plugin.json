@@ -1,12 +1,39 @@
 {
   "name": "pipeline",
   "description": "Structured, multi-agent development: work packages run through design → critique → build → review → retro → ship, with separated planner/reviewer/builder personas, quality gates, and a compounding feedback loop that turns repeated observations into process fixes.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Ambrovia"
   },
   "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
   "repository": "https://github.com/ambrovia/agent-skills-pipeline",
   "license": "Apache-2.0",
-  "skills": "./skills"
+  "keywords": [
+    "skills",
+    "pipeline",
+    "multi-agent",
+    "tdd",
+    "review",
+    "work-packages"
+  ],
+  "skills": "./skills",
+  "interface": {
+    "displayName": "Pipeline",
+    "shortDescription": "Run work packages through planning, critique, build, review, retro, and ship.",
+    "longDescription": "Pipeline packages a structured multi-agent software delivery workflow for Codex. It provides skills for work planning, refinement, design, architecture, TDD implementation, review, documentation, retro, and shipping, with explicit planner/reviewer/builder separation.",
+    "developerName": "Ambrovia",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Review"
+    ],
+    "websiteURL": "https://github.com/ambrovia/agent-skills-pipeline",
+    "defaultPrompt": [
+      "Run /pipeline for this work package.",
+      "Review this change with the pipeline.",
+      "Plan a new pipeline work package."
+    ],
+    "brandColor": "#2563EB"
+  }
 }

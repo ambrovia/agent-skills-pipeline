@@ -1,0 +1,41 @@
+{
+  "name": "agent-skills-pipeline",
+  "version": "0.3.0",
+  "description": "Structured, multi-agent development pipeline for AI coding tools, with an opencode plugin entrypoint.",
+  "type": "module",
+  "main": "./.opencode/plugins/pipeline.js",
+  "exports": {
+    ".": "./.opencode/plugins/pipeline.js"
+  },
+  "files": [
+    ".opencode/plugins/pipeline.js",
+    ".opencode/agents/",
+    "skills/",
+    "!skills/**/node_modules/**",
+    "!skills/**/.annotations/**",
+    "!skills/**/.vite/**",
+    "hooks/",
+    "scripts/install-opencode.sh",
+    "pipeline.config.example.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "agent-skills",
+    "multi-agent",
+    "pipeline",
+    "tdd",
+    "review"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ambrovia/agent-skills-pipeline.git"
+  }
+}

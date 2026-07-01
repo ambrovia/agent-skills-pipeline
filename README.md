@@ -26,6 +26,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
 - **[`agents/`](agents/)** — `planner` / `reviewer` / `builder` persona subagents.
 - **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Both are wired for Claude, Cursor, Gemini, Codex, and Copilot via `.cursor/`, `.codex/`, `.gemini/`, `.github/`. The edit-streak skips subagent edits on Claude (which exposes that distinction); on the others it's best-effort.
+- **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
 ## Install
 
@@ -38,22 +39,65 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 
 Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `/pipeline`.
 
-### Cursor · Copilot · Gemini · Codex — copy the files
+### Codex — plugin
 
-These tools read `SKILL.md` from their own directory. Copy `skills/` (and `agents/`) into it, plus `hooks/` and your tool's hook config (`.cursor/`, `.gemini/`, `.codex/`, or `.github/`) so the pipeline surfaces at session start:
+This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json). Installing the plugin gives Codex the pipeline skills and the bundled lifecycle hooks in `hooks/hooks.json`. No public or repo-local marketplace listing is committed here; the repo is the plugin source, and you decide which local marketplace exposes it.
+
+For local use, create a personal or repo-local Codex marketplace outside this plugin repo. Put or symlink this clone at `plugins/pipeline` under that marketplace root, then point the marketplace entry at that relative path:
+
+```json
+{
+  "name": "local",
+  "interface": {
+    "displayName": "Local"
+  },
+  "plugins": [
+    {
+      "name": "pipeline",
+      "source": {
+        "source": "local",
+        "path": "./plugins/pipeline"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
+```
+
+Restart Codex, open the plugin browser, choose that marketplace, and install `pipeline`. When you change the plugin source, restart Codex so the local install picks up the new files. The repo also includes `.codex/` custom agent config for project-local development of Pipeline itself; Codex plugin manifests currently do not declare those agent files, so they are not part of the installed plugin contract.
+
+### Cursor · Copilot · Gemini — copy the files
+
+These tools read `SKILL.md` from their own directory. Copy `skills/` (and `agents/`) into it, plus `hooks/` and your tool's hook config (`.cursor/`, `.gemini/`, or `.github/`) so the pipeline surfaces at session start:
 
 | Tool | Put skills in |
 |---|---|
 | Cursor | `.cursor/skills/` or `.agents/skills/` |
 | Copilot | `.github/skills/` or `.agents/skills/` |
 | Gemini / Antigravity | `.gemini/skills/` or `.agents/skills/` |
-| Codex | `.agents/skills/` |
 
 > `.agents/skills/` is the shared standard for all of these. **Claude Code is the exception** — it reads `.claude/skills/`, so use the plugin (or copy into `.claude/`).
 
-### opencode — install script
+### opencode — plugin
 
-opencode has no plugin marketplace: skills and agents are discovered from disk, and plugins are JS modules — so there's no single bundle to install. One script drops every piece where opencode looks. From a clone of this repo:
+opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes the edit-streak nudge as a proper opencode plugin through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js), and [`package.json`](package.json) exports that module for npm-style opencode installs.
+
+If you install or publish this package as an npm package, enable the plugin in `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["agent-skills-pipeline"]
+}
+```
+
+For local development from this clone, no package install is needed: opencode auto-loads project plugins from `.opencode/plugins/`, so opening this repository in opencode loads the plugin directly.
+
+The opencode plugin covers the lifecycle hook only. Pipeline’s skills, persona agents, and session-start guidance are separate opencode configuration files, so the installer remains the one-command bootstrap for the full Pipeline experience in another project:
 
 ```text
 scripts/install-opencode.sh            # into the current project
@@ -65,7 +109,7 @@ It installs:
 
 | Piece | Goes to | Why |
 |---|---|---|
-| Skills | `.agents/skills/` | opencode reads this natively (same path as the tools above) |
+| Skills | `.opencode/skills/` | opencode reads project-level skills from its config directory |
 | Agents | `.opencode/agents/` | opencode-format `planner` / `reviewer` / `builder` — available as `@planner`, etc. |
 | Edit-streak hook | `.opencode/plugins/pipeline.js` | nudges the orchestrator to delegate after 5 edits, via `tool.execute.after` |
 | Session-start guidance | `AGENTS.md` (managed block) | opencode's rules file — the equivalent of the session-start hook |
