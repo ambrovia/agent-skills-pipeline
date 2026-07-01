@@ -3,8 +3,9 @@
 # install-opencode.sh — install the agent-pipeline into a project (or globally)
 # for opencode.
 #
-# opencode has no plugin marketplace: skills and agents are discovered from disk
-# and plugins are JS modules. This script drops each piece where opencode looks.
+# opencode plugins are JavaScript/TypeScript modules. Skills, agents, and rules
+# are still file-based configuration, so this script drops each pipeline piece
+# where opencode looks.
 #
 #   skills  → .opencode/skills/    (opencode's own skill dir — self-contained,
 #                                    no dependency on .claude/ or shared .agents/)
