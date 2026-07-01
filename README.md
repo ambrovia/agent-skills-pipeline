@@ -41,34 +41,15 @@ Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `
 
 ### Codex — plugin
 
-This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json). Installing the plugin gives Codex the pipeline skills and the bundled lifecycle hooks in `hooks/hooks.json`. No public or repo-local marketplace listing is committed here; the repo is the plugin source, and you decide which local marketplace exposes it.
+This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills and the bundled lifecycle hooks in `hooks/hooks.json`.
 
-For local use, create a personal or repo-local Codex marketplace outside this plugin repo. Put or symlink this clone at `plugins/pipeline` under that marketplace root, then point the marketplace entry at that relative path:
+Add this repository as a Codex marketplace source:
 
-```json
-{
-  "name": "local",
-  "interface": {
-    "displayName": "Local"
-  },
-  "plugins": [
-    {
-      "name": "pipeline",
-      "source": {
-        "source": "local",
-        "path": "./plugins/pipeline"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    }
-  ]
-}
+```text
+codex plugin marketplace add ambrovia/agent-skills-pipeline
 ```
 
-Restart Codex, open the plugin browser, choose that marketplace, and install `pipeline`. When you change the plugin source, restart Codex so the local install picks up the new files. The repo also includes `.codex/` custom agent config for project-local development of Pipeline itself; Codex plugin manifests currently do not declare those agent files, so they are not part of the installed plugin contract.
+Restart Codex, open `/plugins`, choose the **Agent Pipeline** marketplace, and install `pipeline`. The repo also includes `.codex/` custom agent config for project-local development of Pipeline itself; Codex plugin manifests currently do not declare those agent files, so they are not part of the installed plugin contract.
 
 ### Cursor · Copilot · Gemini — copy the files
 
