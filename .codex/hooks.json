@@ -3,7 +3,7 @@
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "bash hooks/session-start.sh codex" }
+          { "type": "command", "command": "bash -c 'root=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; script=\"$root/hooks/session-start.sh\"; if [ -f \"$script\" ]; then bash \"$script\" codex; else printf \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"SessionStart\\\",\\\"additionalContext\\\":\\\"agent-pipeline hook could not find hooks/session-start.sh. Reinstall the pipeline plugin or copy hooks/ into this repo.\\\"}}\\n\"; fi'" }
         ]
       }
     ],
@@ -11,7 +11,7 @@
       {
         "matcher": "apply_patch",
         "hooks": [
-          { "type": "command", "command": "bash hooks/edit-streak.sh codex" }
+          { "type": "command", "command": "bash -c 'root=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; script=\"$root/hooks/edit-streak.sh\"; if [ -f \"$script\" ]; then bash \"$script\" codex; fi'" }
         ]
       }
     ]
