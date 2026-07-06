@@ -2,13 +2,10 @@ import { Component, StrictMode, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { AnnotationOverlay } from "./annotations/annotation-overlay.js";
-import { discoverStories, type GlobSource } from "./discovery.js";
+import { discoverStories } from "./discovery.js";
+import { storyGlobs } from "./story-globs.generated.js";
+import "./target-styles.generated.js";
 import "./viewer.css";
-
-const storyGlobs = import.meta.glob<Record<string, unknown>>(
-  "../src/**/*.stories.tsx",
-  { eager: true },
-) as GlobSource;
 
 const modules = discoverStories(storyGlobs);
 
