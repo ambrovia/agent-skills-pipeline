@@ -40,13 +40,22 @@ The trigger reads two greppable signals the upstream acts already emit: the `DES
 
 This skill ships with a self-contained **Vite-based component viewer** in the `viewer/` directory. It renders `.stories.tsx` files live in the browser and includes a first-party annotation overlay — no browser extensions, no external tools.
 
-### Setup
+### Launching it (agent-owned, interactive path)
 
-1. Copy the `viewer/` directory into your project root (alongside `src/`)
-2. `cd viewer && npm install`
-3. `npm run dev` → viewer at `http://localhost:5173`
+The agent running this phase stands the viewer up — the founder never sets it up by hand. The steps are idempotent; re-running the phase reuses an existing copy and a live server.
 
-The viewer auto-discovers all `src/**/*.stories.tsx` files and groups them by directory structure. No configuration file needed. If your stories live elsewhere, adjust the glob in `main.tsx`.
+1. **Already running?** If `http://localhost:5173` answers, reuse it — skip to the loop. (A GET to the port returning any HTTP response means the viewer is up.)
+2. **Locate the source.** The viewer lives at `viewer/` inside this skill's own directory (resolve the skill install path; do not assume CWD). This is the copy source.
+3. **Copy into the project once.** If `<project-root>/viewer/` does not exist, copy the skill's `viewer/` there (alongside `src/`). If it already exists, leave it — the founder may have adjusted the glob.
+4. **Install deps only if missing.** If `<project-root>/viewer/node_modules` is absent, run `npm install` in `viewer/`. Skip otherwise.
+5. **Start in the background.** Launch `npm run dev` in `viewer/` as a long-running background process and keep it alive for the whole annotation loop — do not block on it.
+6. **Wait until ready, then hand off.** Poll `http://localhost:5173` until it responds, then give the founder the URL (`http://localhost:5173/#<ComponentName>`).
+
+If any step fails (no dev server, port unavailable, install error), do **not** hard-fail — fall through to the screenshot fallback below and log that the overlay was unavailable.
+
+The viewer auto-discovers all `src/**/*.stories.tsx` files and groups them by directory structure. No configuration file needed. If stories live elsewhere, adjust the glob in `main.tsx`.
+
+> In an **autonomous** `/pipeline` run this phase never launches the viewer — it **parks** (see Graceful degradation). The launch above belongs to the interactive path only, whether reached via a direct `/human-concept-review` invocation or a founder resuming a parked work package.
 
 ### Story format
 
@@ -89,7 +98,7 @@ The annotation overlay is the **inspector rail** docked to the right edge of the
 ## The loop (interactive — founder present)
 
 ```
-1. Start the viewer and open the variant's hash route.
+1. Launch the viewer (see "Launching it" above — idempotent) and open the variant's hash route.
 2. Founder annotates elements using the "Select" toggle in the right-edge inspector rail:
    arm → click element → write note → Save. Spatial, element-tied notes.
    Founder also reads the guide draft in requirements.md alongside the render.
