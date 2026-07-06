@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
   "description": "Structured, multi-agent development: work packages run through design → critique → build → review → retro → ship, with separated planner/reviewer/builder personas, quality gates, and a compounding feedback loop that turns repeated observations into process fixes.",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "author": {
     "name": "Ambrovia"
   },

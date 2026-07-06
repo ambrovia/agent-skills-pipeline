@@ -65,18 +65,11 @@ These tools read `SKILL.md` from their own directory. Copy `skills/` (and `agent
 
 ### opencode — plugin
 
-opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes the edit-streak nudge as a proper opencode plugin through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js), and [`package.json`](package.json) exports that module for npm-style opencode installs.
+opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes the edit-streak nudge as a proper opencode plugin through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js).
 
-If you install or publish this package as an npm package, enable the plugin in `opencode.json`:
+**This package is not published to npm** — install it from a clone using the one-command bootstrap below (or copy `.opencode/plugins/pipeline.js` into your own `.opencode/plugins/`). [`package.json`](package.json) exports that module, so *if you fork and publish it yourself*, you could then list your package in `opencode.json` (`"plugin": ["<your-package>"]`) — but the published-npm path is not provided here.
 
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["agent-skills-pipeline"]
-}
-```
-
-For local development from this clone, no package install is needed: opencode auto-loads project plugins from `.opencode/plugins/`, so opening this repository in opencode loads the plugin directly.
+For local development from this clone, no install is needed: opencode auto-loads project plugins from `.opencode/plugins/`, so opening this repository in opencode loads the plugin directly.
 
 The opencode plugin covers the lifecycle hook only. Pipeline’s skills, persona agents, and session-start guidance are separate opencode configuration files, so the installer remains the one-command bootstrap for the full Pipeline experience in another project:
 
