@@ -45,7 +45,7 @@ export function InspectorRail({
           className={`anno-arm${picker.armed ? " anno-arm--on" : ""}`}
           onClick={() => (picker.armed ? picker.disarm() : picker.arm())}
         >
-          {picker.armed ? "Stop" : "Inspect"}
+          {picker.armed ? "Stop" : "Select"}
         </button>
         {!collapsed && (
           <span className="anno-round">
@@ -104,7 +104,7 @@ export function InspectorRail({
             <div className="anno-rail-hint">
               {picker.armed
                 ? "Hover the canvas — click an element to comment."
-                : "Press Inspect, then hover + click any element."}
+                : "Press Select, then hover + click any element."}
             </div>
           )}
 

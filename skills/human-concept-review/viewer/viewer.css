@@ -1,36 +1,27 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ──────────────────────────────────────────────────────────────
+   Black & white flat design system.
+   Single neutral grayscale ramp, one ink color for interaction,
+   hairline borders instead of shadows. No accent hues, no dark
+   mode — clean and monochrome, in the spirit of Geist / Primer.
+   ────────────────────────────────────────────────────────────── */
 :root {
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-dim: rgba(37, 99, 235, 0.08);
-  --bg: #fff;
-  --bg-elevated: #f5f5f5;
-  --bg-overlay: #eee;
-  --text: #1a1a1a;
-  --text-dim: #666;
-  --text-faint: #999;
-  --border: #e0e0e0;
-  --error: #dc2626;
-  --shadow: 0 4px 12px rgba(0,0,0,.08);
-  --radius: 8px;
+  --bg: #ffffff;
+  --bg-elevated: #fafafa;
+  --bg-sunken: #f4f4f4;
+  --ink: #111111;          /* primary action + selected state */
+  --ink-hover: #000000;
+  --text: #111111;
+  --text-dim: #666666;
+  --text-faint: #999999;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d4;
+  --fill-faint: rgba(0, 0, 0, 0.04);
+  --fill-soft: rgba(0, 0, 0, 0.06);
+  --radius: 6px;
   --mono: ui-monospace, "SF Mono", monospace;
   --sans: system-ui, -apple-system, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --bg-elevated: #252525;
-    --bg-overlay: #333;
-    --text: #e8e8e8;
-    --text-dim: #aaa;
-    --text-faint: #777;
-    --border: #3a3a3a;
-    --accent: #3b82f6;
-    --accent-dim: rgba(59, 130, 246, 0.12);
-    --shadow: 0 4px 12px rgba(0,0,0,.3);
-  }
 }
 
 html, body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--sans); }
@@ -43,7 +34,7 @@ html, body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--san
 /* ── Catalog ── */
 .page ul { list-style: none; }
 .page li a { display: flex; justify-content: space-between; padding: 6px 0; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); font-size: 14px; }
-.page li a:hover { color: var(--accent); }
+.page li a:hover { color: var(--ink); text-decoration: underline; }
 .meta { font: 11px var(--mono); color: var(--text-faint); }
 .back { display: inline-block; font: 11px var(--mono); color: var(--text-faint); text-decoration: none; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
 .back:hover { color: var(--text); }
@@ -57,22 +48,21 @@ html, body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--san
   position: fixed;
   z-index: 99990;
   pointer-events: none;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--ink);
   border-radius: var(--radius);
 }
 .anno-hl-box[data-tone="hover"] {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+  border-width: 1.5px;
+  background: var(--fill-faint);
 }
 .anno-hl-box[data-tone="selected"] {
-  border-color: var(--accent);
-  background: rgba(37, 99, 235, 0.05);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--ink);
+  background: var(--fill-soft);
 }
 .anno-hl-box[data-tone="rehighlight"] {
-  border-color: var(--accent);
+  border-color: var(--text-dim);
   border-style: dashed;
-  background: var(--accent-dim);
+  background: var(--fill-faint);
 }
 
 .anno-hl-label {
@@ -86,10 +76,10 @@ html, body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--san
   border-radius: 4px;
   white-space: nowrap;
   color: #fff;
-  background: var(--accent);
+  background: var(--ink);
 }
 .anno-hl-label[data-tone="rehighlight"] {
-  background: var(--accent-hover);
+  background: var(--text-dim);
 }
 
 /* ── Inspector rail ── */
@@ -102,7 +92,6 @@ html, body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--san
   z-index: 99999;
   background: var(--bg-elevated);
   border-left: 1px solid var(--border);
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -147,31 +136,30 @@ body.anno-active {
 }
 .anno-rail-toggle:hover {
   color: var(--text);
-  border-color: var(--text-dim);
+  border-color: var(--border-strong);
 }
 
 .anno-arm {
-  padding: 5px 12px;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
   background: var(--bg);
-  color: var(--text-dim);
-  font: 500 11px/1 var(--sans);
+  color: var(--text);
+  font: 500 12px/1 var(--sans);
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 .anno-arm:hover {
-  color: var(--text);
-  border-color: var(--text-dim);
+  border-color: var(--ink);
 }
 .anno-arm--on {
-  background: var(--accent);
+  background: var(--ink);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--ink);
 }
 .anno-arm--on:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--ink-hover);
+  border-color: var(--ink-hover);
 }
 
 .anno-round {
@@ -227,12 +215,12 @@ body.anno-active {
   cursor: pointer;
 }
 .anno-crumb:hover {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: var(--fill-soft);
+  color: var(--text);
 }
 .anno-crumb--on {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: var(--fill-soft);
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -257,7 +245,7 @@ body.anno-active {
   width: 100%;
   min-height: 64px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   color: var(--text);
   font: 13px/1.5 var(--sans);
@@ -266,7 +254,7 @@ body.anno-active {
   outline: none;
 }
 .anno-rail-section textarea:focus {
-  border-color: var(--accent);
+  border-color: var(--ink);
 }
 
 /* ── Actions ── */
@@ -276,40 +264,41 @@ body.anno-active {
 }
 
 .anno-save {
-  padding: 5px 14px;
-  background: var(--accent);
+  padding: 6px 16px;
+  background: var(--ink);
   color: #fff;
-  border: none;
-  border-radius: 9999px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
   font: 500 12px/1 var(--sans);
   cursor: pointer;
   transition: background 120ms ease;
 }
 .anno-save:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--ink-hover);
 }
 .anno-save:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .anno-cancel {
-  padding: 5px 14px;
+  padding: 6px 16px;
   background: transparent;
   color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: 9999px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
   font: 500 12px/1 var(--sans);
   cursor: pointer;
 }
 .anno-cancel:hover {
   color: var(--text);
-  border-color: var(--text-dim);
+  border-color: var(--ink);
 }
 
 .anno-error {
   font: 11px var(--mono);
-  color: var(--error);
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* ── Notes list ── */
@@ -336,12 +325,12 @@ body.anno-active {
   background: none;
   border: none;
   font: 11px var(--mono);
-  color: var(--accent);
+  color: var(--text-dim);
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: underline;
 }
 .anno-iterate:hover {
-  text-decoration: underline;
+  color: var(--ink);
 }
 
 .anno-notes {
@@ -370,7 +359,7 @@ body.anno-active {
   width: 100%;
 }
 .anno-note-row:hover {
-  background: var(--accent-dim);
+  background: var(--fill-soft);
 }
 
 .anno-note-comp {
