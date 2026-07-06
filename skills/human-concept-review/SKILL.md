@@ -72,11 +72,11 @@ Each named export (except `default`) becomes a variant rendered on the component
 
 ## The annotation tool (first-party, built into the viewer)
 
-The annotation overlay is the bottom-left pill in the viewer. No Chrome extension, no MCP wiring. It runs inside the Vite dev server and writes to `.annotations/` in the project root (gitignored).
+The annotation overlay is the **inspector rail** docked to the right edge of the viewer. No Chrome extension, no MCP wiring. It runs inside the Vite dev server and writes to `.annotations/` in the project root (gitignored).
 
 **How to use:**
 1. Start the viewer → navigate to a component page via hash route (`#ComponentName`)
-2. Bottom-left pill → **Select** → click an element → write note → **Save**
+2. In the rail header → **Select** → click an element → write note → **Save**
 3. **New iteration** closes the round and opens the next
 
 **How the agent reads annotations:**
@@ -90,7 +90,7 @@ The annotation overlay is the bottom-left pill in the viewer. No Chrome extensio
 
 ```
 1. Start the viewer and open the variant's hash route.
-2. Founder annotates elements using the bottom-left "Select" pill:
+2. Founder annotates elements using the "Select" toggle in the right-edge inspector rail:
    arm → click element → write note → Save. Spatial, element-tied notes.
    Founder also reads the guide draft in requirements.md alongside the render.
 3. Agent reads .annotations/annotations.md — each ## Round N block contains

@@ -42,7 +42,7 @@ class StoryErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div data-story-error="true" style={{ color: "#dc2626", fontSize: 12 }}>
+        <div data-story-error="true" style={{ color: "#111111", fontSize: 12, fontWeight: 600 }}>
           Error: {this.state.error.message}
         </div>
       );
