@@ -66,7 +66,31 @@ Resolve `<viewer>` from the plugin install path (do not assume CWD):
 
 On any failure (`launch.mjs` exits non-zero — no dev server, port unavailable, install error), do **not** hard-fail — fall through to the screenshot fallback below and log that the overlay was unavailable.
 
-The viewer auto-discovers all `src/**/*.stories.tsx` files and groups them by directory structure. No configuration file needed. If stories live elsewhere, adjust the glob in `main.tsx`.
+The viewer auto-discovers stories and target app styles before Vite starts. No configuration is needed for ordinary single-package projects (`src/**/*.stories.tsx` plus an app CSS import), and monorepos are covered by default (`packages/*/src/**/*.stories.tsx`, `apps/*/src/**/*.stories.tsx`).
+
+For unusual projects, prefer an explicit override in either `pipeline.config.yml`:
+
+```yaml
+viewer:
+  storyGlobs:
+    - packages/web/src/**/*.stories.tsx
+    - packages/design-system/src/**/*.stories.tsx
+  cssEntries:
+    - packages/web/src/index.css
+  toolchain: auto # auto | tailwind-v4 | tailwind-v3 | none
+```
+
+or `.pipeline/viewer.config.json`:
+
+```json
+{
+  "storyGlobs": ["packages/web/src/**/*.stories.tsx"],
+  "cssEntries": ["packages/web/src/index.css"],
+  "toolchain": "auto"
+}
+```
+
+CSS detection is config-first, then falls back to CSS imported by app main entries, then common files (`index.css`, `global.css`, `app.css`, `styles.css`, `tokens.css`) under `src/`, `packages/*/src/`, and `apps/*/src/`, then `designSystem.tokens` from `pipeline.config.yml`. If no CSS is found, the viewer still runs and prints a warning. Tailwind v4 projects use the target project's `@tailwindcss/vite` package when Tailwind v4 and Tailwind CSS directives are detected; Tailwind v3 projects use the target project's PostCSS config when present. Plain CSS, CSS Modules, SCSS, and CSS-in-JS need no special toolchain beyond Vite's defaults.
 
 > In an **autonomous** `/pipeline` run this phase never launches the viewer — it **parks** (see Graceful degradation). The launch above belongs to the interactive path only, whether reached via a direct `/human-concept-review` invocation or a founder resuming a parked work package.
 
