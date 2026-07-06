@@ -42,16 +42,29 @@ This skill ships with a self-contained **Vite-based component viewer** in the `v
 
 ### Launching it (agent-owned, interactive path)
 
-The agent running this phase stands the viewer up — the founder never sets it up by hand. The steps are idempotent; re-running the phase reuses an existing copy and a live server.
+The agent running this phase stands the viewer up — the founder never sets it up by hand. Run the bundled launcher, pointed at the project root:
 
-1. **Already running?** If `http://localhost:5173` answers, reuse it — skip to the loop. (A GET to the port returning any HTTP response means the viewer is up.)
-2. **Locate the source.** The viewer lives at `viewer/` inside this skill's own directory (resolve the skill install path; do not assume CWD). This is the copy source.
-3. **Copy into the project once.** If `<project-root>/viewer/` does not exist, copy the skill's `viewer/` there (alongside `src/`). If it already exists, leave it — the founder may have adjusted the glob.
-4. **Install deps only if missing.** If `<project-root>/viewer/node_modules` is absent, run `npm install` in `viewer/`. Skip otherwise.
-5. **Start in the background.** Launch `npm run dev` in `viewer/` as a long-running background process and keep it alive for the whole annotation loop — do not block on it.
-6. **Wait until ready, then hand off.** Poll `http://localhost:5173` until it responds, then give the founder the URL (`http://localhost:5173/#<ComponentName>`).
+```
+node "<viewer>/launch.mjs" <project-root>
+```
 
-If any step fails (no dev server, port unavailable, install error), do **not** hard-fail — fall through to the screenshot fallback below and log that the overlay was unavailable.
+Resolve `<viewer>` from the plugin install path (do not assume CWD):
+
+| Tool | Command |
+|---|---|
+| Claude Code | `node "${CLAUDE_PLUGIN_ROOT}/skills/human-concept-review/viewer/launch.mjs" <project-root>` |
+| Codex CLI | `node "${PLUGIN_ROOT}/skills/human-concept-review/viewer/launch.mjs" <project-root>` |
+| opencode / any | no plugin-root env var — the viewer always sits at `viewer/` next to this `SKILL.md`; resolve that directory and run `node .../viewer/launch.mjs <project-root>` |
+
+`launch.mjs` is zero-dependency (Node built-ins only) and **idempotent** — it does exactly what the loop needs, so the agent doesn't script these by hand:
+
+1. If `http://localhost:5173` already answers, reuse it and print the URL.
+2. Copy the viewer into `<project-root>/viewer/` once (the viewer must live in the project — it compiles that project's stories live; skipped if already present or already running from there).
+3. `npm install` in the viewer only if `node_modules` is missing (the Vite/esbuild toolchain ships a platform-native binary, so it can't be vendored — first run needs a network install).
+4. Start the Vite dev server detached and poll until it answers.
+5. Print the base URL on stdout; open `http://localhost:5173/#<ComponentName>` for the variant. Exit non-zero if it never comes up.
+
+On any failure (`launch.mjs` exits non-zero — no dev server, port unavailable, install error), do **not** hard-fail — fall through to the screenshot fallback below and log that the overlay was unavailable.
 
 The viewer auto-discovers all `src/**/*.stories.tsx` files and groups them by directory structure. No configuration file needed. If stories live elsewhere, adjust the glob in `main.tsx`.
 
