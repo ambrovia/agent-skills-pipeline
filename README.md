@@ -24,8 +24,10 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 ## What's in here
 
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
-- **[`agents/`](agents/)** — `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents, plus Codex plugin agent metadata.
-- **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent no-fail wrappers because Codex 0.142.5 rejects SessionStart/PostToolUse stdout for these lifecycle hooks. The edit-streak skips subagent edits on Claude (which exposes that distinction); on the others it's best-effort.
+- **[`agents/`](agents/)** — Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents.
+- **[`agents-cursor/`](agents-cursor/)** — Cursor-format subagents (`model: inherit`, no Claude-specific `tools` field), registered via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json).
+- **[`.cursor-plugin/`](.cursor-plugin/)** — Cursor plugin manifest + Team Marketplace config for GitHub import.
+- **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent no-fail wrappers because Codex 0.142.5 rejects SessionStart/PostToolUse stdout for these lifecycle hooks. Cursor plugin hooks live in [`hooks/cursor-hooks.json`](hooks/cursor-hooks.json) and use `${CURSOR_PLUGIN_ROOT}` for install-path resolution.
 - **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
 ## Install
@@ -59,9 +61,36 @@ codex plugin marketplace add ambrovia/agent-skills-pipeline
 
 Restart Codex, open `/plugins`, choose the **Agent Pipeline** marketplace, and install `pipeline`. The repo also includes `.codex/` custom agent config for project-local development of Pipeline itself; Codex plugin manifests currently do not declare those agent files, so they are not part of the installed plugin contract.
 
-### Cursor · Copilot · Gemini — copy the files
+### Cursor — plugin
 
-These tools read `SKILL.md` from their own directory. Copy `skills/` (and `agents/`) into it, plus `hooks/` and your tool's hook config (`.cursor/`, `.gemini/`, or `.github/`) so the pipeline surfaces at session start:
+This repo ships as a native Cursor plugin via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json) and is importable as a **Team Marketplace** from GitHub (Cursor 2.6+, Teams/Enterprise):
+
+```text
+Dashboard → Plugins → Team Marketplaces → Import from Repo
+https://github.com/ambrovia/agent-skills-pipeline
+```
+
+Then install **pipeline** from Customize. The manifest bundles skills (`./skills`), Cursor-format subagents (`./agents-cursor`), and lifecycle hooks (`./hooks/cursor-hooks.json`).
+
+**Local / dev install** (Cursor IDE):
+
+```bash
+scripts/install-cursor.sh
+```
+
+That symlinks the repo into `~/.cursor/plugins/local/pipeline`. Restart Cursor or run **Developer: Reload Window**.
+
+**Project copy** (Cursor CLI or when the plugin loader is unavailable):
+
+```bash
+scripts/install-cursor.sh /path/to/project   # or --project for cwd
+```
+
+Copies skills, agents, and hooks into the target project's `.cursor/` tree.
+
+### Cursor · Copilot · Gemini — manual copy (legacy)
+
+These tools also read `SKILL.md` from their own directory. You can still copy `skills/` (and `agents/`) into it, plus `hooks/` and your tool's hook config (`.cursor/`, `.gemini/`, or `.github/`) so the pipeline surfaces at session start:
 
 | Tool | Put skills in |
 |---|---|

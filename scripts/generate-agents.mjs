@@ -127,6 +127,20 @@ function generateOpencode(meta, body) {
   return `${fm}\n\n${mdMarker(meta.name)}\n${body}`;
 }
 
+function generateCursor(meta, body) {
+  const fmLines = [
+    '---',
+    `name: ${meta.name}`,
+    `description: "${yamlQuote(meta.description)}"`,
+    'model: inherit',
+  ];
+  if (meta.write === false && meta.edit === false) {
+    fmLines.push('readonly: true');
+  }
+  fmLines.push('---');
+  return `${fmLines.join('\n')}\n\n${mdMarker(meta.name)}\n${body}`;
+}
+
 function generateCodex(meta, body) {
   // Escape any literal """ in the body so the TOML multi-line basic string stays valid.
   // NOTE: when this fires, the on-disk developer_instructions bytes differ from the persona
@@ -164,6 +178,10 @@ for (const file of personaFiles) {
   outputs.push({
     path: join(ROOT, 'agents', `${name}.md`),
     content: generateClaude(meta, body),
+  });
+  outputs.push({
+    path: join(ROOT, 'agents-cursor', `${name}.md`),
+    content: generateCursor(meta, body),
   });
   outputs.push({
     path: join(ROOT, '.opencode', 'agents', `${name}.md`),
