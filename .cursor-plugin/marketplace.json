@@ -1,0 +1,36 @@
+{
+  "name": "agent-pipeline",
+  "owner": {
+    "name": "Ambrovia"
+  },
+  "metadata": {
+    "description": "Structured, multi-agent software development pipeline for Cursor — skills, subagents, and lifecycle hooks.",
+    "version": "0.4.2"
+  },
+  "plugins": [
+    {
+      "name": "pipeline",
+      "source": ".",
+      "description": "Work packages run through design → critique → build → review → retro → ship, driven by pipeline-planner/pipeline-reviewer/pipeline-builder persona subagents. 16 skills + 3 personas + session/edit hooks.",
+      "version": "0.4.2",
+      "author": {
+        "name": "Ambrovia"
+      },
+      "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
+      "repository": "https://github.com/ambrovia/agent-skills-pipeline",
+      "license": "Apache-2.0",
+      "keywords": [
+        "skills",
+        "agents",
+        "pipeline",
+        "tdd",
+        "review",
+        "ship",
+        "work-packages",
+        "retro",
+        "compound",
+        "lore"
+      ]
+    }
+  ]
+}

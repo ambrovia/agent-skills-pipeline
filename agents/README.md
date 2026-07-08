@@ -22,6 +22,7 @@ Frontmatter is harness-neutral; the generator maps it to each tool's dialect:
 | Harness | File | Frontmatter the generator emits | Skills location |
 |---|---|---|---|
 | **Claude Code** | `agents/*.md` (registered in `.claude-plugin/plugin.json`) | `tools` PascalCase string + `model` real id (`opus` / `sonnet`) | `skills` field → `./skills` |
+| **Cursor** | `agents-cursor/*.md` (registered in `.cursor-plugin/plugin.json`) | `model: inherit`; `readonly: true` when write+edit are false | `skills` field → `./skills` |
 | **opencode** | `.opencode/agents/*.md` | `mode: subagent` + `tools` deny-map; `model` omitted (inherit) | `.opencode/skills/` (install-time copy) |
 | **Codex** | `.codex/agents/*.toml` + `.codex/config.toml` | `name` / `description` / `model` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` -> `./skills` |
 
@@ -34,8 +35,8 @@ subagent roles must be copied into the target project by
 ## Changing a persona
 
 1. Edit `personas/<name>.md` — the body and/or the neutral frontmatter.
-2. Run `node scripts/generate-agents.mjs` to regenerate all nine outputs
-   (3 personas × 3 harnesses).
+2. Run `node scripts/generate-agents.mjs` to regenerate all twelve outputs
+   (3 personas × 4 harnesses).
 3. Commit `personas/` and the regenerated files together.
 
 CI / pre-commit guard: `node scripts/generate-agents.mjs --check` exits non-zero
@@ -46,6 +47,11 @@ if any generated file is stale, so the copies cannot silently drift.
 - **Claude:** `tools` MUST be a PascalCase comma string and `model` a real Claude
   id — lowercase array tools match zero tools (silent no-op) and abstract tiers
   (`high` / `fast`) are not valid model ids (spawn errors). The generator enforces both.
+- **Cursor:** plugin manifest at `.cursor-plugin/plugin.json` registers skills,
+  `agents-cursor/*.md` (`model: inherit`, no `tools`; `readonly: true` on
+  pipeline-reviewer), and `hooks/cursor-hooks.json` (uses `${CURSOR_PLUGIN_ROOT}`
+  for script paths). Install via Team Marketplace import, `scripts/install-cursor.sh`,
+  or manual copy.
 - **opencode:** the loader globs `{agent,agents}`, so the plural `.opencode/agents/`
   used here loads fine (the old singular/plural silent-no-load is fixed on current versions).
 - **Codex:** project files in `.codex/agents/` load only when the project is trusted

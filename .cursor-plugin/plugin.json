@@ -1,0 +1,25 @@
+{
+  "name": "pipeline",
+  "version": "0.4.2",
+  "description": "Structured, multi-agent development: work packages run through design → critique → build → review → retro → ship, with separated pipeline-planner/pipeline-reviewer/pipeline-builder personas, quality gates, and a compounding feedback loop.",
+  "author": {
+    "name": "Ambrovia"
+  },
+  "homepage": "https://github.com/ambrovia/agent-skills-pipeline",
+  "repository": "https://github.com/ambrovia/agent-skills-pipeline",
+  "license": "Apache-2.0",
+  "keywords": [
+    "skills",
+    "agents",
+    "pipeline",
+    "multi-agent",
+    "tdd",
+    "review",
+    "work-packages",
+    "retro",
+    "compound"
+  ],
+  "skills": "./skills",
+  "agents": "./agents-cursor",
+  "hooks": "./hooks/cursor-hooks.json"
+}
