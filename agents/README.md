@@ -23,11 +23,13 @@ Frontmatter is harness-neutral; the generator maps it to each tool's dialect:
 |---|---|---|---|
 | **Claude Code** | `agents/*.md` (registered in `.claude-plugin/plugin.json`) | `tools` PascalCase string + `model` real id (`opus` / `sonnet`) | `skills` field → `./skills` |
 | **opencode** | `.opencode/agents/*.md` | `mode: subagent` + `tools` deny-map; `model` omitted (inherit) | `.opencode/skills/` (install-time copy) |
-| **Codex** | `.codex/agents/*.toml` | `name` / `description` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` → `./skills` |
+| **Codex** | `.codex/agents/*.toml` + `.codex/config.toml` | `name` / `description` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` -> `./skills` |
 
-Codex has native TOML subagents (project-scoped `.codex/agents/`, loaded when the
-project is trusted), so real producer/evaluator separation works there too — not
-the orchestrator-inline fallback the pipeline used before.
+Codex has native TOML subagents, but they are registered through
+`.codex/config.toml`; the TOML files alone are inert. The plugin manifest exposes
+skills/hooks and the plugin-level `agents/openai.yaml` metadata, while real
+subagent roles must be copied into the target project by
+`scripts/install-codex.sh`.
 
 ## Changing a persona
 
@@ -46,9 +48,11 @@ if any generated file is stale, so the copies cannot silently drift.
   (`high` / `fast`) are not valid model ids (spawn errors). The generator enforces both.
 - **opencode:** the loader globs `{agent,agents}`, so the plural `.opencode/agents/`
   used here loads fine (the old singular/plural silent-no-load is fixed on current versions).
-- **Codex:** project files in `.codex/agents/` load only when the project is trusted.
-  The Codex plugin manifest has no `agents` field, so subagents ship as project files,
-  separate from the `.codex-plugin` skill bundle.
+- **Codex:** project files in `.codex/agents/` load only when the project is trusted
+  and registered in `.codex/config.toml`. Run `scripts/install-codex.sh <project>`
+  to install them as `planner`, `reviewer`, and `builder` roles. The Codex plugin
+  manifest has no subagent-role field, so plugin installation alone cannot create
+  those roles.
 
 After regenerating Claude agents, reinstall/update the plugin so the cache copy
 (`~/.claude/plugins/cache/agent-pipeline/.../agents/`) picks up the change, and

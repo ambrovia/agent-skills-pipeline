@@ -1,0 +1,13 @@
+# Repo-scoped Codex registration for the pipeline persona agents.
+# Codex plugins expose skills/hooks, but subagent roles still come from config.toml.
+[agents.planner]
+description = "Pipeline planner persona for concept, design, and architecture planning."
+config_file = "./agents/planner.toml"
+
+[agents.reviewer]
+description = "Pipeline reviewer persona for critiques and read-only implementation review."
+config_file = "./agents/reviewer.toml"
+
+[agents.builder]
+description = "Pipeline builder persona for tests, implementation, fixes, and shipping."
+config_file = "./agents/builder.toml"

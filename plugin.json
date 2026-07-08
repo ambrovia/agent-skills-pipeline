@@ -1,5 +1,5 @@
 {
   "name": "agent-pipeline",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Structured, multi-agent development pipeline — work packages run through design → critique → build → review → ship, with planner/reviewer/builder personas."
 }
