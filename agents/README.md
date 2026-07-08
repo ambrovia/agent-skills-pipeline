@@ -50,9 +50,9 @@ if any generated file is stale, so the copies cannot silently drift.
   used here loads fine (the old singular/plural silent-no-load is fixed on current versions).
 - **Codex:** project files in `.codex/agents/` load only when the project is trusted
   and registered in `.codex/config.toml`. Run `scripts/install-codex.sh <project>`
-  to install them as `planner`, `reviewer`, and `builder` roles. The Codex plugin
-  manifest has no subagent-role field, so plugin installation alone cannot create
-  those roles.
+  to install them as `pipeline-planner`, `pipeline-reviewer`, and `pipeline-builder`
+  roles. The Codex plugin manifest has no subagent-role field, so plugin installation
+  alone cannot create those roles.
 
 After regenerating Claude agents, reinstall/update the plugin so the cache copy
 (`~/.claude/plugins/cache/agent-pipeline/.../agents/`) picks up the change, and

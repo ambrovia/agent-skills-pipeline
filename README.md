@@ -49,7 +49,7 @@ Codex subagent roles (`planner`, `reviewer`, `builder`) are not registered from 
 /path/to/agent-skills-pipeline/scripts/install-codex.sh /path/to/project
 ```
 
-That copies the generated TOML files into `<project>/.codex/agents/` and writes the required `[agents.*]` entries into `<project>/.codex/config.toml`.
+That copies the generated TOML files into `<project>/.codex/agents/` and writes namespaced `[agents.pipeline-*]` entries into `<project>/.codex/config.toml`, avoiding collisions with project-local `builder`, `reviewer`, or `planner` roles.
 
 Add this repository as a Codex marketplace source:
 
