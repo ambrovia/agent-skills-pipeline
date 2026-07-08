@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pipeline"
+  short_description: "Run work through planner, reviewer, and builder personas"
+  default_prompt: "Run this work package through the pipeline."

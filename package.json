@@ -1,6 +1,6 @@
 {
   "name": "agent-skills-pipeline",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Structured, multi-agent development pipeline for AI coding tools, with an opencode plugin entrypoint.",
   "type": "module",
   "main": "./.opencode/plugins/pipeline.js",
@@ -8,20 +8,25 @@
     ".": "./.opencode/plugins/pipeline.js"
   },
   "files": [
+    ".codex/",
+    ".codex-plugin/",
     ".opencode/plugins/pipeline.js",
     ".opencode/agents/",
+    "agents/",
     "skills/",
     "!skills/**/node_modules/**",
     "!skills/**/.annotations/**",
     "!skills/**/.vite/**",
     "hooks/",
+    "scripts/install-codex.sh",
     "scripts/install-opencode.sh",
     "pipeline.config.example.yml",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js"
+    "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
+    "check:codex-installer": "bash -n scripts/install-codex.sh"
   },
   "keywords": [
     "opencode",

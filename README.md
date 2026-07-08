@@ -24,7 +24,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 ## What's in here
 
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
-- **[`agents/`](agents/)** — `planner` / `reviewer` / `builder` persona subagents.
+- **[`agents/`](agents/)** — `planner` / `reviewer` / `builder` persona subagents, plus Codex plugin agent metadata.
 - **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Both are wired for Claude, Cursor, Gemini, Codex, and Copilot via `.cursor/`, `.codex/`, `.gemini/`, `.github/`. The edit-streak skips subagent edits on Claude (which exposes that distinction); on the others it's best-effort.
 - **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
@@ -41,7 +41,15 @@ Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `
 
 ### Codex — plugin
 
-This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills and the bundled lifecycle hooks in `hooks/hooks.json`.
+This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills, plugin-level agent metadata (`agents/openai.yaml`), and the bundled lifecycle hooks in `hooks/hooks.json`.
+
+Codex subagent roles (`planner`, `reviewer`, `builder`) are not registered from the plugin manifest. Install them into a project explicitly:
+
+```bash
+/path/to/agent-skills-pipeline/scripts/install-codex.sh /path/to/project
+```
+
+That copies the generated TOML files into `<project>/.codex/agents/` and writes the required `[agents.*]` entries into `<project>/.codex/config.toml`.
 
 Add this repository as a Codex marketplace source:
 
