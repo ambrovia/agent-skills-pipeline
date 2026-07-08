@@ -2,7 +2,7 @@
 name: refine
 description: "Clarify a work package's goal before design and architecture: the user value it delivers, the impact it should have, what success looks like, and what's out of scope; then draft the user/dev guide that tells that story. Pin any new domain noun it introduces as a later step. Run as the first pre-build act on any work package whose goal isn't yet sharp."
 phase: 1
-persona: planner
+persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---

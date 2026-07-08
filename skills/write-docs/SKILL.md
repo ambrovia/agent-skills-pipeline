@@ -2,7 +2,7 @@
 name: write-docs
 description: "Write or review user-facing documentation as a reading funnel — capture attention in seconds, deliver insight progressively, convert scanners into users. Use when authoring or reviewing docs, guides, product pages, or feature docs. Backed by eye-tracking, engagement, and A/B research."
 phase: 3
-persona: builder
+persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
@@ -22,7 +22,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 ## When this runs
 
 - A work package's acceptance criteria include user-facing docs or copy.
-- A reviewer is scoring documentation deliverables before ship.
+- A pipeline-reviewer is scoring documentation deliverables before ship.
 - An existing doc set is being audited and revised.
 
 ## The Reading Funnel
@@ -117,7 +117,7 @@ Before describing any feature, component, or interaction: search `{{paths.source
 4. Apply P1-P15 as you draft. Check sentence length as you go (count words in any sentence that feels long).
 5. After drafting, self-score against the rubric. Any dimension below 3 needs revision before submission.
 
-### As a reviewer
+### As a pipeline-reviewer
 
 1. Score the document against all 10 rubric dimensions.
 2. For any dimension scoring below 3: provide a specific finding with the principle number, location, and fix.

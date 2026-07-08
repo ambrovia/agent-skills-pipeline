@@ -2,7 +2,7 @@
  * agent-pipeline — opencode plugin.
  *
  * Ports the "edit-streak" hook: after THRESHOLD code edits the orchestrator is
- * nudged to delegate to its builder/planner/reviewer team instead of doing the
+ * nudged to delegate to its pipeline-builder/pipeline-planner/pipeline-reviewer team instead of doing the
  * heavy lifting itself. The nudge is appended to the edit tool's result, which
  * opencode surfaces to the model on its next turn (verified against the
  * `@opencode-ai/plugin` `tool.execute.after` signature: `output.output` is the
@@ -17,7 +17,7 @@
  * Caveat (matches the Cursor/Gemini/Codex/Copilot ports): opencode does not
  * expose an orchestrator/subagent distinction at the tool layer, so — unlike
  * Claude, which skips edits made inside a subagent — this can't tell whether an
- * edit came from the orchestrator or from the builder. The nudge is best-effort
+ * edit came from the orchestrator or from the pipeline-builder. The nudge is best-effort
  * and may also fire inside a subagent.
  */
 
@@ -47,8 +47,8 @@ export const AgentPipeline = async () => {
           output.output +=
             `\n\n---\n[agent-pipeline] You've made ${THRESHOLD} code edits since the last ` +
             `reminder. You're the orchestrator — delegate to your team instead of doing the ` +
-            `heavy lifting yourself: the builder implements & ships, the planner plans & ` +
-            `structures, the reviewer reviews & critiques. Hand structured work to a subagent.`;
+            `heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & ` +
+            `structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent.`;
         }
       } catch {
         // A nudge must never break a tool call.

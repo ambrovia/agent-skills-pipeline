@@ -2,14 +2,14 @@
 name: architecture
 description: "Produce the technical plan for a work package — types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER /refine (when needed) and AFTER /design (when the work package has UI)."
 phase: 1
-persona: planner
+persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
 
 # Architecture — the technical plan for a work package
 
-**Why:** A clear plan prevents wasted implementation time. Without architectural planning, the builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The reviewer catches errors before they become expensive rework.
+**Why:** A clear plan prevents wasted implementation time. Without architectural planning, the pipeline-builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The pipeline-reviewer catches errors before they become expensive rework.
 
 **Fixed inputs (do NOT re-litigate):**
 - Requirements doc from `/refine` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
@@ -28,7 +28,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## Phase 0 — Interrogate the understanding
 
-Before producing acceptance criteria, walk the decision tree. Pick only the questions that are actually unsettled — the ones where the spec, the work-package file, or existing code don't give you a confident answer. Skip what's already pinned. For each remaining question, propose your recommended answer with the evidence you have, then ask the human (or the reviewer in autonomous mode) to confirm, override, or dig deeper. Issue all of these probes in one parallel batch — independent questions don't need separate round-trips.
+Before producing acceptance criteria, walk the decision tree. Pick only the questions that are actually unsettled — the ones where the spec, the work-package file, or existing code don't give you a confident answer. Skip what's already pinned. For each remaining question, propose your recommended answer with the evidence you have, then ask the human (or the pipeline-reviewer in autonomous mode) to confirm, override, or dig deeper. Issue all of these probes in one parallel batch — independent questions don't need separate round-trips.
 
 **Few, important questions.** Three sharp probes force a real decision; ten low-stakes ones are noise that get answered with shrugs while the load-bearing assumption stays silent. The bar to ask is: "will the answer change the plan?" If no, don't ask.
 
@@ -83,4 +83,4 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 ## Done when
 
 - A plan exists with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
-- The plan is saved to `.pipeline/plans/<id>.md` — the durable producer→consumer handoff that the builder and reviewer read. Write it there even when a warm planner session would otherwise carry it; downstream personas must not depend on that session existing.
+- The plan is saved to `.pipeline/plans/<id>.md` — the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read. Write it there even when a warm pipeline-planner session would otherwise carry it; downstream personas must not depend on that session existing.

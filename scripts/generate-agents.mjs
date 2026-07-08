@@ -47,7 +47,7 @@ function parseFrontmatter(src) {
 }
 
 // ---------------------------------------------------------------------------
-// Tool list builder
+// Tool list construction
 // ---------------------------------------------------------------------------
 
 function buildClaudeTools(meta) {
@@ -61,6 +61,10 @@ function buildClaudeTools(meta) {
 
 function modelFromCapability(capability) {
   return capability === 'high' ? 'opus' : 'sonnet';
+}
+
+function codexModelFromCapability(capability) {
+  return capability === 'high' ? 'gpt-5.5' : 'gpt-5.4-mini';
 }
 
 function yamlQuote(s) {
@@ -132,6 +136,7 @@ function generateCodex(meta, body) {
   const lines = [tomlMarker(meta.name)];
   lines.push(`name = "${meta.name}"`);
   lines.push(`description = "${meta.description.replace(/"/g, '\\"')}"`);
+  lines.push(`model = "${codexModelFromCapability(meta.capability)}"`);
   if (meta.capability === 'high') {
     lines.push('model_reasoning_effort = "high"');
   }

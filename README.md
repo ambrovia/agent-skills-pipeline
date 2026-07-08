@@ -13,19 +13,19 @@ Freeform "vibe coding" with an agent fails at scale: no separation between decid
 
 ```
 work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶ review ──▶ retro ──▶ ship
-                planner    reviewer      builder        reviewer    fresh     builder
+                pipeline-planner    pipeline-reviewer      pipeline-builder        pipeline-reviewer    fresh     pipeline-builder
 ```
 
 - **The agent that designs is not the agent that reviews it.** Producer/evaluator separation is enforced by persona.
-- **Planning is phase 1, never the finish line.** A plan isn't done until the builder makes it real and the reviewer signs off.
+- **Planning is phase 1, never the finish line.** A plan isn't done until the pipeline-builder makes it real and the pipeline-reviewer signs off.
 - **Gates are mechanical.** Your `verify` command must pass and the review verdict must be `DONE` before ship.
 - Phases that don't apply are skipped — a backend work package skips the design phases automatically.
 
 ## What's in here
 
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
-- **[`agents/`](agents/)** — `planner` / `reviewer` / `builder` persona subagents, plus Codex plugin agent metadata.
-- **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Both are wired for Claude, Cursor, Gemini, Codex, and Copilot via `.cursor/`, `.codex/`, `.gemini/`, `.github/`. The edit-streak skips subagent edits on Claude (which exposes that distinction); on the others it's best-effort.
+- **[`agents/`](agents/)** — `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents, plus Codex plugin agent metadata.
+- **[`hooks/`](hooks/)** — a session-start hook (surfaces the pipeline) and an edit-streak hook (nudges the orchestrator to delegate after 5 consecutive edits). Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent no-fail wrappers because Codex 0.142.5 rejects SessionStart/PostToolUse stdout for these lifecycle hooks. The edit-streak skips subagent edits on Claude (which exposes that distinction); on the others it's best-effort.
 - **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
 ## Install
@@ -41,15 +41,15 @@ Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `
 
 ### Codex — plugin
 
-This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills, plugin-level agent metadata (`agents/openai.yaml`), and the bundled lifecycle hooks in `hooks/hooks.json`.
+This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills, plugin-level agent metadata (`agents/openai.yaml`), and the bundled no-fail lifecycle hook wrappers in `hooks/hooks.json`.
 
-Codex subagent roles (`planner`, `reviewer`, `builder`) are not registered from the plugin manifest. Install them into a project explicitly:
+Codex subagent roles (`pipeline-planner`, `pipeline-reviewer`, `pipeline-builder`) are not registered from the plugin manifest. Install them into a project explicitly:
 
 ```bash
 /path/to/agent-skills-pipeline/scripts/install-codex.sh /path/to/project
 ```
 
-That copies the generated TOML files into `<project>/.codex/agents/` and writes namespaced `[agents.pipeline-*]` entries into `<project>/.codex/config.toml`, avoiding collisions with project-local `builder`, `reviewer`, or `planner` roles.
+That copies the generated TOML files into `<project>/.codex/agents/` and writes namespaced `[agents.pipeline-*]` entries into `<project>/.codex/config.toml`, avoiding collisions with project-local `pipeline-builder`, `pipeline-reviewer`, or `pipeline-planner` roles.
 
 Add this repository as a Codex marketplace source:
 
@@ -92,7 +92,7 @@ It installs:
 | Piece | Goes to | Why |
 |---|---|---|
 | Skills | `.opencode/skills/` | opencode reads project-level skills from its config directory |
-| Agents | `.opencode/agents/` | opencode-format `planner` / `reviewer` / `builder` — available as `@planner`, etc. |
+| Agents | `.opencode/agents/` | opencode-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` — available as `@pipeline-planner`, etc. |
 | Edit-streak hook | `.opencode/plugins/pipeline.js` | nudges the orchestrator to delegate after 5 edits, via `tool.execute.after` |
 | Session-start guidance | `AGENTS.md` (managed block) | opencode's rules file — the equivalent of the session-start hook |
 

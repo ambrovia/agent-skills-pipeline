@@ -9,7 +9,7 @@
 #
 #   skills  → .opencode/skills/    (opencode's own skill dir — self-contained,
 #                                    no dependency on .claude/ or shared .agents/)
-#   agents  → .opencode/agents/    (opencode-format planner / reviewer / builder)
+#   agents  → .opencode/agents/    (opencode-format pipeline-planner / pipeline-reviewer / pipeline-builder)
 #   plugin  → .opencode/plugins/   (the edit-streak nudge)
 #   rules   → AGENTS.md            (session-start "pipeline is active" guidance)
 #
@@ -54,7 +54,7 @@ mkdir -p "$SKILLS_DIR"
 cp -R "$SRC/skills/." "$SKILLS_DIR/"
 echo "  ✓ skills   → $SKILLS_DIR"
 
-# 2. Agents — opencode-format planner / reviewer / builder.
+# 2. Agents — opencode-format pipeline-planner / pipeline-reviewer / pipeline-builder.
 mkdir -p "$AGENTS_DIR"
 cp "$SRC/.opencode/agents/"*.md "$AGENTS_DIR/"
 echo "  ✓ agents   → $AGENTS_DIR"
@@ -79,8 +79,8 @@ agent-pipeline is active. Work in structured phases, not freeform.
 - Conceptual questions (what a thing IS or should be): use the concept skill, and
   resolve them interactively with the user — don't settle load-bearing meaning alone.
 - Structured work uses three dedicated agents; you are the orchestrator, delegate
-  work to your team: @planner (concept/design/architecture) plans & structures
-  details; @builder implements & ships and thus does the heavy lifting; @reviewer
+  work to your team: @pipeline-planner (concept/design/architecture) plans & structures
+  details; @pipeline-builder implements & ships and thus does the heavy lifting; @pipeline-reviewer
   critiques and reviews.
 $END
 EOF
@@ -99,7 +99,7 @@ cat <<EOF
 
 Done. Open the target project in opencode and restart it.
   • skills surface via the skill tool
-  • personas are available as @planner, @reviewer, @builder
+  • personas are available as @pipeline-planner, @pipeline-reviewer, @pipeline-builder
   • the edit-streak nudge loads from the plugin automatically
 
 To pin models, set 'model: <provider>/<id>' in the agent files under $AGENTS_DIR.

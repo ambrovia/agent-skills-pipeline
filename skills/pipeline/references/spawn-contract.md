@@ -6,7 +6,7 @@ state — the WP spec, the plan artifact (`.pipeline/plans/<id>.md`), and progre
 works whether the persona is the same warm session or a cold re-spawn.
 
 **Where the host supports session reuse** (warm sessions, agent teams, message-an-existing-agent),
-give each persona a stable handle (`planner-<id>`, `reviewer-<id>`, `builder-<id>`) and reuse the
+give each persona a stable handle (`pipeline-planner-<id>`, `pipeline-reviewer-<id>`, `pipeline-builder-<id>`) and reuse the
 live session for follow-ups to save context/cache-creation cost. **Where it doesn't**, re-spawn
 each phase and let the persona read its inputs from `.pipeline/`. Never gate a phase on reuse.
 
@@ -14,9 +14,9 @@ Update `currentStep` in `.pipeline/progress/<id>.json` before each persona dispa
 
 ---
 
-## Phase 1 — planner (production)
+## Phase 1 — pipeline-planner (production)
 
-Spawn the **planner** (`{{models.design}}`).
+Spawn the **pipeline-planner** (`{{models.design}}`).
 
 - Run `design`: classify routine vs. novel, generate variants. **Skip if no UI surface or
   `designSystem` is null.** Routine UI (existing component family, known layout) gets 1 variant
@@ -24,12 +24,12 @@ Spawn the **planner** (`{{models.design}}`).
   primitives are always novel.
 - Run `architecture`: interrogate the spec, draft the technical plan.
 
-Keep the planner warm for Phase 2's critique fixes if the host supports it; otherwise it re-enters
+Keep the pipeline-planner warm for Phase 2's critique fixes if the host supports it; otherwise it re-enters
 Phase 2 by reading the WP spec and the current plan draft from `.pipeline/plans/<id>.md`.
 
-## Phase 2 — reviewer + planner (critique loop)
+## Phase 2 — pipeline-reviewer + pipeline-planner (critique loop)
 
-Spawn the **reviewer** (`{{models.review}}`) — a *different* agent reading the planner's output
+Spawn the **pipeline-reviewer** (`{{models.review}}`) — a *different* agent reading the pipeline-planner's output
 cold. This is true producer/evaluator separation, not a mode switch on one agent.
 
 - Run `design-critique` (score variants against the rubric). **Skip if no UI surface / no design
@@ -38,22 +38,22 @@ cold. This is true producer/evaluator separation, not a mode switch on one agent
 
 If the critique has CRITICAL or WARNING findings:
 
-1. Send the findings to the **planner**, who revises the plan/design to address each one.
-2. Send the revised plan back to the **reviewer** to re-critique.
+1. Send the findings to the **pipeline-planner**, who revises the plan/design to address each one.
+2. Send the revised plan back to the **pipeline-reviewer** to re-critique.
 3. Repeat until the score clears the bar **or 3 rounds are reached**.
 
-The planner keeps `.pipeline/plans/<id>.md` current through the critique loop; when the critique
+The pipeline-planner keeps `.pipeline/plans/<id>.md` current through the critique loop; when the critique
 clears it holds the approved plan (concept + design spec + architecture + acceptance criteria). The
-builder receives a single clean, approved plan — not a plan plus a separate critique doc. Keep the
-reviewer warm for Phase 4 if the host supports it; otherwise it re-reviews cold against
+pipeline-builder receives a single clean, approved plan — not a plan plus a separate critique doc. Keep the
+pipeline-reviewer warm for Phase 4 if the host supports it; otherwise it re-reviews cold against
 `.pipeline/plans/<id>.md`.
 
-## Phase 3 — builder (TDD)
+## Phase 3 — pipeline-builder (TDD)
 
 Before coding, **sync the base**: pull the latest mainline and merge it in, resolving conflicts
 now rather than letting a stale base accumulate drift.
 
-Spawn the **builder** (`{{models.build}}`).
+Spawn the **pipeline-builder** (`{{models.build}}`).
 
 - Run `write-tests`: read `.pipeline/plans/<id>.md`, write failing tests for **all** acceptance criteria. Do
   **not** write implementation code here — requirement definition must not be contaminated by
@@ -62,8 +62,8 @@ Spawn the **builder** (`{{models.build}}`).
   implementation changes behavior documented under `{{paths.docs}}`, update those doc sections in
   the same change (doc sync). Run `{{verify}}` — must pass before handing off. (For tight inner
   loops, a fast typecheck if the project defines one; the full `{{verify}}` is the gate.) If the
-  builder hits a plan-vs-reality conflict, it raises a **BLOCKER** rather than redesigning in flight.
-- **Doc check** (after `write-code`): the builder answers "Does this WP change what the user sees,
+  pipeline-builder hits a plan-vs-reality conflict, it raises a **BLOCKER** rather than redesigning in flight.
+- **Doc check** (after `write-code`): the pipeline-builder answers "Does this WP change what the user sees,
   reads, or does?" If **YES** (new feature, changed behavior, new primitive, new API surface),
   apply `write-docs` to write/update user-facing docs under `{{paths.docs}}`. If **NO**, record a
   one-line justification (e.g. `docs: no user-facing changes (<reason>)`). Skipping without
@@ -71,18 +71,18 @@ Spawn the **builder** (`{{models.build}}`).
 
 ## Phase 4 — review
 
-The reviewer reads `.pipeline/plans/<id>.md` (approved design + architecture) and the live diff,
+The pipeline-reviewer reads `.pipeline/plans/<id>.md` (approved design + architecture) and the live diff,
 and checks one against the other. Reuse its warm Phase 2 session if the host supports it —
-otherwise a fresh reviewer reconstitutes from the plan artifact; same review either way.
+otherwise a fresh pipeline-reviewer reconstitutes from the plan artifact; same review either way.
 
 - Run `review`: positive lenses (architecture, design, security) + negative lenses (adversarial,
   simplification, slop) + AC-completeness audit. The design lens is skipped silently if no UI files.
-- If docs were written/updated in Phase 3, the reviewer also scores them against the `write-docs`
-  rubric. If the doc check was NO, the reviewer verifies the skip justification is reasonable and
+- If docs were written/updated in Phase 3, the pipeline-reviewer also scores them against the `write-docs`
+  rubric. If the doc check was NO, the pipeline-reviewer verifies the skip justification is reasonable and
   flags user-facing changes that lack docs.
 - Emits **DONE | NOT DONE** with an AC table + findings.
 
-If **NOT DONE**: send the findings to the **builder**, who applies them, re-runs `{{verify}}`, and
+If **NOT DONE**: send the findings to the **pipeline-builder**, who applies them, re-runs `{{verify}}`, and
 hands back for re-review. **Max 3 attempts.** If **DONE**: proceed to Phase 5.
 
 ## Phase 5 — retro
@@ -96,6 +96,6 @@ before ship** so the retro output is in the verified tree.
 Before dispatching ship, update `.pipeline/progress/<id>.json`: `status: "done"`,
 `currentStep: "shipped"`, `completedAt` = now. This must land before the ship push.
 
-Send `ship <id>` to the **builder**. The `ship` skill: syncs the mainline, runs `{{verify}}`,
-opens/readies the PR via `{{vcs}}`, and **waits for CI green**. If CI is red, the builder fixes
+Send `ship <id>` to the **pipeline-builder**. The `ship` skill: syncs the mainline, runs `{{verify}}`,
+opens/readies the PR via `{{vcs}}`, and **waits for CI green**. If CI is red, the pipeline-builder fixes
 and re-ships (**max 3 attempts**). Ship is not done until CI is green.

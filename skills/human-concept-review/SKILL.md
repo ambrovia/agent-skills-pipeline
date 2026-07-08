@@ -1,9 +1,9 @@
 ---
 name: human-concept-review
-description: "Stakes-gated pipeline phase after the critiques: the founder reviews the user-facing parts of a work package — the user/dev-guide draft (from /refine) AND the design. They open the chosen variant rendered live in the component viewer, annotate elements in the browser, and read the guide draft; the planner agent revises the actual component code and the draft until the founder approves. Runs when the design is novel OR the user/dev guides get a significant rewrite; otherwise skipped."
+description: "Stakes-gated pipeline phase after the critiques: the founder reviews the user-facing parts of a work package — the user/dev-guide draft (from /refine) AND the design. They open the chosen variant rendered live in the component viewer, annotate elements in the browser, and read the guide draft; the pipeline-planner agent revises the actual component code and the draft until the founder approves. Runs when the design is novel OR the user/dev guides get a significant rewrite; otherwise skipped."
 argument-hint: "[workpackage-id]"
 phase: 2
-persona: planner
+persona: pipeline-planner
 applies-to: [frontend, application]
 user-invocable: true
 ---
@@ -12,7 +12,7 @@ user-invocable: true
 
 The human-vs-agent gate on the **user-facing parts** of a work package — the parts a human actually experiences: the **user/dev-guide draft** (the requirement story `/refine` wrote) and the **design**. It is the human counterpart to the agent-vs-agent critiques (`/design-critique`, `/architecture-critique`). When a change is high-stakes, the founder reviews both:
 
-- **Design** — they open the chosen variant rendered **live in the component viewer** and mark it up element-by-element — pointing at a control and saying "move this here" or "tighten this spacing" — and the planner agent revises the **actual component code the build will ship**, looping until the founder approves. Feedback is spatial and lands in the code that ships, not prose on a screenshot of a throwaway mockup.
+- **Design** — they open the chosen variant rendered **live in the component viewer** and mark it up element-by-element — pointing at a control and saying "move this here" or "tighten this spacing" — and the pipeline-planner agent revises the **actual component code the build will ship**, looping until the founder approves. Feedback is spatial and lands in the code that ships, not prose on a screenshot of a throwaway mockup.
 - **User/dev guides** — they read the guide draft in `requirements.md` (the backwards-planned story of what's being built) and confirm it describes the right thing for the right reader. The agent revises the draft to address the feedback.
 
 This phase exists because once component code is the sole design source of truth and variants are real stories rendered in isolation, the founder can annotate the running render directly — every note tied to a real element — with the agent revising the component the app will actually ship. There is no mockup→code rebuild and no parity drift. The guide draft rides the same review because the docs ARE how a user understands what shipped.
@@ -31,7 +31,7 @@ The trigger reads two greppable signals the upstream acts already emit: the `DES
 
 ## What this phase is NOT
 
-- **Not the critiques.** `/design-critique` / `/architecture-critique` are agent-vs-agent rubric scoring (reviewer persona, automated). Human-concept-review is human-vs-agent review (founder, interactive, only when high-stakes).
+- **Not the critiques.** `/design-critique` / `/architecture-critique` are agent-vs-agent rubric scoring (pipeline-reviewer persona, automated). Human-concept-review is human-vs-agent review (founder, interactive, only when high-stakes).
 - **Not `/visual-polish`.** Polish runs *after* implementation for fidelity. This runs *before* implementation to settle the design shape + the requirement story.
 - **Not a new classifier.** It reuses the `DESIGN-CLASS:` and `DOC-CLASS:` lines verbatim.
 - **Not presence-gated.** See the gate table above.

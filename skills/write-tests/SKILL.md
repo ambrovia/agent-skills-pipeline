@@ -1,8 +1,8 @@
 ---
 name: write-tests
-description: "Write failing tests for every acceptance criterion of a work package BEFORE writing implementation (TDD red phase). Use in phase 3 when a builder picks up a work package and must encode the requirement as executable proof. Trigger: a work package is planned and ready to build."
+description: "Write failing tests for every acceptance criterion of a work package BEFORE writing implementation (TDD red phase). Use in phase 3 when a pipeline-builder picks up a work package and must encode the requirement as executable proof. Trigger: a work package is planned and ready to build."
 phase: 3
-persona: builder
+persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
@@ -24,7 +24,7 @@ kinds, layers, fixtures, and mock policy:
 
 ## When this runs
 
-Phase 3 (build), the first thing a builder does on a work package — before any
+Phase 3 (build), the first thing a pipeline-builder does on a work package — before any
 implementation code. The work package must already be planned with explicit
 acceptance criteria. Read the approved plan (`.pipeline/plans/<id>.md`) for the
 concrete acceptance criteria, with the outcome-level work-package entry under

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'tool=codex; roots=(); if [ -n \"${CODEX_PLUGIN_ROOT:-}\" ]; then roots+=(\"$CODEX_PLUGIN_ROOT\"); fi; if [ -n \"${CLAUDE_PLUGIN_ROOT:-}\" ]; then tool=claude; roots+=(\"$CLAUDE_PLUGIN_ROOT\"); fi; for root in \"$HOME\"/.codex/plugins/cache/agent-pipeline/pipeline/* \"$HOME\"/.codex/plugins/cache/agent-pipeline/*/pipeline/* \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; do roots+=(\"$root\"); done; for root in \"${roots[@]}\"; do script=\"$root/hooks/session-start.sh\"; if [ -f \"$script\" ]; then exec bash \"$script\" \"$tool\"; fi; done; printf \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"SessionStart\\\",\\\"additionalContext\\\":\\\"agent-pipeline hook could not find hooks/session-start.sh. Reinstall the pipeline plugin or copy hooks/ into this repo.\\\"}}\\n\"'"
+            "command": "bash -lc 'for root in \"${CODEX_PLUGIN_ROOT:-}\" \"$HOME\"/.codex/plugins/cache/agent-pipeline/pipeline/* \"$HOME\"/.codex/plugins/cache/agent-pipeline/*/pipeline/* \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; do [ -n \"$root\" ] || continue; script=\"$root/hooks/session-start.sh\"; if [ -f \"$script\" ]; then exec bash \"$script\" codex; fi; done; exit 0'"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'tool=codex; roots=(); if [ -n \"${CODEX_PLUGIN_ROOT:-}\" ]; then roots+=(\"$CODEX_PLUGIN_ROOT\"); fi; if [ -n \"${CLAUDE_PLUGIN_ROOT:-}\" ]; then tool=claude; roots+=(\"$CLAUDE_PLUGIN_ROOT\"); fi; for root in \"$HOME\"/.codex/plugins/cache/agent-pipeline/pipeline/* \"$HOME\"/.codex/plugins/cache/agent-pipeline/*/pipeline/* \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; do roots+=(\"$root\"); done; for root in \"${roots[@]}\"; do script=\"$root/hooks/edit-streak.sh\"; if [ -f \"$script\" ]; then exec bash \"$script\" \"$tool\"; fi; done'"
+            "command": "bash -lc 'for root in \"${CODEX_PLUGIN_ROOT:-}\" \"$HOME\"/.codex/plugins/cache/agent-pipeline/pipeline/* \"$HOME\"/.codex/plugins/cache/agent-pipeline/*/pipeline/* \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; do [ -n \"$root\" ] || continue; script=\"$root/hooks/edit-streak.sh\"; if [ -f \"$script\" ]; then exec bash \"$script\" codex; fi; done; exit 0'"
           }
         ]
       }

@@ -5,7 +5,7 @@
 # The per-tool config matcher restricts this to edit tools; the script also
 # self-guards (only counts edit-like tool names) so a loose matcher can't make it
 # count reads. Subagent edits are skipped where the tool exposes them (Claude:
-# agent_id) — the builder doing edits is its job. Other tools don't surface the
+# agent_id) — the pipeline-builder doing edits is its job. Other tools don't surface the
 # orchestrator/subagent distinction at the tool level, so there the nudge is
 # best-effort and may also fire inside a subagent.
 THRESHOLD=5
@@ -35,12 +35,12 @@ if [ "$n" -lt "$THRESHOLD" ]; then
 fi
 echo 0 > "$file" 2>/dev/null
 
-msg="You've made $THRESHOLD direct code edits in a row. You're the orchestrator — delegate to your team instead of doing the heavy lifting yourself: the builder implements & ships, the planner plans & structures, the reviewer reviews & critiques. Hand structured work to a subagent."
+msg="You've made $THRESHOLD direct code edits in a row. You're the orchestrator — delegate to your team instead of doing the heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent."
 
 case "$fmt" in
   cursor)  jq -cn --arg m "$msg" '{additional_context:$m}' ;;
   gemini)  jq -cn --arg m "$msg" '{hookSpecificOutput:{additionalContext:$m}}' ;;
-  codex)   jq -cn --arg m "$msg" '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:$m}}' ;;
+  codex)   exit 0 ;;
   copilot) jq -cn --arg m "$msg" '{additionalContext:$m}' ;;
   *)       jq -cn --arg m "$msg" '{hookSpecificOutput:{hookEventName:"PostToolUse",additionalContext:$m}}' ;;  # claude
 esac

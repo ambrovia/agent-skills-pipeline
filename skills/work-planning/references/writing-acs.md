@@ -24,13 +24,13 @@ An AC describes the **observable state** a user, agent, or system is in after th
 | "Add `valid_from` timestamp and `valid_until` nullable timestamp columns to the records table" | Prescribes schema — that's architecture work | "Records track when they became valid and when they were superseded, queryable by date" |
 | "The detail sheet reuses the existing sheet component pattern" | Prescribes component reuse — that's design/architecture | "Clicking an item shows its history and configuration without leaving the current page" |
 | "Uses the existing rich-text editor component" | Names a specific component — that's architecture | "The authoring flow provides rich text editing for item bodies" |
-| "Keyboard shortcuts: v to validate, e to edit, r to reject" | Prescribes the interaction design | "A reviewer can process the queue rapidly without reaching for the mouse" |
+| "Keyboard shortcuts: v to validate, e to edit, r to reject" | Prescribes the interaction design | "A pipeline-reviewer can process the queue rapidly without reaching for the mouse" |
 
 ## The specificity gradient
 
 ACs should be **specific about outcomes, vague about solutions.** The test: if two different planners would produce the same solution from your AC, it's too prescriptive. If two different reviewers can't agree on whether it passes, it's too vague.
 
-- **Too vague:** "Item management works well" — no reviewer can audit this
+- **Too vague:** "Item management works well" — no pipeline-reviewer can audit this
 - **Too prescriptive:** "List page has 3 tabs: Curated, Triage, Review, with server-side pagination and quick-search" — this is a design spec, not an AC
 - **Right level:** "A human can find, review, and validate items efficiently, with the most important items surfaced first" — testable (time-on-task, can they find items?), but leaves room for design
 

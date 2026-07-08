@@ -1,21 +1,21 @@
 ---
 name: architecture-critique
-description: "Score a technical plan against the 9-dimension architectural rubric BEFORE any code is written. Use in Phase 2 after the planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — reviewer persona scores the planner's plan; distinct from reviewing implemented code."
+description: "Score a technical plan against the 9-dimension architectural rubric BEFORE any code is written. Use in Phase 2 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
 phase: 2
-persona: reviewer
+persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
 
 # Architecture Critique — score the plan, not the code
 
-**Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
+**Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the pipeline-reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
 
-This is the **evaluation** counterpart to plan production (the `architecture` act). The reviewer persona scores what the planner produced. Architecture drafts the plan; this skill scores it. The approved plan lands in `.pipeline/plans/<id>.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The approved plan lands in `.pipeline/plans/<id>.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
-This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same reviewer persona runs both, against the approved plan in `.pipeline/plans/<id>.md` (warm context if the host kept the session, read from the artifact if not).
+This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the approved plan in `.pipeline/plans/<id>.md` (warm context if the host kept the session, read from the artifact if not).
 
-The reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
+The pipeline-reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
 ## Project rules
 
@@ -25,7 +25,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## When this runs
 
-- **In the pipeline:** Phase 2, after the planner completes the `architecture` act. Reviewer session.
+- **In the pipeline:** Phase 2, after the pipeline-planner completes the `architecture` act. Reviewer session.
 - **On explicit invocation for a work package:** full audit of the plan at `.pipeline/progress/<id>/architecture.md` (or wherever the project's architecture act writes the plan).
 - **Skip condition:** this skill always applies to a work package that has a technical plan. The design-system-specific checks inside it are skipped automatically when no design system is configured (`pipeline.config` `designSystem: null`).
 
@@ -52,7 +52,7 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
    missing security/abuse cases, missing protected-test list, route-checklist gaps)
 3. Score it (0-10) against the 9 dimensions below
 4. List specific findings (CRITICAL / WARNING / SUGGESTION) with plan-section references
-5. The planner fixes the highest-priority issue IN THE PLAN
+5. The pipeline-planner fixes the highest-priority issue IN THE PLAN
 6. Re-score
 7. Repeat until score >= 7 or 3 rounds reached
 ```
@@ -141,7 +141,7 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 
 | Score | Meaning | Action |
 |-------|---------|--------|
-| 9-10 | Exceptional | Ship the plan. The planner produced a plan a senior engineer would defend. |
+| 9-10 | Exceptional | Ship the plan. The pipeline-planner produced a plan a senior engineer would defend. |
 | 7-8 | Good | Minor follow-ups. Acceptable to proceed to test authoring. |
 | 5-6 | Mediocre | Needs work on 2-3 dimensions before tests. |
 | 3-4 | Poor | Structural issues. Plan is missing core contracts or has scope leaks. Restart the architecture act. |
@@ -164,7 +164,7 @@ ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD
 - [plan §<section>] Description of issue → specific fix to apply
 
 ### What's Working Well
-- 1-2 things the plan does right (reinforces good patterns; helps the next planner)
+- 1-2 things the plan does right (reinforces good patterns; helps the next pipeline-planner)
 ```
 
 The retro reads `rounds=<n>` to track plan-quality drift over time. Write the score and rounds to `.pipeline/progress/<id>.json` so downstream phases and the retro can read them.
@@ -186,7 +186,7 @@ When the plan ships these gaps, this skill blocks; when the plan addresses them,
 - **"Looks complete" scoring.** Score by reading every plan section against its rubric dimension. Don't skim; verify field-by-field.
 - **Critiquing in the abstract.** Every finding has a plan-section reference and a concrete fix.
 - **Letting design-it-twice be theatre.** If the plan lists two alternatives but the second is straw-manned, that's worse than not having two — flag it.
-- **Re-doing the planner's job.** This skill scores; it does not rewrite the plan. The planner applies the fixes; this skill rescores.
+- **Re-doing the pipeline-planner's job.** This skill scores; it does not rewrite the plan. The pipeline-planner applies the fixes; this skill rescores.
 
 ## Done when
 

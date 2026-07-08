@@ -4,20 +4,20 @@ Read this before you talk yourself out of a phase.
 
 ## Adversarial principle: author / critic boundaries are enforced by persona separation
 
-(a) The **planner** produces (`design`, `architecture`); the **reviewer** evaluates
+(a) The **pipeline-planner** produces (`design`, `architecture`); the **pipeline-reviewer** evaluates
 (`design-critique`, `architecture-critique`) — *different agents*, true independence. (b) The
-reviewer later reviews the code in Phase 4 against the approved plan in `.pipeline/plans/<id>.md`
+pipeline-reviewer later reviews the code in Phase 4 against the approved plan in `.pipeline/plans/<id>.md`
 (warm on those decisions if its Phase 2 session survived, reading them from the artifact if not),
 applying both positive lenses (does it respect the contracts?) and negative lenses (what would
-break it?). The reviewer's AC-completeness audit enforces the one boundary that must never live
-inside a producer session: it reads a *live* change against the spec, not the builder's notes
+break it?). The pipeline-reviewer's AC-completeness audit enforces the one boundary that must never live
+inside a producer session: it reads a *live* change against the spec, not the pipeline-builder's notes
 about the change.
 
-## Why the reviewer does the critique (not the planner)
+## Why the pipeline-reviewer does the critique (not the pipeline-planner)
 
-The agent that created a design cannot objectively score it. Moving critique to the reviewer gives
+The agent that created a design cannot objectively score it. Moving critique to the pipeline-reviewer gives
 true producer/evaluator separation — different agents, not a "cognitive mode switch" on one agent.
-Bonus: if the host keeps the reviewer's Phase 2 session warm, those design decisions and
+Bonus: if the host keeps the pipeline-reviewer's Phase 2 session warm, those design decisions and
 architecture contracts carry into Phase 4 for free; if not, it reads them from
 `.pipeline/plans/<id>.md`. Either way it checks code against the written contract.
 
@@ -55,7 +55,7 @@ One variant for routine work keeps cost down without losing the documentation va
 - **"The plan is done, I can stop"** → planning is Phase 1 of 6. You haven't built anything yet.
 - **"This story is simple, skip the review"** → simple stories have the highest skip rate *and* the
   highest regression rate.
-- **"The reviewer is redundant, the tests passed"** → tests prove behavior; the reviewer proves the
+- **"The pipeline-reviewer is redundant, the tests passed"** → tests prove behavior; the pipeline-reviewer proves the
   *right* thing was built against the spec, in *fresh context*. The boundary is the value.
 - **"The retro is navel-gazing"** → without the cost signals it emits, the analysis/compounding step
   can't prove a change actually saved tokens, and can't propose the next round of improvements.

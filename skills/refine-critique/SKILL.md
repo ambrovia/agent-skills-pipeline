@@ -1,15 +1,15 @@
 ---
 name: refine-critique
-description: "Score a work package's refinement — the sharpened goal + guide draft from /refine — against a rubric BEFORE design and architecture. Reviewer persona: a fresh evaluator, not the planner who wrote it. Run in pipeline Phase 2 when /refine produced a requirement, or on demand to audit a requirements doc."
+description: "Score a work package's refinement — the sharpened goal + guide draft from /refine — against a rubric BEFORE design and architecture. Reviewer persona: a fresh evaluator, not the pipeline-planner who wrote it. Run in pipeline Phase 2 when /refine produced a requirement, or on demand to audit a requirements doc."
 phase: 2
-persona: reviewer
+persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
 
 # Refine Critique — score the goal before anything is built
 
-The evaluation counterpart to `/refine`. The planner who sharpened the goal is the least able to see where it's still fuzzy, so a fresh reviewer scores it before design and architecture build on it. This is **not** `/architecture-critique` — that scores the plan; this scores the *goal and its guide draft*, upstream of any plan.
+The evaluation counterpart to `/refine`. The pipeline-planner who sharpened the goal is the least able to see where it's still fuzzy, so a fresh pipeline-reviewer scores it before design and architecture build on it. This is **not** `/architecture-critique` — that scores the plan; this scores the *goal and its guide draft*, upstream of any plan.
 
 ## When this runs
 
@@ -29,7 +29,7 @@ The evaluation counterpart to `/refine`. The planner who sharpened the goal is t
 1. Read the requirement; sanity-check its claims against the spec and {{paths.docs}}
 2. Score it (0-10) against the dimensions below
 3. List findings (CRITICAL / WARNING / SUGGESTION) with the section each refers to
-4. The planner fixes the highest-priority issue IN requirements.md
+4. The pipeline-planner fixes the highest-priority issue IN requirements.md
 5. Re-score
 6. Repeat until score >= 7 or 3 rounds reached
 ```

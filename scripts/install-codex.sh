@@ -13,9 +13,8 @@ AGENTS_DIR="$CODEX_DIR/agents"
 CONFIG_FILE="$CODEX_DIR/config.toml"
 mkdir -p "$AGENTS_DIR"
 
-for name in planner reviewer builder; do
-  sed "s/^name = \"$name\"$/name = \"pipeline-$name\"/" \
-    "$PLUGIN_ROOT/.codex/agents/$name.toml" > "$AGENTS_DIR/pipeline-$name.toml"
+for name in pipeline-planner pipeline-reviewer pipeline-builder; do
+  cp "$PLUGIN_ROOT/.codex/agents/$name.toml" "$AGENTS_DIR/$name.toml"
 done
 
 touch "$CONFIG_FILE"
@@ -25,15 +24,15 @@ END_MARKER="# END agent-skills-pipeline codex agents"
 BLOCK="$(cat <<'EOF'
 # BEGIN agent-skills-pipeline codex agents
 [agents.pipeline-planner]
-description = "Pipeline planner persona for concept, design, and architecture planning."
+description = "Pipeline planning persona for concept, design, and architecture planning."
 config_file = "./agents/pipeline-planner.toml"
 
 [agents.pipeline-reviewer]
-description = "Pipeline reviewer persona for critiques and read-only implementation review."
+description = "Pipeline review persona for critiques and read-only implementation review."
 config_file = "./agents/pipeline-reviewer.toml"
 
 [agents.pipeline-builder]
-description = "Pipeline builder persona for tests, implementation, fixes, and shipping."
+description = "Pipeline build persona for tests, implementation, fixes, and shipping."
 config_file = "./agents/pipeline-builder.toml"
 # END agent-skills-pipeline codex agents
 EOF

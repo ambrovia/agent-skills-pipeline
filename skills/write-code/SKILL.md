@@ -2,7 +2,7 @@
 name: write-code
 description: "Write the minimum code to make all failing tests pass (TDD green phase). Use when a work package has red tests in place and needs implementation against a clear target, before review. Triggers on a build/implement task for a planned work package."
 phase: 3
-persona: builder
+persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
@@ -32,7 +32,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 - Implementation in `{{paths.source}}` that turns the red tests green.
 - Updated docs in `{{paths.docs}}` when behavior you changed is documented there.
-- A clean `{{verify}}` run — the full gate passes before anything reaches a reviewer.
+- A clean `{{verify}}` run — the full gate passes before anything reaches a pipeline-reviewer.
 
 ## Steps
 
@@ -53,8 +53,8 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 4. **Verify before you ship.** Once all targeted tests are green, run the
    project's verify command, `{{verify}}`, to confirm the full gate passes
    (types, lint, tests). **Verify must pass before pushing.** No broken code
-   reaches reviewers — verification is the builder's responsibility, not the
-   reviewer's. (A fast typecheck mid-flight is fine if the project defines one,
+   reaches reviewers — verification is the pipeline-builder's responsibility, not the
+   pipeline-reviewer's. (A fast typecheck mid-flight is fine if the project defines one,
    but it does not replace the full gate.)
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
@@ -68,7 +68,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 7. **Doc sync.** If your implementation changes behavior documented in
    `{{paths.docs}}` (API shapes, state machines, UI layouts, lifecycles, data
    models, decision records), update the relevant doc section in the same commit.
-   Docs are part of the deliverable, not a follow-up task. The reviewer will flag
+   Docs are part of the deliverable, not a follow-up task. The pipeline-reviewer will flag
    stale docs as CRITICAL.
 
 8. **Open the change.** With the gate green, push and open a PR (or draft PR) via

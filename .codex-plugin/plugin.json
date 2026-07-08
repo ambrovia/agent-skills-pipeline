@@ -1,6 +1,6 @@
 {
   "name": "pipeline",
-  "description": "Structured, multi-agent development: work packages run through design → critique → build → review → retro → ship, with separated planner/reviewer/builder personas, quality gates, and a compounding feedback loop that turns repeated observations into process fixes.",
+  "description": "Structured, multi-agent development: work packages run through design → critique → build → review → retro → ship, with separated pipeline-planner/pipeline-reviewer/pipeline-builder personas, quality gates, and a compounding feedback loop that turns repeated observations into process fixes.",
   "version": "0.4.2",
   "author": {
     "name": "Ambrovia"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Pipeline",
     "shortDescription": "Run work packages through planning, critique, build, review, retro, and ship.",
-    "longDescription": "Pipeline packages a structured multi-agent software delivery workflow for Codex. It provides skills for work planning, refinement, design, architecture, TDD implementation, review, documentation, retro, and shipping, with explicit planner/reviewer/builder separation.",
+    "longDescription": "Pipeline packages a structured multi-agent software delivery workflow for Codex. It provides skills for work planning, refinement, design, architecture, TDD implementation, review, documentation, retro, and shipping, with explicit pipeline-planner/pipeline-reviewer/pipeline-builder separation.",
     "developerName": "Ambrovia",
     "category": "Productivity",
     "capabilities": [

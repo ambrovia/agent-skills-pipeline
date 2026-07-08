@@ -14,7 +14,7 @@ Loaded on demand by the `review` skill. Each section is the exhaustive checklist
 - **Naming** — do names honestly describe what things do?
 - **Component boundaries** — is responsibility correctly assigned across modules/packages?
 - **Spec contradictions** — if two docs disagree, flag it.
-- **Doc staleness** — if the implementation changes behaviour that a doc under `{{paths.docs}}` describes (API shape, state machine, UI layout, lifecycle, data model), flag the stale doc section as **CRITICAL**. The builder must update the doc in the same change. Docs are not "someone else's problem" — they are part of the deliverable.
+- **Doc staleness** — if the implementation changes behaviour that a doc under `{{paths.docs}}` describes (API shape, state machine, UI layout, lifecycle, data model), flag the stale doc section as **CRITICAL**. The pipeline-builder must update the doc in the same change. Docs are not "someone else's problem" — they are part of the deliverable.
 
 ---
 

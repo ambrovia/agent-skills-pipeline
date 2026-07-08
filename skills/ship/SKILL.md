@@ -2,7 +2,7 @@
 name: ship
 description: "Verify, commit, push, and wait for CI green — the single gate between code and a merge-ready PR. Use to ship a completed work package: run the verify command, open/ready a PR via the project's VCS, and confirm CI is green. Stops at CI-green PR open; does not merge."
 phase: 6
-persona: builder
+persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[work-package-id or branch description]"
 user-invocable: true
@@ -34,7 +34,7 @@ to merge.
 
 ### 0. Code-review gate (MANDATORY — do not skip)
 
-Verify that code review is complete before shipping. Check that the reviewer
+Verify that code review is complete before shipping. Check that the pipeline-reviewer
 emitted "Verdict: DONE" for this work package (see
 `.pipeline/progress/<id>.json`). If no review verdict exists, stop — do not
 proceed to verify/ship. Shipping without code review is a process violation, not
