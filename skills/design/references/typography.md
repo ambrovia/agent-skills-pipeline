@@ -3,7 +3,7 @@
 > Canonical research, the project's recommendations table, and exact token values
 > live in the design system docs under `{{designSystem.path}}` and
 > `{{designSystem.tokens}}`. The scale below is a sensible default — map it to
-> whatever your design system defines. Common planner-call additions: body
+> whatever your design system defines. Common pipeline-planner-call additions: body
 > line-height 1.5 (default) / 1.55 (comfortable); uppercase labels carry +0.02em
 > tracking; mobile inputs ≥ 16px.
 

@@ -102,7 +102,7 @@ Append the spec at the bottom of the relevant `<track>.md`, with **exactly** the
 
 **Type.** A one-word label for the kind of work (e.g. frontend, backend, infra, library) — informational only, so the reader knows what to expect. It does not gate phases: the pipeline decides whether `design`/`design-critique` run from whether the work has a UI surface and whether `pipeline.config designSystem` is set.
 
-**What exists today.** One paragraph summarizing the relevant infrastructure and capabilities that already exist in the codebase. Name the specific tables, services, routes, or UI pages that this work package builds on. If this is greenfield, say "Nothing — this is a new capability." This paragraph prevents the architecture pass from rebuilding what already works and helps the builder understand what to extend vs create. Required for M and L work packages; optional for S.
+**What exists today.** One paragraph summarizing the relevant infrastructure and capabilities that already exist in the codebase. Name the specific tables, services, routes, or UI pages that this work package builds on. If this is greenfield, say "Nothing — this is a new capability." This paragraph prevents the architecture pass from rebuilding what already works and helps the pipeline-builder understand what to extend vs create. Required for M and L work packages; optional for S.
 
 **What's genuinely missing.** 2-3 sentences identifying the specific gap between what exists and what the work package delivers. This is the delta — the reason this work package needs to exist. If you cannot articulate the delta clearly, the work package may not be needed.
 
@@ -122,7 +122,7 @@ Append the spec at the bottom of the relevant `<track>.md`, with **exactly** the
 
 **Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package needs refinement (goal unclear or introduces/reshapes a noun), say so and name the noun so the pipeline runs `/refine` first.
 
-**Contracts / constraints.** Bullet list of hard rules the implementation must honor (e.g. "no new on-disk file format dialect", "migration is forward-only", "no emojis", "back-compat preserved at the API level not the row level"). These are guarantees the reviewer will check, separate from AC.
+**Contracts / constraints.** Bullet list of hard rules the implementation must honor (e.g. "no new on-disk file format dialect", "migration is forward-only", "no emojis", "back-compat preserved at the API level not the row level"). These are guarantees the pipeline-reviewer will check, separate from AC.
 
 **Out of scope.** Bullet list of things a reader might assume are part of this work package but are not. Future improvements, related work packages, edge cases deliberately deferred.
 

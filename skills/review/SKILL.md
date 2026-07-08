@@ -1,8 +1,8 @@
 ---
 name: review
-description: "Read-only review of implemented code against its work-package spec: 3 positive lenses (architecture, design, security), 3 negative lenses (adversarial, simplification, slop), plus an acceptance-criteria completeness audit. Use in Phase 4 after the builder produces code, or on demand to review a work package or a set of changed files. Produces findings only — never edits code."
+description: "Read-only review of implemented code against its work-package spec: 3 positive lenses (architecture, design, security), 3 negative lenses (adversarial, simplification, slop), plus an acceptance-criteria completeness audit. Use in Phase 4 after the pipeline-builder produces code, or on demand to review a work package or a set of changed files. Produces findings only — never edits code."
 phase: 4
-persona: reviewer
+persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ Read-only review. Produce findings — do **NOT** make code changes.
 
 Six lenses plus an acceptance-criteria completeness audit, one session. Three positive lenses check that the code respects its contracts. Three negative lenses check what the contracts don't cover. The design lens is skipped silently if no UI files changed (and entirely if no design system is configured — `pipeline.config` `designSystem: null`).
 
-**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context reviewer catches contract violations the implementer rationalized away, gaps the builder didn't notice, and complexity the builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/plans/<id>.md` — warm from Phase 2 if the host kept the reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
+**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context pipeline-reviewer catches contract violations the implementer rationalized away, gaps the pipeline-builder didn't notice, and complexity the pipeline-builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/plans/<id>.md` — warm from Phase 2 if the host kept the pipeline-reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
 
 ## Project rules
 
@@ -29,7 +29,7 @@ Audit against every `pipeline.config rules` slot below as binding — a violatio
 
 ## When this runs
 
-- **In the pipeline:** Phase 4, after the builder completes the build act. Reviewer session.
+- **In the pipeline:** Phase 4, after the pipeline-builder completes the build act. Reviewer session.
 - **On explicit invocation:** review a work package by id, or a set of changed files.
 - **Skip conditions:** the design lens is skipped when no UI files changed; the whole design lens never fires when `designSystem: null`. The security lens always applies. All other lenses always apply.
 
@@ -59,7 +59,7 @@ Read every function body. Check every unsafe cast. Open every test file and veri
 
 Run each lens in turn. Each summary below is the trigger; the full checklist for every lens is in **`references/lenses.md`** — open it and work the relevant section rather than relying on these summaries.
 
-1. **Architecture** — layer violations, API/contract shape, data-model alignment, state machines, naming honesty, component boundaries, spec contradictions, and **doc staleness**. If the implementation changes behaviour that a doc under `{{paths.docs}}` describes, that stale doc section is CRITICAL — the builder must update it in the same change. Docs are part of the deliverable.
+1. **Architecture** — layer violations, API/contract shape, data-model alignment, state machines, naming honesty, component boundaries, spec contradictions, and **doc staleness**. If the implementation changes behaviour that a doc under `{{paths.docs}}` describes, that stale doc section is CRITICAL — the pipeline-builder must update it in the same change. Docs are part of the deliverable.
 
 2. **Design** *(skip if no UI files changed; never fires when `designSystem: null`)* — component budget and reuse against `{{designSystem.path}}`, token compliance against `{{designSystem.tokens}}` (no hardcoded colors/spacing/radii/fonts), all states handled (empty/loading/error/populated), the action→feedback loop, state-conditional affordances, accessibility, layout vs. spec, motion values vs. spec, generic AI-aesthetic violations, and information density. Verify against pixels, not code: render the screen and compare it to the approved reference, including the percentage match in the finding. Keep generic design wisdom; defer product-specific component rules to the configured design system.
 

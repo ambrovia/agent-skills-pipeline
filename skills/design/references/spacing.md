@@ -2,7 +2,7 @@
 
 > Canonical research, the project's recommendations table, and exact token values
 > live in the design system docs under `{{designSystem.path}}` and
-> `{{designSystem.tokens}}`. Density-tier ratios are a planner call — a common
+> `{{designSystem.tokens}}`. Density-tier ratios are a pipeline-planner call — a common
 > default is compact = default × 0.75, comfortable = default × 1.25.
 
 ## The 4px Grid

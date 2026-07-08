@@ -13,8 +13,8 @@ AGENTS_DIR="$CODEX_DIR/agents"
 CONFIG_FILE="$CODEX_DIR/config.toml"
 mkdir -p "$AGENTS_DIR"
 
-for name in planner reviewer builder; do
-  cp "$PLUGIN_ROOT/.codex/agents/$name.toml" "$AGENTS_DIR/pipeline-$name.toml"
+for name in pipeline-planner pipeline-reviewer pipeline-builder; do
+  cp "$PLUGIN_ROOT/.codex/agents/$name.toml" "$AGENTS_DIR/$name.toml"
 done
 
 touch "$CONFIG_FILE"
@@ -23,16 +23,16 @@ START_MARKER="# BEGIN agent-skills-pipeline codex agents"
 END_MARKER="# END agent-skills-pipeline codex agents"
 BLOCK="$(cat <<'EOF'
 # BEGIN agent-skills-pipeline codex agents
-[agents.planner]
-description = "Pipeline planner persona for concept, design, and architecture planning."
+[agents.pipeline-planner]
+description = "Pipeline planning persona for concept, design, and architecture planning."
 config_file = "./agents/pipeline-planner.toml"
 
-[agents.reviewer]
-description = "Pipeline reviewer persona for critiques and read-only implementation review."
+[agents.pipeline-reviewer]
+description = "Pipeline review persona for critiques and read-only implementation review."
 config_file = "./agents/pipeline-reviewer.toml"
 
-[agents.builder]
-description = "Pipeline builder persona for tests, implementation, fixes, and shipping."
+[agents.pipeline-builder]
+description = "Pipeline build persona for tests, implementation, fixes, and shipping."
 config_file = "./agents/pipeline-builder.toml"
 # END agent-skills-pipeline codex agents
 EOF

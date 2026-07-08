@@ -1,6 +1,6 @@
 # Persona agents — one source, generated per harness
 
-Three personas (`planner`, `reviewer`, `builder`) drive the pipeline's
+Three personas (`pipeline-planner`, `pipeline-reviewer`, `pipeline-builder`) drive the pipeline's
 producer/evaluator separation. They are authored ONCE in `../personas/<name>.md`
 (neutral frontmatter + the prompt body) and **generated** into each harness's
 dialect by `../scripts/generate-agents.mjs`. Every generated file carries a
@@ -14,7 +14,7 @@ Frontmatter is harness-neutral; the generator maps it to each tool's dialect:
 
 | Field | Meaning |
 |---|---|
-| `capability` | `high` (planner, reviewer) or `fast` (builder) |
+| `capability` | `high` (pipeline-planner, pipeline-reviewer) or `fast` (pipeline-builder) |
 | `write` / `edit` / `bash` | tool policy (read / grep / glob are always on) |
 
 ## Generated outputs
@@ -23,7 +23,7 @@ Frontmatter is harness-neutral; the generator maps it to each tool's dialect:
 |---|---|---|---|
 | **Claude Code** | `agents/*.md` (registered in `.claude-plugin/plugin.json`) | `tools` PascalCase string + `model` real id (`opus` / `sonnet`) | `skills` field → `./skills` |
 | **opencode** | `.opencode/agents/*.md` | `mode: subagent` + `tools` deny-map; `model` omitted (inherit) | `.opencode/skills/` (install-time copy) |
-| **Codex** | `.codex/agents/*.toml` + `.codex/config.toml` | `name` / `description` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` -> `./skills` |
+| **Codex** | `.codex/agents/*.toml` + `.codex/config.toml` | `name` / `description` / `model` / `developer_instructions`; `model_reasoning_effort: high` for high-capability | `.codex-plugin/plugin.json` -> `./skills` |
 
 Codex has native TOML subagents, but they are registered through
 `.codex/config.toml`; the TOML files alone are inert. The plugin manifest exposes
@@ -50,9 +50,9 @@ if any generated file is stale, so the copies cannot silently drift.
   used here loads fine (the old singular/plural silent-no-load is fixed on current versions).
 - **Codex:** project files in `.codex/agents/` load only when the project is trusted
   and registered in `.codex/config.toml`. Run `scripts/install-codex.sh <project>`
-  to install them as `planner`, `reviewer`, and `builder` roles. The Codex plugin
-  manifest has no subagent-role field, so plugin installation alone cannot create
-  those roles.
+  to install them as `pipeline-planner`, `pipeline-reviewer`, and `pipeline-builder`
+  roles. The Codex plugin manifest has no subagent-role field, so plugin installation
+  alone cannot create those roles.
 
 After regenerating Claude agents, reinstall/update the plugin so the cache copy
 (`~/.claude/plugins/cache/agent-pipeline/.../agents/`) picks up the change, and

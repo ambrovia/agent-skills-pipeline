@@ -2,7 +2,7 @@
 name: design
 description: "Explore 1-3 UX/UI variants (gated by routine vs novel), score them in-session against the 9-dimension rubric, settle on one. Runs BEFORE architecture when a work package has any UI surface — a new page, primitive, component shape, interaction flow, or redesign of an existing surface."
 phase: 1
-persona: planner
+persona: pipeline-planner
 applies-to: [frontend, application]
 user-invocable: true
 ---
@@ -29,7 +29,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## When this runs
 
-- **In the pipeline:** planner persona, after `/refine` and before `/architecture`.
+- **In the pipeline:** pipeline-planner persona, after `/refine` and before `/architecture`.
 - **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
 - **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 2 critique on the existing `approved.md`.
 
@@ -82,7 +82,7 @@ DESIGN-CLASS: <routine|routine-low-conf|novel>  ref=<existing-component-or-none>
 
 ## Phase 0 — Interrogate the task
 
-Pick only the questions that are actually unsettled — skip what the brief, the design system rules, or existing mockups already answer. For each remaining question, propose your read with evidence, then ask the human (or reviewer in autonomous mode) to confirm. Issue all probes in one parallel batch — independent questions don't need separate round-trips.
+Pick only the questions that are actually unsettled — skip what the brief, the design system rules, or existing mockups already answer. For each remaining question, propose your read with evidence, then ask the human (or pipeline-reviewer in autonomous mode) to confirm. Issue all probes in one parallel batch — independent questions don't need separate round-trips.
 
 **Few, important questions.** Three sharp probes force a real decision; ten low-stakes ones get answered with shrugs. The bar: "will the answer change a variant constraint?" If no, don't ask.
 
