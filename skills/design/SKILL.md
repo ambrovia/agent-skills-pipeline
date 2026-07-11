@@ -45,15 +45,13 @@ Read all of the following in one parallel batch of Read calls — these files ar
 4. Any project aesthetic-quality / visual-parity rules the design system docs point to.
 5. If a `design/` directory already exists for this work package under `.pipeline/work/<id>/`, you may be resuming.
 
-For deeper reference material on specific critique dimensions (read on demand when scoring in Phase 2 — each cross-links the design system's own aesthetics documentation):
+The design dimensions to hold each variant against in Phase 2 (always defer to `{{designSystem.tokens}}` for concrete numbers):
 
-- `references/hierarchy.md` — visual-hierarchy tactics; primary / secondary / tertiary text levels.
-- `references/spacing.md` — the spacing grid, density tiers, sub-grid exceptions.
-- `references/typography.md` — type scale, weight limits, monospace usage.
-- `references/color.md` — semantic token usage, halation guard, contrast rules.
-- `references/finishing.md` — hover / focus / pressed states, motion tokens, polish details.
-
-Without these, the Phase 2 critique becomes vibes-grading. Read the relevant reference before assigning a score on its dimension.
+- **Hierarchy** — clear primary / secondary / tertiary text levels; the eye lands on the most important thing first.
+- **Spacing** — everything on the spacing grid; density tier appropriate to context (lists dense, detail views spacious).
+- **Typography** — sizes from the type scale, a limited weight ladder, monospace reserved for data/IDs.
+- **Color** — semantic tokens only, meaning-not-decoration, contrast ≥ 4.5:1, halation guard (no pure black/white in dark mode).
+- **Finishing** — hover / focus / pressed states on every interactive element, motion via the motion tokens, tabular numerals and other polish.
 
 ## Phase 0a — Classify: routine vs novel
 
@@ -214,7 +212,7 @@ Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; upda
 - Mockups that describe instead of embody.
 - Skipping the Phase 2 critique gate.
 - Re-litigating the visual contract in `/architecture`.
-- AI-aesthetic defaults — see the design system's anti-pattern documentation and `references/finishing.md`.
+- AI-aesthetic defaults — see the design system's anti-pattern documentation; finish every interactive element with proper hover/focus/pressed states and token-based motion.
 
 ## Output artifacts
 

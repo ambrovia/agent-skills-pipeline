@@ -128,7 +128,7 @@ Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this orde
 
 ## Acceptance criteria
 
-A bulleted list of observable, testable statements — see `references/writing-acs.md`. These are the single source of truth flowing through all pipeline phases: `/refine` sharpens the requirement against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
+A bulleted list of observable, testable statements (see "Writing good ACs" below). These are the single source of truth flowing through all pipeline phases: `/refine` sharpens the requirement against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
 
 ## Validation scenarios
 
@@ -139,7 +139,7 @@ A bulleted list of observable, testable statements — see `references/writing-a
 
 ## Writing good ACs
 
-ACs are the contract between the spec and every downstream phase. They describe **what becomes true** when the work ships — not how to build it. The full rubric — the outcome rule, the consumer table, good-vs-bad examples, the specificity gradient, structural-vs-behavioral ACs, the mental-state test, and forbidden phrasings — lives in **`references/writing-acs.md`**. Read it before writing any AC.
+ACs are the contract between the spec and every downstream phase. Each AC describes **what becomes true** when the work ships — the observable outcome, not the implementation — is observable/testable (provable true or false by some test), and covers one behavior. Describe behavior ("items can be queried as of a date") not implementation ("add a `valid_from` column"); for UI, describe the user's resulting mental state, not what's on screen. Avoid solution-prescribing phrasing (specific pages, columns, components, endpoints) and forbidden phrasings like "is implemented", "is well-designed", "is clean".
 
 The one-line filter: **ACs should be specific about outcomes, vague about solutions.** If two different planners would produce the same solution from your AC, it's too prescriptive. If two different reviewers can't agree on whether it passes, it's too vague.
 
@@ -182,7 +182,7 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
 
 ## Anti-rationalizations
 
-The full table of tempting rationalizations and why each is wrong lives in **`references/anti-rationalizations.md`**. The headline ones:
+The tempting reasons to cut a corner, and why each is wrong:
 
 - "I'll add the implementation steps now and clean them out later" — specs with implementation creep get their architecture step skipped because "the spec already said how." Keep them out from the start.
 - "S is fine, the AC bullets are short" — S is about scope and time, not bullet length. If it touches >1 subsystem it's M.

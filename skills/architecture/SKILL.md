@@ -46,27 +46,9 @@ Sample interrogation lines (adapt to the work package):
 
 Stop interrogating when the path is clear, not when you run out of questions. Three to seven branches is typical. If the work package already pins a decision, don't re-litigate it — confirm and move on.
 
-## Phase 0b — Feasibility probes (prove it before you plan it)
+## Phase 0b — Feasibility check
 
-Architecture's counterpart to `/design`'s `mockup.html`: before locking contracts and tasks, prove
-load-bearing technical assumptions are **actually doable** — not vibes.
-
-Read `references/feasibility-probes.md` for the full probe anatomy. Summary:
-
-1. **Inventory assumptions** — list every claim the plan would depend on that isn't already
-   grep-verified in this codebase (external APIs, new libraries, perf limits, migrations, IAM, etc.).
-2. **Research or POC each one** — web research with primary sources (official docs, release notes)
-   and/or a throwaway mini POC under `.pipeline/work/<id>/probes/<slug>/`.
-3. **Record verdicts** — `GO`, `GO-WITH-CHANGE`, or `NO-GO` per assumption; `NO-GO` forces a plan
-   change before proceeding.
-4. **Write the feasibility summary to `.pipeline/work/<id>/feasibility.md`** (a table of assumptions → probe → verdict); reference it from `architecture.md`. Raw probe evidence stays under `.pipeline/work/<id>/probes/`.
-
-POCs are minimal and disposable — one API call, one query, one render. They live under
-`.pipeline/work/<id>/probes/` (not `{{paths.source}}`). A failed POC is valuable: it prevents building the
-wrong thing.
-
-Skip probes only when every load-bearing decision reuses an existing, cited pattern — document
-`Unprobed assumptions: none` with file:line evidence in `feasibility.md`.
+Before locking contracts, prove the plan is **actually feasible** — the technical counterpart to `/design`'s prototype. For any load-bearing assumption not already grep-verified here (external API, new library, perf claim, migration), check it with quick web research (the pinned version, primary sources) and/or a throwaway mini-POC under `.pipeline/work/<id>/probes/<slug>/`, then record a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict in a short assumptions→probe→verdict table in `.pipeline/work/<id>/feasibility.md` (raw evidence stays under `probes/`). `architecture-critique` treats any unprobed load-bearing assumption as CRITICAL; skip only when every load-bearing decision reuses a cited existing pattern — then write `Unprobed assumptions: none` with file:line evidence.
 
 ## Phase 1 — Plan reconciliation (spec ⇆ reality)
 
@@ -86,7 +68,7 @@ Read the `## Work package` + `## Acceptance criteria` sections of `.pipeline/wor
 If the work package has a UI surface and `/design` produced an approved spec, read it. The visual contract, component vocabulary, and interaction states are inputs — do not re-litigate them. (Skipped when no design system is configured.)
 
 Produce:
-1. **Acceptance criteria** — each with a specific verification method (see `references/verification-methods.md`).
+1. **Acceptance criteria** — each with a specific verification method.
 2. **Ordered task list** — what to do, which files, which test proves it, dependencies between tasks.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
@@ -96,7 +78,7 @@ Produce:
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
 9. **Shared files** — `sharedFiles: string[]` listing infrastructure files this work package modifies that other concurrent work packages may also touch (schema definitions, shared types, the router, app entrypoint, seed files). Used by the pipeline to detect overlap and schedule merge order when work packages run in parallel.
 
-**Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough. Say exactly what the test does and what it asserts. The verification-method rubric — criterion type → exact verification — is in `references/verification-methods.md`. Where a criterion is "type safety" or "the whole change is green," the verification is the project's verify command, `{{verify}}` (or a fast typecheck, if the project defines one, for incremental checks).
+**Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough — say exactly what the test asserts: schema → migration runs + introspection shows the expected columns/constraints; API → integration test asserts status code + response shape; data integrity → insert violating data, assert rejection; UI → e2e asserts visible elements + interactions; error path → trigger bad input, assert the error response; performance → benchmark N ops under X ms. Where a criterion is "type safety" or "the whole change is green," the verification is the project's verify command, `{{verify}}` (or a fast typecheck, if the project defines one, for incremental checks).
 
 ## Phase 3 — Design-it-twice (for non-trivial decisions)
 

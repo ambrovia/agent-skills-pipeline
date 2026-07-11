@@ -47,7 +47,7 @@ ACTIVATE (2m+)    → "What do I do next?"           → Reader converts to user
 
 ## The 15 Principles
 
-These are specific, measurable rules. Not guidelines — rules. Each has an empirical basis (full citations in `references/research-basis.md`).
+These are specific, measurable rules. Not guidelines — rules. Each has an empirical basis (NNG eye-tracking and A/B studies, Cowan's working-memory revision, dual-coding research).
 
 ### Structure
 
@@ -93,7 +93,7 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 ## Scoring Rubric
 
-Use the 10-dimension rubric (1-5 each, 50 max) in `references/rubric.md` when reviewing documentation. Score every dimension; do not average away a structural failure.
+Score documentation against these 10 dimensions (1-5 each, 50 max): (1) 10-Second Value, (2) Inverted Pyramid, (3) Heading Quality, (4) Sentence/Paragraph Length, (5) Concrete Aids, (6) Cognitive Load, (7) Language Objectivity, (8) Scannability, (9) Progressive Disclosure, (10) Actionable Exit. Score every dimension; do not average away a structural failure.
 
 **Thresholds:**
 - **40-50:** Publication-ready. Ship it.
@@ -140,7 +140,3 @@ Read each document. For each page:
 - Every documented feature is backed by source evidence in `{{paths.source}}`.
 - Docs live under `{{paths.docs}}` and any commands they reference actually run.
 - Each page ends with a concrete next action (P15) and opens its funnel in 10 seconds (P1).
-
----
-
-See `references/research-basis.md` for the full empirical basis per principle and `references/rubric.md` for the scoring table.

@@ -25,6 +25,18 @@ The target is either:
 Cross-track or cross-complexity batches are never dispatched. If you receive a mixed group,
 treat it as a scheduler bug: mark every WP `blocked` with reason `mixed-batch` and exit.
 
+## First: work in a clean worktree off `origin/main`
+
+**Before anything else, switch into a dedicated git worktree on a fresh branch based off `origin/main`** — never run the pipeline on the main checkout or a stale/dirty base. Fetch first so the base is current, then create (or reuse) the worktree and work there for the whole run:
+
+```bash
+git fetch origin
+git worktree add ../<repo>.worktrees/pipeline-<target> -b pipeline/<target> origin/main
+cd ../<repo>.worktrees/pipeline-<target>
+```
+
+If your harness has native worktree support (e.g. a `--worktree` launch flag), use it and confirm the branch is based on `origin/main`. All subsequent phases — planning, build, and ship — run inside this worktree.
+
 ## State contract — non-negotiable
 
 **Everything for a work package lives in one folder: `.pipeline/work/<id>/`.** One folder per work
@@ -144,7 +156,8 @@ in Phase 4 reusing its Phase 2 session, the pipeline-builder carrying Phase 3 in
 ship — to save context/cache-creation cost. Where it doesn't (no durable sessions, or subagents
 that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
 just not free. Never gate the pipeline on session reuse being available. The retro agent is always
-ephemeral. See `references/spawn-contract.md` for the exact per-phase dispatch script.
+ephemeral. Update `currentStep` in `progress.json` before each persona dispatch, and sync the base
+(pull + merge latest mainline) before the Phase 3 build so a stale base doesn't accumulate drift.
 
 ### Loop rules
 
@@ -221,11 +234,13 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
   doubt and a design system exists, run `design` with `routine` classification — one variant is
   cheap and the brief doubles as documentation.
 
-For the full **anti-rationalization table** ("the plan is done, I can stop" / "this story is
-simple, skip the review" / "the pipeline-reviewer is redundant, tests passed" / "the retro is
-navel-gazing") and the **ordering rationale** (why the reviewer critiques, why ship runs after
-retro, why variant count is conditional), see `references/rationale.md`. Read it before you
-talk yourself out of a phase.
+The ordering has reasons worth restating before you talk yourself out of a phase: the
+**pipeline-reviewer runs the critiques** (not the planner) because the agent that produced a
+design can't objectively score it — true producer/evaluator separation, different agents;
+**ship runs after retro** so the retro output lands in the verified tree (ship-before-retro forces
+a full CI re-verify); and the **variant count is conditional** — routine UI gets one variant plus a
+"did we consider X / Y / Z?" check, novel UI (and every new load-bearing primitive) up to three —
+keeping cost down without losing the brief's documentation value.
 
 ## After the pipeline: compound
 
