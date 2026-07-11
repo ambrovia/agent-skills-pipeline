@@ -26,10 +26,11 @@ kinds, layers, fixtures, and mock policy:
 
 Phase 3 (build), the first thing a pipeline-builder does on a work package — before any
 implementation code. The work package must already be planned with explicit
-acceptance criteria. Read the approved plan (`.pipeline/plans/<id>.md`) for the
-concrete acceptance criteria, with the outcome-level work-package entry under
-`.pipeline/work-packages/` as context; track progress in
-`.pipeline/progress/<id>.json`.
+acceptance criteria. Read the technical plan (`.pipeline/work/<id>/architecture.md`)
+for the tasks and ACs, and the spec (`.pipeline/work/<id>/plan.md`) for the concrete
+acceptance criteria (they live in its `## Acceptance criteria` section) plus its
+`## Work package` section as context; track progress in
+`.pipeline/work/<id>/progress.json`.
 
 ## When this does NOT apply
 

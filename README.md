@@ -12,14 +12,15 @@ Freeform "vibe coding" with an agent fails at scale: no separation between decid
 **Pipeline** replaces that with structure. Work is broken into **work packages** — small, outcome-level specs with acceptance criteria — and each runs through a fixed phase loop driven by three separated personas:
 
 ```
-work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶ review ──▶ retro ──▶ ship
-                pipeline-planner    pipeline-reviewer      pipeline-builder        pipeline-reviewer    fresh     pipeline-builder
+work package ──▶ refine ──▶ human approval ──▶ design ──▶ architecture (+ feasibility POCs)
+                      ──▶ critique ──▶ build (TDD) ──▶ review ──▶ retro ──▶ ship
+                pipeline-planner    founder gate      pipeline-reviewer      pipeline-builder
 ```
 
 - **The agent that designs is not the agent that reviews it.** Producer/evaluator separation is enforced by persona.
 - **Planning is phase 1, never the finish line.** A plan isn't done until the pipeline-builder makes it real and the pipeline-reviewer signs off.
 - **Gates are mechanical.** Your `verify` command must pass and the review verdict must be `DONE` before ship.
-- Phases that don't apply are skipped — a backend work package skips the design phases automatically.
+- **Human approval is mandatory.** Every work package parks for founder sign-off on requirements before design or architecture; UI work packages also require design approval. Autonomous runs park — they never skip the gate.
 
 ## What's in here
 
@@ -165,7 +166,7 @@ This is how one repo makes `/review` enforce its own reuse-before-build rule, or
 
 ## The skills
 
-`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `ship` · `retro` · `compound` · `lore` · `work-planning` · `pipeline`
+`refine` · `human-concept-review` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `ship` · `retro` · `compound` · `lore` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 

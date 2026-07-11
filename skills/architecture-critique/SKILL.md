@@ -1,6 +1,6 @@
 ---
 name: architecture-critique
-description: "Score a technical plan against the 9-dimension architectural rubric BEFORE any code is written. Use in Phase 2 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
+description: "Score a technical plan against the 10-dimension architectural rubric BEFORE any code is written. Use in Phase 2 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
 phase: 2
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
@@ -11,9 +11,9 @@ user-invocable: true
 
 **Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the pipeline-reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
 
-This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The approved plan lands in `.pipeline/plans/<id>.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture writes the plan; this skill scores it. The technical plan lands in `.pipeline/work/<id>/architecture.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
-This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the approved plan in `.pipeline/plans/<id>.md` (warm context if the host kept the session, read from the artifact if not).
+This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the technical plan in `.pipeline/work/<id>/architecture.md` (warm context if the host kept the session, read from the artifact if not).
 
 The pipeline-reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
@@ -26,7 +26,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 ## When this runs
 
 - **In the pipeline:** Phase 2, after the pipeline-planner completes the `architecture` act. Reviewer session.
-- **On explicit invocation for a work package:** full audit of the plan at `.pipeline/progress/<id>/architecture.md` (or wherever the project's architecture act writes the plan).
+- **On explicit invocation for a work package:** full audit of `.pipeline/work/<id>/architecture.md` (+ its `feasibility.md`).
 - **Skip condition:** this skill always applies to a work package that has a technical plan. The design-system-specific checks inside it are skipped automatically when no design system is configured (`pipeline.config` `designSystem: null`).
 
 ## What it produces
@@ -35,7 +35,7 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
 
 ## Required reading
 
-1. The work package in `.pipeline/work-packages/<id>.md`.
+1. The `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`.
 2. The locked concept output for the work package (the concept act's output).
 3. The plan itself — every section, including its **Required reading** list.
 4. The specific authoritative files named in the plan's **Required reading** (these are individual `{{paths.docs}}` files the plan picked, not whole folders).
@@ -49,8 +49,9 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
    about the codebase (tables, routes, components, precedent shapes) by grep/read, citing
    file:line; treat "verified against code" as a hypothesis, not proof
 2. Challenge it adversarially (over-engineering, missing deps, AC gaps, scope creep,
-   missing security/abuse cases, missing protected-test list, route-checklist gaps)
-3. Score it (0-10) against the 9 dimensions below
+   missing security/abuse cases, missing protected-test list, route-checklist gaps,
+   and implementability holes — any task that forces the builder to decide, not just do)
+3. Score it (0-10) against the 10 dimensions below
 4. List specific findings (CRITICAL / WARNING / SUGGESTION) with plan-section references
 5. The pipeline-planner fixes the highest-priority issue IN THE PLAN
 6. Re-score
@@ -68,6 +69,15 @@ Score ≥ 7 ships the plan. 5-6 needs work on 2-3 dimensions. ≤ 4 restarts the
 - Are scope-creep tasks present (things not asked for)? They shouldn't be.
 - For UI work packages (when a design system is configured), does the plan match the contracts in the approved design output? If the design act was skipped on a UI work package, that's CRITICAL.
 - **Smell:** plan has more tasks than the work package has ACs. Plan is missing a verification method for an AC. Plan invents requirements.
+
+### 1b. Implementability — executable, not interpretable
+
+The plan's job is to leave the builder with **nothing to decide**. Score whether a competent builder with no access to the planner could execute every task without asking a clarifying question.
+
+- Does every task name the files it touches, the exact contract/signature/shape, and the test that proves it?
+- Is any decision deferred to the builder — a data shape, a name, a library choice, an unlisted edge case, "figure out X", "handle appropriately", "as needed"?
+- Are contracts concrete types/schemas, not "similar to the existing one"?
+- **Smell:** tasks phrased as goals ("make auth work") rather than actions ("add `requireSession` to `src/mw/auth.ts`, applied in `src/router.ts` at lines …"). Any hand-wave the builder must resolve at build time. Treat unresolved builder-facing decisions as **CRITICAL** — the builder should be doing, not reasoning.
 
 ### 2. Layer integrity
 
@@ -137,6 +147,15 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 - Is the protected-tests list populated for any test whose contract must not drift?
 - **Smell:** AC verifies "the feature works". AC verifies a behaviour that has no harness in the codebase. Test order inverted (implementation listed before its proving test). Empty protected-tests block.
 
+### 10. Feasibility (probes)
+
+- Does the plan include a reference to `feasibility.md` with a table of load-bearing assumptions?
+- For each non-trivial assumption (external API, new library, perf claim, migration shape, IAM capability): is there a probe under `.pipeline/work/<id>/probes/` with `verdict.md`?
+- Did web-research probes cite primary sources (official docs, release notes) with URLs — not vague "should work"?
+- Did code POCs include captured output proving they ran?
+- If probes were skipped: does `feasibility.md` cite file:line precedent for every assumption?
+- **Smell:** plan assumes a third-party capability without a probe. `NO-GO` verdict ignored. Probe theatre (empty `result.md`). Architecture proceeds without `approvals.requirements` set in `progress.json`.
+
 ## Scoring guide
 
 | Score | Meaning | Action |
@@ -152,7 +171,7 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 ```
 ## Architecture Critique: <work-package-id>
 
-ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD:_ FMC:_ S:_ V:_
+ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD:_ FMC:_ S:_ V:_ FE:_
 
 ### CRITICAL
 - [plan §<section>] Description of issue → specific fix to apply
@@ -167,7 +186,7 @@ ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD
 - 1-2 things the plan does right (reinforces good patterns; helps the next pipeline-planner)
 ```
 
-The retro reads `rounds=<n>` to track plan-quality drift over time. Write the score and rounds to `.pipeline/progress/<id>.json` so downstream phases and the retro can read them.
+The retro reads `rounds=<n>` to track plan-quality drift over time. Write the score and rounds to `.pipeline/work/<id>/progress.json` so downstream phases and the retro can read them.
 
 ## Common failure modes caught by this skill
 
@@ -177,6 +196,7 @@ These are recurrences the compound-candidates log keeps surfacing — every one 
 - **Spec / codebase drift.** Plan references tables, routes, components that don't exist. Caught by reading the plan-reconciliation section against `grep` reality during scoring.
 - **Protected-tests drift.** Plan doesn't enumerate which test contracts are frozen. Caught by Dimension 9.
 - **Route-checklist gap.** Plan enumerates a guard but not the route × file matrix the guard must cover. Caught by Dimension 7.
+- **Unprobed feasibility.** Plan depends on external API / library / migration assumptions without probes. Caught by Dimension 10.
 - **UI selector drift.** Plan changes UI shape without listing affected e2e specs in protected-tests. Caught by Dimension 9 + cross-referencing the changed component against e2e selectors.
 
 When the plan ships these gaps, this skill blocks; when the plan addresses them, the downstream review/security/definition-of-done acts have less to surface.
@@ -190,6 +210,7 @@ When the plan ships these gaps, this skill blocks; when the plan addresses them,
 
 ## Done when
 
-- The plan scores ≥ 7 (averaged across the 9 dimensions), or 3 rounds have elapsed.
-- The critique, score line, and `rounds=<n>` are recorded to `.pipeline/progress/<id>.json`.
+- The plan scores ≥ 7 (averaged across the dimensions), or 3 rounds have elapsed.
+- No implementability hole remains: every task is executable without a builder-side decision (checked in Dimension 1b).
+- The critique, score line, and `rounds=<n>` are recorded to `.pipeline/work/<id>/progress.json`.
 - Every CRITICAL finding is either fixed in the plan or explicitly accepted with a reason.

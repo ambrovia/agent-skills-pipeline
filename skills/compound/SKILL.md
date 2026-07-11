@@ -45,7 +45,7 @@ If the tracker doesn't exist yet, create it with an empty table and proceed.
 
 ### 1. Read the retro log
 
-Read every `.pipeline/retro-log/*.jsonl` file (one per work package). Parse every entry across all
+Read every `.pipeline/work/*/retro.jsonl` file (one per work package). Parse every entry across all
 files. Group observations by tags. Map each observation against the candidate tracker from step 0
 before counting recurrences.
 
@@ -135,7 +135,7 @@ After producing the review, update `.pipeline/compound-candidates.md`:
 
 ```
 Agent finishes work
-    → /retro appends observations to retro-log/<work-package>.jsonl
+    → /retro appends observations to work/<id>/retro.jsonl
     → observations accumulate across work packages
     → /compound runs periodically
     → identifies patterns at 3+ occurrences
@@ -148,7 +148,7 @@ Agent finishes work
 
 ## Done when
 
-- Every `.pipeline/retro-log/*.jsonl` file has been read and parsed.
+- Every `.pipeline/work/*/retro.jsonl` file has been read and parsed.
 - Patterns are classified as CONFIRMED / EMERGING / RESOLVED / CONTRADICTED.
 - Each CONFIRMED pattern has a surgical proposal with evidence, root cause, target, and risk.
 - `.pipeline/compound-candidates.md` is updated (no duplicates, recurrence counts current).
