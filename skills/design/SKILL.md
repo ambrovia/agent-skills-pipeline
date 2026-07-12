@@ -31,7 +31,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 - **In the pipeline:** pipeline-planner persona, after `/refine` and before `/architecture`.
 - **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
-- **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 2 critique on the existing `approved.md`.
+- **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 3 critique on the existing `approved.md`.
 
 **Fixed input from `/refine`:** the founder-approved `.pipeline/work/<id>/requirements.md` (confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`). Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue — return to Pass 1, not a design issue.
 
@@ -45,9 +45,9 @@ Read all of the following in one parallel batch of Read calls — these files ar
 4. Any project aesthetic-quality / visual-parity rules the design system docs point to.
 5. If a `design/` directory already exists for this work package under `.pipeline/work/<id>/`, you may be resuming.
 
-For the design dimensions scored in Phase 2 — visual hierarchy, spacing/density, typography, color, and finishing — read the design system's aesthetics documentation under `{{designSystem.path}}` (with token values in `{{designSystem.tokens}}`). Without a concrete reference the Phase 2 critique becomes vibes-grading — read it before assigning a score on its dimension.
+For the design dimensions scored in Phase 3 — visual hierarchy, spacing/density, typography, color, and finishing — read the design system's aesthetics documentation under `{{designSystem.path}}` (with token values in `{{designSystem.tokens}}`). Without a concrete reference the Phase 3 critique becomes vibes-grading — read it before assigning a score on its dimension.
 
-## Phase 0a — Classify: routine vs novel
+## Phase 0 — Classify: routine vs novel
 
 Before interrogation, classify the work package along two axes:
 
@@ -56,7 +56,7 @@ Before interrogation, classify the work package along two axes:
 
 Both yes → `routine`. Both no → `novel`. Mixed → `routine` with low-confidence flag (see below).
 
-| Class | Variants in Phase 1 | Phase 2 critique |
+| Class | Variants in Phase 2 | Phase 3 critique |
 |---|---|---|
 | `novel` | 3, full constraint-and-thesis spread | per-variant + on `approved.md` |
 | `routine` | 1, with a "did we consider X / Y / Z?" check on the rejected directions | only on `approved.md` |
@@ -72,7 +72,7 @@ Output one machine-greppable line at the top of `brief.md`:
 DESIGN-CLASS: <routine|routine-low-conf|novel>  ref=<existing-component-or-none>  pattern=<design-system-file-or-none>
 ```
 
-## Phase 0 — Interrogate the task
+## Phase 1 — Interrogate the task
 
 Pick only the questions that are actually unsettled — skip what the brief, the design system rules, or existing mockups already answer. For each remaining question, propose your read with evidence, then ask the human (or pipeline-reviewer in autonomous mode) to confirm. Issue all probes in one parallel batch — independent questions don't need separate round-trips.
 
@@ -88,7 +88,7 @@ Sample probes (adapt):
 
 Stop when the brief is clear. 3-7 branches typical.
 
-## Phase 1 — Generate variants in parallel (count from Phase 0a)
+## Phase 2 — Generate variants in parallel (count from Phase 0)
 
 For `routine`: produce **one** variant honoring the named existing component / pattern, plus an explicit `rejected.md` block listing the X / Y / Z directions you considered and rejected (one line each). Do NOT regenerate the rejected directions.
 
@@ -129,7 +129,7 @@ Variant C — "Layered" (a base layer that always renders + extension slots that
             consumers fill — the slot/children composition pattern).
 ```
 
-Anti-convergence requirement — verify before Phase 2:
+Anti-convergence requirement — verify before Phase 3:
 - Variants must differ on **at least 3 of these axes per pair**: hierarchy (where the eye lands first), density (how much fits per row/screen), state strategy (one canonical layout vs distinct shapes per state), motion (where it moves), action surface (where verbs live), composition (one component vs three), copy register (terse vs guided).
 
 If two variants converge, regenerate. Do not proceed with three flavours of one thing.
@@ -152,7 +152,7 @@ Each variant produces, in `.pipeline/work/<id>/design/<variant-slug>/`:
 
 If HTML mockups are too heavy for the work package (small primitive, well-understood shape), produce *spec + a component sketch in the design system's playground/sandbox* instead. The hard rule is: each variant must produce a **looked-at artifact**, not just prose.
 
-## Phase 2 — Build the comparison
+## Phase 3 — Build the comparison
 
 Produce `.pipeline/work/<id>/design/comparison.md`:
 
@@ -170,7 +170,7 @@ Produce `.pipeline/work/<id>/design/comparison.md`:
 
 Plus the screenshots side by side.
 
-## Phase 3 — Synthesize
+## Phase 4 — Synthesize
 
 Often the best design combines insights from multiple variants. Write `.pipeline/work/<id>/design/synthesis.md`:
 
@@ -185,7 +185,7 @@ If the project is in autonomous mode, the orchestrator picks based on:
 
 If a maintainer is reachable, surface the comparison and **let them pick**. One question, with the variants + your recommendation. Never batch design decisions across multiple separate questions.
 
-## Phase 4 — Approve and write the chosen design
+## Phase 5 — Approve and write the chosen design
 
 Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; update `plan.md` only if the design changes the overall plan (scope/ACs):
 
@@ -204,7 +204,7 @@ Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; upda
 - Three flavors of one thing. Variants must differ on shape, not accent.
 - Specs without concrete values. Use named tokens, not "clean, modern".
 - Mockups that describe instead of embody.
-- Skipping the Phase 2 critique gate.
+- Skipping the Phase 3 critique gate.
 - Re-litigating the visual contract in `/architecture`.
 - AI-aesthetic defaults — see the design system's anti-pattern documentation under `{{designSystem.path}}`.
 
@@ -234,7 +234,7 @@ Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; upda
 
 - `approved.md` exists with the locked design + explicit rejection list.
 - Every variant produced a looked-at artifact (mockup/screenshot or sandbox sketch), not just prose.
-- The Phase 2 critique gate ran and scores are recorded in `comparison.md`.
+- The Phase 3 critique gate ran and scores are recorded in `comparison.md`.
 
 ## Downstream
 

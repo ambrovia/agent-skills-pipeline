@@ -1,6 +1,6 @@
 ---
 name: architecture-critique
-description: "Score a technical plan against the 10-dimension architectural rubric BEFORE any code is written. Use in Phase 7 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
+description: "Score a technical plan against the 11-dimension architectural rubric BEFORE any code is written. Use in Phase 7 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
 phase: 7
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
@@ -52,7 +52,7 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
    under-engineering, missing deps, AC gaps, scope creep, missing security/abuse cases,
    missing protected-test list, route-checklist gaps, and implementability holes — any
    task that forces the builder to decide, not just do)
-3. Score it (0-10) against the 10 dimensions below
+3. Score it (0-10) against the 11 dimensions below
 4. List specific findings (CRITICAL / WARNING / SUGGESTION) with plan-section references
 5. The pipeline-planner fixes the highest-priority issue IN THE PLAN
 6. Re-score
@@ -71,11 +71,11 @@ Score ≥ 7 ships the plan. 5-6 needs work on 2-3 dimensions. ≤ 4 restarts the
 - For UI work packages (when a design system is configured), does the plan match the contracts in the approved design output? If the design act was skipped on a UI work package, that's CRITICAL.
 - **Smell:** plan has more tasks than the work package has ACs. Plan is missing a verification method for an AC. Plan invents requirements.
 
-### 1b. Implementability — executable, not interpretable
+### 2. Implementability — executable, not interpretable
 
 The plan's job is to leave the builder *doing*, not *deciding*. Score whether the architecture is actually defined: are the contracts (types/signatures/schemas), the data flow, the states, the file/repo structure, and the tech stack specified — with concrete files named where they're known? Is any real decision deferred to the builder — a data shape, a contract, a library choice, unresolved intent? Contracts must be concrete, not "similar to the existing one". Smell: tasks phrased as goals ("make auth work") instead of defined changes. Treat unresolved builder-facing **decisions** as CRITICAL — but do not demand that every file be named or that every task carry a test; demand that the architecture is **defined**.
 
-### 2. Layer integrity
+### 3. Layer integrity
 
 - Does any task in the plan reach past its layer? (Respect the project's declared layering and strict dependency direction.)
 - Do layers that should not call models do so anyway?
@@ -83,7 +83,7 @@ The plan's job is to leave the builder *doing*, not *deciding*. Score whether th
 - Does a task in one module reach into another module's internals (or vice versa)?
 - **Smell:** schema or query in the wrong module. Direct data-store access from the UI. Cross-module private-API call.
 
-### 3. API contracts
+### 4. API contracts
 
 - Are all routes named with their method, path, request shape, response shape, and status codes?
 - Is the request/response body shape a concrete exported type the plan defines, not "looks like the existing endpoint"?
@@ -91,7 +91,7 @@ The plan's job is to leave the builder *doing*, not *deciding*. Score whether th
 - For closed vocabularies (e.g. a message-type discriminant union), is the union closed and exhaustively type-checked?
 - **Smell:** an endpoint with no request body. Vague "returns the entity" with no field list. Open string union where a closed discriminant is required.
 
-### 4. Data model alignment
+### 5. Data model alignment
 
 - Do the schemas match the spec field-by-field, type-by-type? (If the spec says 6 indexes, the plan lists 6.)
 - Are foreign keys, unique constraints, NOT NULL, default values, and check constraints all specified?
@@ -99,7 +99,7 @@ The plan's job is to leave the builder *doing*, not *deciding*. Score whether th
 - Are migration names forward-only with rollback plans documented?
 - **Smell:** column without a type. Missing FK on a relation. Migration without a rollback note. Schema diverges from the spec's field list.
 
-### 5. Naming
+### 6. Naming
 
 - Do names honestly describe what things do?
 - Does a function or column name eliminate a paragraph of doc?
@@ -107,7 +107,7 @@ The plan's job is to leave the builder *doing*, not *deciding*. Score whether th
 - Are domain terms used consistently with the specific authoritative files named in the plan's Required reading and with the contract docs under `{{paths.docs}}`?
 - **Smell:** generic names (`Manager`, `Service`, `Handler`, `Helper`, `Util`). Function name lies about side effects. New name shadowing or aliasing an existing primitive.
 
-### 6. Module depth (interface simplicity hides complexity)
+### 7. Module depth (interface simplicity hides complexity)
 
 From *A Philosophy of Software Design*: deep modules have small interfaces hiding significant complexity. Shallow modules have large interfaces with thin implementations.
 
@@ -117,7 +117,7 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 - For a shared primitive, does ONE well-shaped API serve every consumer named in the work package, without each consumer needing a custom wrapper?
 - **Smell:** one new function per consumer. Public types that mirror internal data shapes 1:1. Five exports where two would do.
 
-### 7. Failure-mode coverage
+### 8. Failure-mode coverage
 
 - Has every error path been identified?
 - For every external call (data store, HTTP, model, queue), is the timeout / retry / failure behaviour specified?
@@ -126,7 +126,7 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 - Does the plan name the *route checklist* (the route × file matrix) for any guard/middleware enumerated in the spec?
 - **Smell:** happy-path-only ACs. "Returns an error" without specifying status. Missing rate-limit on writes. Missing validation at trust boundary. Missing route in route-checklist.
 
-### 8. Tier-fit — simplicity vs. over- AND under-engineering
+### 9. Tier-fit — simplicity vs. over- AND under-engineering
 
 Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `prototype | mvp | production | critical`), not against an absolute maximum. Both directions are defects:
 
@@ -135,7 +135,7 @@ Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `protot
 - Is the design-it-twice section absent from a non-trivial decision, or theatre-present on a forced one?
 - **Smell:** abstraction with one implementation or "future-proof" anything **on a low tier**; missing hardening/observability/security depth **on a high tier**. Three similar tasks compressed into a generic helper before the third repeat. Commented-out scaffolding for "next phase".
 
-### 9. Verifiability
+### 10. Verifiability
 
 - Does every AC have a concrete verification method (test name, assertion, expected output) — not "write a test"?
 - Are the verification methods aligned with what's actually testable in this codebase, and runnable under the project's verify command, {{verify}}? (Unit, e2e, integration against a real backend — use the harnesses the project actually has.)
@@ -143,7 +143,7 @@ Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `protot
 - Is the protected-tests list populated for any test whose contract must not drift?
 - **Smell:** AC verifies "the feature works". AC verifies a behaviour that has no harness in the codebase. Test order inverted (implementation listed before its proving test). Empty protected-tests block.
 
-### 10. Feasibility (probes)
+### 11. Feasibility (probes)
 
 - Does the plan include a reference to `feasibility.md` with a table of load-bearing assumptions?
 - For each non-trivial assumption (external API, new library, perf claim, migration shape, IAM capability): is there a probe under `.pipeline/work/<id>/probes/` with `verdict.md`?
@@ -167,7 +167,7 @@ Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `protot
 ```
 ## Architecture Critique: <work-package-id>
 
-ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD:_ FMC:_ S:_ V:_ FE:_
+ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ IM:_ LI:_ AC:_ DM:_ N:_ MD:_ FMC:_ S:_ V:_ FE:_
 
 ### CRITICAL
 - [plan §<section>] Description of issue → specific fix to apply
@@ -188,12 +188,12 @@ The retro reads `rounds=<n>` to track plan-quality drift over time. Write the sc
 
 These are recurrences the compound-candidates log keeps surfacing — every one is something architecture-critique should catch in the plan, not the code review in the code:
 
-- **Happy-path-only ACs.** Security & abuse cases block missing or thin. Caught by Dimension 7.
+- **Happy-path-only ACs.** Security & abuse cases block missing or thin. Caught by Dimension 8.
 - **Spec / codebase drift.** Plan references tables, routes, components that don't exist. Caught by reading the plan-reconciliation section against `grep` reality during scoring.
-- **Protected-tests drift.** Plan doesn't enumerate which test contracts are frozen. Caught by Dimension 9.
-- **Route-checklist gap.** Plan enumerates a guard but not the route × file matrix the guard must cover. Caught by Dimension 7.
-- **Unprobed feasibility.** Plan depends on external API / library / migration assumptions without probes. Caught by Dimension 10.
-- **UI selector drift.** Plan changes UI shape without listing affected e2e specs in protected-tests. Caught by Dimension 9 + cross-referencing the changed component against e2e selectors.
+- **Protected-tests drift.** Plan doesn't enumerate which test contracts are frozen. Caught by Dimension 10.
+- **Route-checklist gap.** Plan enumerates a guard but not the route × file matrix the guard must cover. Caught by Dimension 8.
+- **Unprobed feasibility.** Plan depends on external API / library / migration assumptions without probes. Caught by Dimension 11.
+- **UI selector drift.** Plan changes UI shape without listing affected e2e specs in protected-tests. Caught by Dimension 10 + cross-referencing the changed component against e2e selectors.
 
 When the plan ships these gaps, this skill blocks; when the plan addresses them, the downstream review/security/definition-of-done acts have less to surface.
 
@@ -207,6 +207,6 @@ When the plan ships these gaps, this skill blocks; when the plan addresses them,
 ## Done when
 
 - The plan scores ≥ 7 (averaged across the dimensions), or 3 rounds have elapsed.
-- No implementability hole remains: every task is executable without a builder-side decision (checked in Dimension 1b).
+- No implementability hole remains: every task is executable without a builder-side decision (checked in Dimension 2).
 - The critique, score line, and `rounds=<n>` are recorded to `.pipeline/work/<id>/progress.json`.
 - Every CRITICAL finding is either fixed in the plan or explicitly accepted with a reason.
