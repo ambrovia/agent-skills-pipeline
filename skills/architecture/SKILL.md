@@ -9,11 +9,13 @@ user-invocable: true
 
 # Architecture — the technical plan for a work package
 
+**Writes `architecture.md`.** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the requirements doc from `/refine` at `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
+
 **Why:** A clear plan prevents wasted implementation time. Without architectural planning, the pipeline-builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The pipeline-reviewer catches errors before they become expensive rework.
 
 **Fixed inputs (do NOT re-litigate):**
-- Requirements doc from `/refine` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
-- Approved design from `/design` (UI work packages), at the path the design step wrote it (e.g. `.pipeline/progress/<id>` or alongside the work package). If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
+- Requirements doc from `/refine` at `.pipeline/work/<id>/requirements.md` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
+- Approved design from `/design` (UI work packages), at `.pipeline/work/<id>/design/approved.md`. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
 
 **Doc discovery:** Read the "Required reading" from `/refine` output if available. Otherwise list `{{paths.docs}}` to identify relevant topic folders. **Output a "Required reading" section in the plan** listing the specific doc files the engineer must read before implementing. This is the natural filter — downstream skills read only what the plan prescribes.
 
@@ -55,7 +57,7 @@ Produce a `Plan reconciliation:` block in the plan listing every spec assumption
 
 ## Phase 2 — Acceptance criteria + tasks
 
-Read the work package under `.pipeline/work-packages/`. Read existing code in the affected areas of `{{paths.source}}` and the relevant doc sections identified in doc discovery above.
+Read the `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`. Read existing code in the affected areas of `{{paths.source}}` and the relevant doc sections identified in doc discovery above.
 
 If the work package has a UI surface and `/design` produced an approved spec, read it. The visual contract, component vocabulary, and interaction states are inputs — do not re-litigate them. (Skipped when no design system is configured.)
 
@@ -82,5 +84,5 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 ## Done when
 
-- A plan exists with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
-- The plan is saved to `.pipeline/plans/<id>.md` — the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read. Write it there even when a warm pipeline-planner session would otherwise carry it; downstream personas must not depend on that session existing.
+- `architecture.md` has been written with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on that session existing.

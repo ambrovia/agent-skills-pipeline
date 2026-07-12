@@ -23,16 +23,16 @@ Phase 1, the first pre-build act for a work package whose goal is unclear or tha
 
 ## What it produces
 
-- `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement output (**always**). Carries the `DOC-CLASS` line and the guide draft. This is what `/design` and `/architecture` read as a fixed input.
+- **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement output (**always**). Carries the `DOC-CLASS` line and the guide draft. It **references `plan.md`** and **updates `plan.md` only if the overall plan changes**. This is what `/design` and `/architecture` read as a fixed input.
 - A ground-truth doc under `{{paths.docs}}` when the requirement reshapes an existing layer — the **specific** file, never a generic folder dump.
 
 ## Required reading (do this first)
 
-1. The work package in `.pipeline/work-packages/<id>.md` (or `.pipeline/work-packages/<id>/`) — what it asks for and why.
+1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why.
 2. Existing canonical-shapes / contract docs under `{{paths.docs}}` — does the noun already have a contract?
 3. List `{{paths.docs}}` to identify relevant topic folders, then read each topic's index and drill into the specific files that match the noun.
 
-**Output a "Required reading" section** in your requirements doc, listing the specific doc files downstream agents (`/design`, `/architecture`, `/pipeline`) must read for this work package.
+**Output a "Required reading" section** inside `requirements.md`, listing the specific doc files downstream agents (`/design`, `/architecture`, `/pipeline`) must read for this work package.
 
 If the spec contradicts an existing requirements / concept doc, that is **CRITICAL**. Surface it; never silently re-define.
 
@@ -52,7 +52,7 @@ State the goal as the user/dev guide that would explain the feature once it ship
 
 ## Phase 2 — Write requirements.md and emit DOC-CLASS
 
-Write `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), the **Guide draft** from Phase 1, and the `DOC-CLASS` line. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
+Write `.pipeline/work/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), the **Guide draft** from Phase 1, and the `DOC-CLASS` line. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
 
 **Emit the `DOC-CLASS` line** at the top of `requirements.md` — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
 
@@ -74,7 +74,7 @@ Stop there: a distinct, unambiguous noun, not a data model. No cardinality / lif
 
 ## Done when
 
-- `requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, and — if the work introduced a noun — its definition + hard rules.
+- `.pipeline/work/<id>/requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, and — if the work introduced a noun — its definition + hard rules.
 - The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
 - A "Required reading" section names the specific docs downstream agents must read.
 - No spec/doc contradiction is left silent.

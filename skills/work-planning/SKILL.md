@@ -1,6 +1,6 @@
 ---
 name: work-planning
-description: "Create a new work-package spec — outcome-level only — and register it in the manifest + track index. Maintainer-only. Use when introducing a new work package or breaking a track into work packages. Triggers: 'add a new work package', 'plan a work package', 'register X under Track Y'."
+description: "Create a new work-package spec — outcome-level only — by seeding its plan.md in the work folder and registering it in the per-track coordination file. Maintainer-only. Use when introducing a new work package or breaking a track into work packages. Triggers: 'add a new work package', 'plan a work package', 'register X under Track Y'."
 phase: 1
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
@@ -63,8 +63,8 @@ The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground 
 
 ## Pre-flight checks (refuse to proceed if any fails)
 
-1. **Track letter is valid.** Must match an existing `.pipeline/work-packages/<track>.md` or be a deliberate new track (in which case create the track file first with the same scope-rules section other tracks use).
-2. **Work-package ID is unique.** Read `.pipeline/pipeline-manifest.yml`; the generated ID (e.g. `L30`) must not collide with any existing entry.
+1. **Track letter is valid.** Must match an existing per-track coordination file `.pipeline/<track>.md` or be a deliberate new track (in which case create `.pipeline/<track>.md` first with the standard header + scope-rules section other tracks use).
+2. **Work-package ID is unique.** Read the WP registry in `.pipeline/<track>.md`; the generated ID (e.g. `L30`) must not collide with any existing entry.
 3. **Strategic-frame gate.** The track's **strategic frame** — its load-bearing primitive / boundary and the frame every work package shares — must be defined in `{{paths.docs}}` before registering. Run the strategic-framing questionnaire to settle it; if it's vague or contested, **hold** and resolve the open questions. A per-WP noun needing its own `/refine` does not block registration — flag the **Refinement** gate so the pipeline runs it at build time. `/pipeline` enforces this at runtime (`blocked: concept-missing` if a WP reaches build with no frame).
 4. **Justification check.** The work package must have a clear answer to: "Who specifically benefits, and what's the cost of NOT building this?" If the only argument is "it would be nice," "other products have it," or "the research says so," the work package is not justified. Features are complexity — every one makes the system harder to understand, maintain, and explain. The burden of proof is on the work package to earn its existence. Refuse to register if the justification is weak.
 5. **Existing-implementation check.** Before writing the spec, search `{{paths.source}}` for the capability being proposed. Read the relevant source files — schemas, routes, services, UI pages. If the feature largely exists, the spec must document what's already built (in a "What exists today" paragraph) and identify only the genuine gap. Proposing to build something that already exists is the #1 failure mode in work-planning. When in doubt, spawn an Explore agent to audit the relevant subsystem.
@@ -89,12 +89,14 @@ The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground 
 
 ## Output contract — the spec template
 
-Work-package specs live **inline as H3 sections inside `.pipeline/work-packages/<track>.md`** (NOT as standalone files). Follow the existing convention used by the other track files. Pipeline-step artifacts (`<id>-architecture-review.md`, `<id>-plan.md`, …) DO get their own files — those are produced later by `/architecture` and friends, not by you.
+Each work package gets **its own folder** `.pipeline/work/<id>/`, and its spec is **seeded into `.pipeline/work/<id>/plan.md`** — the WP spec, the plan of record. You write the seed: the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections (with the spec fields below under `## Work package`). Later phases write their **own** files alongside it — `/refine` → `requirements.md`, `/design` → `design/`, `/architecture` → `architecture.md` — and update `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). They do NOT add sections to `plan.md`. Do NOT write those downstream docs yourself, and do NOT put implementation detail in the seed.
 
-Append the spec at the bottom of the relevant `<track>.md`, with **exactly** these sections, in this order:
+Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this order:
 
 ```markdown
-### <ID> — <Title>
+# <ID> — <Title>
+
+## Work package
 
 **Work package.** One paragraph (4-6 sentences max) framed as: *As a <role>, I want <observable outcome>, so that <reason>.* Concrete, no jargon, no acronyms unless already established under `{{paths.docs}}`. The first reader must be able to picture the user-visible or system-visible result without reading further.
 
@@ -116,10 +118,6 @@ Append the spec at the bottom of the relevant `<track>.md`, with **exactly** the
 
 **Human concept review.** Yes | No — `<one-line reason>`. Forecasts whether the founder will review the user-facing parts (the user/dev-guide draft + the design). Forecast `Yes` when the WP introduces a new essential / base / primitive component, a large redesign, OR a significant rewrite of the user/dev guides; `No` for a routine tweak, a backend/infra-only WP, or an extension of an existing component. **Advisory forecast, NOT the trigger** — the authoritative gate is `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` at review time (a WP forecast `No` that `/design` later classifies `novel` or `/refine` marks `DOC-CLASS: significant` still parks).
 
-**Acceptance criteria.** A bulleted list of observable, testable statements — see `references/writing-acs.md`. These are the single source of truth flowing through all pipeline phases: `/refine` sharpens the requirement against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
-
-**Validation scenarios.** 2–4 Given/When/Then scenarios. These are the minimum the QA gate (`/review`) will run. They must collectively cover every AC.
-
 **Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package needs refinement (goal unclear or introduces/reshapes a noun), say so and name the noun so the pipeline runs `/refine` first.
 
 **Contracts / constraints.** Bullet list of hard rules the implementation must honor (e.g. "no new on-disk file format dialect", "migration is forward-only", "no emojis", "back-compat preserved at the API level not the row level"). These are guarantees the pipeline-reviewer will check, separate from AC.
@@ -127,6 +125,14 @@ Append the spec at the bottom of the relevant `<track>.md`, with **exactly** the
 **Out of scope.** Bullet list of things a reader might assume are part of this work package but are not. Future improvements, related work packages, edge cases deliberately deferred.
 
 **Effort.** S (~Xmin) | M (~Xh) | L (~Xd) — same letter as Complexity, with a rough time estimate. The estimate is informational; the letter drives scheduler behavior. Examples: `S (~30min)`, `M (~4h)`, `L (~5d)`.
+
+## Acceptance criteria
+
+A bulleted list of observable, testable statements — see `references/writing-acs.md`. These are the single source of truth flowing through all pipeline phases: `/refine` sharpens the requirement against them, `/design` produces variants for them, `/architecture` writes tasks to satisfy them, `/write-tests` produces one failing test per AC, `/write-code` makes those tests pass, and `/review` audits code against them.
+
+## Validation scenarios
+
+2–4 Given/When/Then scenarios. These are the minimum the QA gate (`/review`) will run. They must collectively cover every AC.
 ```
 
 ---
@@ -151,19 +157,14 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
 
 ## Registration steps (perform in order, in one commit)
 
-1. **Append the spec to the track file.** Add the new H3 section at the bottom of `.pipeline/work-packages/<track>.md` per the template above. If the track doesn't exist yet, create the file with the standard preamble (scope rules, reference docs, dependency-graph pointer to `.pipeline/work-packages/dependency-graph.md`) before appending.
-2. **Append to the manifest.** Add an entry to `.pipeline/pipeline-manifest.yml` under the existing list of work packages:
-    ```yaml
-      - id: <ID>
-        title: <Title — same as the spec H3>
-        track: <single-letter track>
-        type: frontend | backend | application | framework | infra
-        depends: [<ID>, <ID>] # or []
-        complexity: S | M | L
+1. **Seed the plan.** Create `.pipeline/work/<id>/` and write `plan.md` with the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections per the template above. Later phases write their own docs (`requirements.md`, `design/`, `architecture.md`) alongside it and update `plan.md` only if the overall plan changes.
+2. **Register in the per-track coordination file.** Add a row to the WP registry table in `.pipeline/<track>.md` and record the dependency edges (including any cross-track references) in that file's dependency graph:
+    ```markdown
+    | <ID> | <Title> | frontend\|backend\|application\|framework\|infra | S\|M\|L | depends: <ID>, <ID> (or —) | status: planned |
     ```
-3. **Update the track index** if the row count changed for that track (e.g. `Work packages: L1–L30` → `L1–L31`).
-4. **Validate.** Run the project's verify command, `{{verify}}` — manifest checks must pass (these catch a duplicate ID, an invalid complexity, an unknown type, or a dangling dep). If the project defines a faster typecheck/lint subset, run that first as a sanity pass.
-5. **Single commit.** All changes ship together: track update + manifest + index. Message: `plan: register <ID> — <title>`.
+    If the track doesn't exist yet, create `.pipeline/<track>.md` first with the standard header (track frame summary, scope rules, reference docs) + an empty registry table + dependency-graph section.
+3. **Validate.** Run the project's verify command, `{{verify}}` — coordination-file checks must pass (these catch a duplicate ID, an invalid complexity, an unknown type, or a dangling dep). If the project defines a faster typecheck/lint subset, run that first as a sanity pass.
+4. **Single commit.** All changes ship together: the seeded `.pipeline/work/<id>/plan.md` + the `.pipeline/<track>.md` registry/dependency update. Message: `plan: register <ID> — <title>`.
 
 ---
 

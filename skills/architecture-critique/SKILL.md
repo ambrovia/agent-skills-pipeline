@@ -11,9 +11,9 @@ user-invocable: true
 
 **Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the pipeline-reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
 
-This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The approved plan lands in `.pipeline/plans/<id>.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The technical plan lands in `.pipeline/work/<id>/architecture.md`, so the Phase 4 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
-This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the approved plan in `.pipeline/plans/<id>.md` (warm context if the host kept the session, read from the artifact if not).
+This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the technical plan in `.pipeline/work/<id>/architecture.md` (warm context if the host kept the session, read from the artifact if not).
 
 The pipeline-reviewer should run on a fresh high-capability agent ({{models.review}}) so the critique is not anchored by whatever produced the plan.
 
@@ -26,7 +26,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 ## When this runs
 
 - **In the pipeline:** Phase 2, after the pipeline-planner completes the `architecture` act. Reviewer session.
-- **On explicit invocation for a work package:** full audit of the plan at `.pipeline/progress/<id>/architecture.md` (or wherever the project's architecture act writes the plan).
+- **On explicit invocation for a work package:** full audit of `.pipeline/work/<id>/architecture.md`.
 - **Skip condition:** this skill always applies to a work package that has a technical plan. The design-system-specific checks inside it are skipped automatically when no design system is configured (`pipeline.config` `designSystem: null`).
 
 ## What it produces
@@ -35,7 +35,7 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
 
 ## Required reading
 
-1. The work package in `.pipeline/work-packages/<id>.md`.
+1. The `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`.
 2. The locked concept output for the work package (the concept act's output).
 3. The plan itself — every section, including its **Required reading** list.
 4. The specific authoritative files named in the plan's **Required reading** (these are individual `{{paths.docs}}` files the plan picked, not whole folders).
@@ -167,7 +167,7 @@ ARCHITECTURE-SCORE: <int>/10  rounds=<n>  score-line: SA:_ LI:_ AC:_ DM:_ N:_ MD
 - 1-2 things the plan does right (reinforces good patterns; helps the next pipeline-planner)
 ```
 
-The retro reads `rounds=<n>` to track plan-quality drift over time. Write the score and rounds to `.pipeline/progress/<id>.json` so downstream phases and the retro can read them.
+The retro reads `rounds=<n>` to track plan-quality drift over time. Write the score and rounds to `.pipeline/work/<id>/progress.json` so downstream phases and the retro can read them.
 
 ## Common failure modes caught by this skill
 
@@ -191,5 +191,5 @@ When the plan ships these gaps, this skill blocks; when the plan addresses them,
 ## Done when
 
 - The plan scores ≥ 7 (averaged across the 9 dimensions), or 3 rounds have elapsed.
-- The critique, score line, and `rounds=<n>` are recorded to `.pipeline/progress/<id>.json`.
+- The critique, score line, and `rounds=<n>` are recorded to `.pipeline/work/<id>/progress.json`.
 - Every CRITICAL finding is either fixed in the plan or explicitly accepted with a reason.

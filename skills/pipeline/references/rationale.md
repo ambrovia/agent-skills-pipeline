@@ -6,7 +6,7 @@ Read this before you talk yourself out of a phase.
 
 (a) The **pipeline-planner** produces (`design`, `architecture`); the **pipeline-reviewer** evaluates
 (`design-critique`, `architecture-critique`) — *different agents*, true independence. (b) The
-pipeline-reviewer later reviews the code in Phase 4 against the approved plan in `.pipeline/plans/<id>.md`
+pipeline-reviewer later reviews the code in Phase 4 against the approved plan in `.pipeline/work/<id>/plan.md`
 (warm on those decisions if its Phase 2 session survived, reading them from the artifact if not),
 applying both positive lenses (does it respect the contracts?) and negative lenses (what would
 break it?). The pipeline-reviewer's AC-completeness audit enforces the one boundary that must never live
@@ -19,7 +19,7 @@ The agent that created a design cannot objectively score it. Moving critique to 
 true producer/evaluator separation — different agents, not a "cognitive mode switch" on one agent.
 Bonus: if the host keeps the pipeline-reviewer's Phase 2 session warm, those design decisions and
 architecture contracts carry into Phase 4 for free; if not, it reads them from
-`.pipeline/plans/<id>.md`. Either way it checks code against the written contract.
+`.pipeline/work/<id>/plan.md`. Either way it checks code against the written contract.
 
 ## Why ship runs after retro
 

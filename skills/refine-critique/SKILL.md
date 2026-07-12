@@ -14,13 +14,13 @@ The evaluation counterpart to `/refine`. The pipeline-planner who sharpened the 
 ## When this runs
 
 - **In the pipeline:** Phase 2, after `/refine` produced `requirements.md`, before `/design-critique` and `/architecture-critique`. Reviewer session.
-- **On explicit invocation:** audit a work package's `requirements.md`.
+- **On explicit invocation:** audit a work package's `.pipeline/work/<id>/requirements.md`.
 - **Skip when:** `/refine` did not run for the work package (the goal was already sharp in `{{paths.docs}}`).
 
 ## Required reading
 
-1. The work package in `.pipeline/work-packages/<id>.md` — what it asks for.
-2. `requirements.md` — the sharpened goal, the guide draft, and the `DOC-CLASS` line.
+1. The work package in `.pipeline/work/<id>/plan.md` — what it asks for.
+2. `.pipeline/work/<id>/requirements.md` — the sharpened goal, the guide draft, and the `DOC-CLASS` line.
 3. The track's strategic frame in `{{paths.docs}}` — the value and boundary the goal must serve.
 
 ## The critique loop
@@ -57,7 +57,7 @@ Score ≥ 7 unlocks the goal for design and architecture. ≤ 4 sends it back to
 ### What's working
 ```
 
-Write the score and rounds to `.pipeline/progress/<id>.json` so the pipeline and retro can read them.
+Write the score and rounds to `.pipeline/work/<id>/progress.json` so the pipeline and retro can read them.
 
 ## Target
 

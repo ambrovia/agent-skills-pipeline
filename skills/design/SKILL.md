@@ -33,17 +33,17 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 - **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
 - **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 2 critique on the existing `approved.md`.
 
-**Fixed input from `/refine`:** the relevant requirement output is the conceptual model these variants must respect. Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue, not a design issue.
+**Fixed input from `/refine`:** the requirement output at `.pipeline/work/<id>/requirements.md` is the conceptual model these variants must respect. Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue, not a design issue.
 
 ## Inputs
 
 Read all of the following in one parallel batch of Read calls — these files are independent (anchor-scoped where possible):
 
-1. The work package in `.pipeline/work-packages/<id>.md`.
-2. The per-work-package requirement output at `.pipeline/work-packages/<id>/requirements.md` and the specific docs under `{{paths.docs}}` it cites in its **Required reading**. The requirement tells you which existing layout / component-budget files matter — do not browse `{{paths.docs}}` directly.
+1. The `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`.
+2. `requirements.md` and the specific docs under `{{paths.docs}}` it cites in its **Required reading**. The requirement tells you which existing layout / component-budget files matter — do not browse `{{paths.docs}}` directly.
 3. The design system's principles, aesthetics, and conventions docs under `{{designSystem.path}}`, plus the tokens at `{{designSystem.tokens}}`.
 4. Any project aesthetic-quality / visual-parity rules the design system docs point to.
-5. If a `design/` directory already exists for this work package under `.pipeline/progress/<work-package-id>/`, you may be resuming.
+5. If a `design/` directory already exists for this work package under `.pipeline/work/<id>/`, you may be resuming.
 
 For deeper reference material on specific critique dimensions (read on demand when scoring in Phase 2 — each cross-links the design system's own aesthetics documentation):
 
@@ -144,7 +144,7 @@ If two variants converge, regenerate. Do not proceed with three flavours of one 
 
 ### Output per variant — the spec is concrete OR it doesn't count
 
-Each variant produces, in `.pipeline/progress/<work-package-id>/design/<variant-slug>/`:
+Each variant produces, in `.pipeline/work/<id>/design/<variant-slug>/`:
 
 1. **`spec.md`** — opinionated spec, no hand-waving:
    - User task (1 sentence — who, what, why)
@@ -162,7 +162,7 @@ If HTML mockups are too heavy for the work package (small primitive, well-unders
 
 ## Phase 2 — Build the comparison
 
-Produce `.pipeline/progress/<work-package-id>/design/comparison.md`:
+Produce `.pipeline/work/<id>/design/comparison.md`:
 
 | Dimension | Variant A | Variant B | Variant C |
 |---|---|---|---|
@@ -180,7 +180,7 @@ Plus the screenshots side by side.
 
 ## Phase 3 — Synthesize
 
-Often the best design combines insights from multiple variants. Write `.pipeline/progress/<work-package-id>/design/synthesis.md`:
+Often the best design combines insights from multiple variants. Write `.pipeline/work/<id>/design/synthesis.md`:
 
 - Which variant is the strongest base?
 - Which elements from the others are worth pulling in?
@@ -195,7 +195,7 @@ If a maintainer is reachable, surface the comparison and **let them pick**. One 
 
 ## Phase 4 — Approve and write the chosen design
 
-Once a direction is chosen, write `.pipeline/progress/<work-package-id>/design/approved.md`:
+Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; update `plan.md` only if the design changes the overall plan (scope/ACs):
 
 - The chosen variant + any pulled-in elements from siblings
 - The rejected list (so `/architecture` and the build phase don't re-litigate)
@@ -219,7 +219,7 @@ Once a direction is chosen, write `.pipeline/progress/<work-package-id>/design/a
 ## Output artifacts
 
 ```
-.pipeline/progress/<work-package-id>/design/
+.pipeline/work/<id>/design/
 ├── brief.md                    # the interrogated brief (DESIGN-CLASS line at top)
 ├── <variant-a-slug>/
 │   ├── spec.md
