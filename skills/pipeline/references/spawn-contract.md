@@ -16,51 +16,35 @@ Update `currentStep` in `.pipeline/work/<id>/progress.json` before each persona 
 
 ---
 
-## Phase 1a — pipeline-planner (refine)
+## Phase 1 — pipeline-planner (production)
 
 Spawn the **pipeline-planner** (`{{models.design}}`).
 
-- Run `refine` when the WP goal is unclear or it introduces/reshapes a noun. It writes
-  `.pipeline/work/<id>/requirements.md`.
-- When refine is skipped, ensure `.pipeline/work/<id>/requirements.md`
-  exists (consolidate from the plan's `## Work package` section + `{{paths.docs}}`) so downstream
-  phases have a requirement to read.
-
-## Phase 2a — pipeline-reviewer + pipeline-planner (refine critique)
-
-Spawn the **pipeline-reviewer** (`{{models.review}}`).
-
-- Run `refine-critique` when refine ran. Skip when refine did not run and requirements were
-  consolidated unchanged from locked docs.
-- CRITICAL/WARNING → pipeline-planner revises `.pipeline/work/<id>/requirements.md`
-  → re-critique (**max 3 rounds**).
-
-## Phase 1b — pipeline-planner (design)
-
-Spawn the **pipeline-planner** (`{{models.design}}`).
-
+- Run `refine` when the WP goal is unclear or it introduces/reshapes a noun — it writes
+  `.pipeline/work/<id>/requirements.md`. When refine is skipped, ensure that file exists
+  (consolidate from the plan's `## Work package` section + `{{paths.docs}}`) so downstream phases
+  have a requirement to read.
 - Run `design`: classify routine vs. novel, generate variants. **Skip if no UI surface or
-  `designSystem` is null.** Consumes `.pipeline/work/<id>/requirements.md`;
-  artifacts go under `.pipeline/work/<id>/design/` (incl. `approved.md`).
-- Routine UI gets 1 variant plus a "did we consider X / Y / Z?" check; novel UI gets up to 3.
-
-## Phase 1c — pipeline-planner (architecture)
-
-Spawn the **pipeline-planner** (`{{models.design}}`).
-
+  `designSystem` is null.** Consumes `.pipeline/work/<id>/requirements.md`; artifacts go under
+  `.pipeline/work/<id>/design/` (incl. `approved.md`). Routine UI (existing component family, known
+  layout) gets 1 variant plus a "did we consider X / Y / Z?" check; genuinely novel UI gets up to 3.
+  New load-bearing primitives are always novel.
 - Run `architecture`: interrogate the spec and **write** `.pipeline/work/<id>/architecture.md`.
   Consumes `.pipeline/work/<id>/plan.md` + `.pipeline/work/<id>/requirements.md` +
   `.pipeline/work/<id>/design/approved.md` (when UI).
 
-Keep the pipeline-planner warm for Phase 2b's critique fixes if the host supports it.
+Keep the pipeline-planner warm for Phase 2's critique fixes if the host supports it; otherwise it re-enters
+Phase 2 by reading the WP spec and the current docs from `.pipeline/work/<id>/`.
 
-## Phase 2b — pipeline-reviewer + pipeline-planner (critique loop)
+## Phase 2 — pipeline-reviewer + pipeline-planner (critique loop)
 
 Spawn the **pipeline-reviewer** (`{{models.review}}`) — a *different* agent reading the pipeline-planner's output
-cold.
+cold. This is true producer/evaluator separation, not a mode switch on one agent.
 
-- Run `design-critique` (score variants). **Skip if no UI surface / no design system.**
-- Run `architecture-critique` (score the plan).
+- Run `refine-critique` when refine ran (score the goal + guide draft against the rubric).
+- Run `design-critique` (score variants against the rubric). **Skip if no UI surface / no design
+  system.**
+- Run `architecture-critique` (score the plan against the rubric).
 
 If the critique has CRITICAL or WARNING findings:
 
@@ -68,7 +52,10 @@ If the critique has CRITICAL or WARNING findings:
 2. Send the revised plan back to the **pipeline-reviewer** to re-critique.
 3. Repeat until the score clears the bar **or 3 rounds are reached**.
 
-The pipeline-planner keeps `.pipeline/work/<id>/architecture.md` current through the critique loop.
+The pipeline-planner keeps `.pipeline/work/<id>/architecture.md` current through the critique loop; when
+the critique clears, the pipeline-builder receives a single clean, approved plan. Keep the
+pipeline-reviewer warm for Phase 4 if the host supports it; otherwise it re-reviews cold against
+`.pipeline/work/<id>/`.
 
 ## Phase 3 — pipeline-builder (TDD)
 

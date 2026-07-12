@@ -9,11 +9,11 @@ user-invocable: true
 
 # Refine Critique — score the goal before anything is built
 
-The evaluation counterpart to `/refine`. The pipeline-planner who sharpened the goal is the least able to see where it's still fuzzy, so a fresh pipeline-reviewer scores it **before** `/human-concept-review` Pass 1 and before any design or architecture work. This is **not** `/architecture-critique` — that scores the plan; this scores the *goal and its guide draft*, upstream of any plan.
+The evaluation counterpart to `/refine`. The pipeline-planner who sharpened the goal is the least able to see where it's still fuzzy, so a fresh pipeline-reviewer scores it before design and architecture build on it. This is **not** `/architecture-critique` — that scores the plan; this scores the *goal and its guide draft*, upstream of any plan.
 
 ## When this runs
 
-- **In the pipeline:** Phase 2a, after `/refine` wrote `requirements.md`, before `/human-concept-review` Pass 1. Reviewer session.
+- **In the pipeline:** Phase 2, after `/refine` produced `requirements.md`, before `/design-critique` and `/architecture-critique`. Reviewer session.
 - **On explicit invocation:** audit a work package's `.pipeline/work/<id>/requirements.md`.
 - **Skip when:** `/refine` did not run for the work package (the goal was already sharp in `{{paths.docs}}`).
 
