@@ -57,7 +57,7 @@ Read every function body. Check every unsafe cast. Open every test file and veri
 
 ## The six lenses
 
-Run each lens in turn. Each summary below is the trigger; the full checklist for every lens is in **`references/lenses.md`** — open it and work the relevant section rather than relying on these summaries.
+Run each lens in turn — the summary below is the working checklist for that lens. Every finding carries a `file:line` and a spec reference.
 
 1. **Architecture** — layer violations, API/contract shape, data-model alignment, state machines, naming honesty, component boundaries, spec contradictions, and **doc staleness**. If the implementation changes behaviour that a doc under `{{paths.docs}}` describes, that stale doc section is CRITICAL — the pipeline-builder must update it in the same change. Docs are part of the deliverable.
 

@@ -47,7 +47,7 @@ ACTIVATE (2m+)    → "What do I do next?"           → Reader converts to user
 
 ## The 15 Principles
 
-These are specific, measurable rules. Not guidelines — rules. Each has an empirical basis (full citations in `references/research-basis.md`).
+These are specific, measurable rules. Not guidelines — rules. Each has an empirical basis (NNG eye-tracking and A/B studies, Cowan's working-memory limit, the picture-superiority effect).
 
 ### Structure
 
@@ -93,7 +93,18 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 ## Scoring Rubric
 
-Use the 10-dimension rubric (1-5 each, 50 max) in `references/rubric.md` when reviewing documentation. Score every dimension; do not average away a structural failure.
+Score documentation on 10 dimensions (1-5 each, 50 max). Score every dimension; do not average away a structural failure. **5 (excellent)** looks like:
+
+1. **10-second value** — the first sentence answers "what" and "why"; scannable in 3 seconds.
+2. **Inverted pyramid** — answer first, then detail, then background; no scrolling for the core point.
+3. **Heading quality** — a heading every 150-200 words; each is a standalone information scent; the headings alone tell the page story.
+4. **Sentence / paragraph length** — paragraphs under 100 words; sentences 14-20; none over 35.
+5. **Concrete aids** — a code/visual/worked example within the first 2 screenfuls; every key concept has one.
+6. **Cognitive load** — max 4 concepts per section, each followed by an example or summary.
+7. **Language objectivity** — purely factual; zero promotional adjectives ("powerful", "seamless").
+8. **Scannability** — bullet lists for parallel items, bold for key terms, tables for comparisons.
+9. **Progressive disclosure** — 3 layers (summary → detail → reference); no dead ends.
+10. **Actionable exit** — ends with a concrete next action or a "Try it" prompt.
 
 **Thresholds:**
 - **40-50:** Publication-ready. Ship it.
@@ -140,7 +151,3 @@ Read each document. For each page:
 - Every documented feature is backed by source evidence in `{{paths.source}}`.
 - Docs live under `{{paths.docs}}` and any commands they reference actually run.
 - Each page ends with a concrete next action (P15) and opens its funnel in 10 seconds (P1).
-
----
-
-See `references/research-basis.md` for the full empirical basis per principle and `references/rubric.md` for the scoring table.

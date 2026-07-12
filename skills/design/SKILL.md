@@ -45,15 +45,7 @@ Read all of the following in one parallel batch of Read calls — these files ar
 4. Any project aesthetic-quality / visual-parity rules the design system docs point to.
 5. If a `design/` directory already exists for this work package under `.pipeline/work/<id>/`, you may be resuming.
 
-For deeper reference material on specific critique dimensions (read on demand when scoring in Phase 2 — each cross-links the design system's own aesthetics documentation):
-
-- `references/hierarchy.md` — visual-hierarchy tactics; primary / secondary / tertiary text levels.
-- `references/spacing.md` — the spacing grid, density tiers, sub-grid exceptions.
-- `references/typography.md` — type scale, weight limits, monospace usage.
-- `references/color.md` — semantic token usage, halation guard, contrast rules.
-- `references/finishing.md` — hover / focus / pressed states, motion tokens, polish details.
-
-Without these, the Phase 2 critique becomes vibes-grading. Read the relevant reference before assigning a score on its dimension.
+For the design dimensions scored in Phase 2 — visual hierarchy, spacing/density, typography, color, and finishing — read the design system's aesthetics documentation under `{{designSystem.path}}` (with token values in `{{designSystem.tokens}}`). Without a concrete reference the Phase 2 critique becomes vibes-grading — read it before assigning a score on its dimension.
 
 ## Phase 0a — Classify: routine vs novel
 
@@ -214,7 +206,7 @@ Once a direction is chosen, write `.pipeline/work/<id>/design/approved.md`; upda
 - Mockups that describe instead of embody.
 - Skipping the Phase 2 critique gate.
 - Re-litigating the visual contract in `/architecture`.
-- AI-aesthetic defaults — see the design system's anti-pattern documentation and `references/finishing.md`.
+- AI-aesthetic defaults — see the design system's anti-pattern documentation under `{{designSystem.path}}`.
 
 ## Output artifacts
 
