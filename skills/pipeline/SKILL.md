@@ -126,7 +126,7 @@ in Phase 4 reusing its Phase 2 session, the pipeline-builder carrying Phase 3 in
 ship — to save context/cache-creation cost. Where it doesn't (no durable sessions, or subagents
 that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
 just not free. Never gate the pipeline on session reuse being available. The retro agent is always
-ephemeral. See `references/spawn-contract.md` for the exact per-phase dispatch script.
+ephemeral.
 
 ### Loop rules
 
@@ -196,11 +196,11 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
   doubt and a design system exists, run `design` with `routine` classification — one variant is
   cheap and the brief doubles as documentation.
 
-For the full **anti-rationalization table** ("the plan is done, I can stop" / "this story is
-simple, skip the review" / "the pipeline-reviewer is redundant, tests passed" / "the retro is
-navel-gazing") and the **ordering rationale** (why the pipeline-reviewer critiques, why ship runs after
-retro, why variant count is conditional), see `references/rationale.md`. Read it before you
-talk yourself out of a phase.
+Watch the anti-rationalizations ("the plan is done, I can stop" / "this story is simple, skip the
+review" / "the pipeline-reviewer is redundant, tests passed" / "the retro is navel-gazing") and hold
+the **ordering rationale**: the pipeline-reviewer critiques (never the producer), and ship runs after
+retro so the retro output is part of the verified tree. Read this before you talk yourself out of a
+phase.
 
 ## After the pipeline: compound
 

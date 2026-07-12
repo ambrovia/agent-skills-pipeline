@@ -62,7 +62,7 @@ Read the `## Work package` + `## Acceptance criteria` sections of `.pipeline/wor
 If the work package has a UI surface and `/design` produced an approved spec, read it. The visual contract, component vocabulary, and interaction states are inputs — do not re-litigate them. (Skipped when no design system is configured.)
 
 Produce:
-1. **Acceptance criteria** — each with a specific verification method (see `references/verification-methods.md`).
+1. **Acceptance criteria** — each with a specific verification method (see the criterion→verification table below).
 2. **Ordered task list** — what to do, which files, which test proves it, dependencies between tasks.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
@@ -72,7 +72,20 @@ Produce:
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
 9. **Shared files** — `sharedFiles: string[]` listing infrastructure files this work package modifies that other concurrent work packages may also touch (schema definitions, shared types, the router, app entrypoint, seed files). Used by the pipeline to detect overlap and schedule merge order when work packages run in parallel.
 
-**Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough. Say exactly what the test does and what it asserts. The verification-method rubric — criterion type → exact verification — is in `references/verification-methods.md`. Where a criterion is "type safety" or "the whole change is green," the verification is the project's verify command, `{{verify}}` (or a fast typecheck, if the project defines one, for incremental checks).
+**Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough — say exactly what the test does and what it asserts. Map each criterion type to a concrete verification:
+
+| Criterion type | Verification |
+|---|---|
+| Schema / data model | Migration runs clean; schema introspection shows the expected tables/columns/constraints |
+| API endpoint | Integration test hits it, asserts status code + response shape |
+| Type safety / whole-change correctness | `{{verify}}` passes with zero errors |
+| Data integrity | Test inserts violating data (orphan FK, duplicate unique), asserts rejection |
+| CRUD | Test creates / reads / updates / deletes, asserts each result |
+| Error handling | Test triggers the error path (bad input, missing resource), asserts the error response |
+| UI component | E2E test navigates to the page, asserts visible elements + interactions (skipped when no design system) |
+| Performance | Benchmark runs N operations under X ms |
+
+Where a criterion is "type safety" or "the whole change is green," the verification is the project's verify command, `{{verify}}` (or a fast typecheck, if the project defines one, for incremental checks).
 
 ## Phase 3 — Design-it-twice (for non-trivial decisions)
 

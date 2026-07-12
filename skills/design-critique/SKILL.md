@@ -38,7 +38,7 @@ Read the project's design-system conventions before critiquing. These live at `{
 3. The actual token values: `{{designSystem.tokens}}`.
 4. Any hard-rule / lint-rule documents the project defines for visual quality.
 
-Deep reference, only when the dimension is in scope: `references/hierarchy.md`, `references/spacing.md`, `references/typography.md`, `references/color.md`, `references/finishing.md`. These carry general design wisdom; always cross-check the concrete numbers against the project's own `{{designSystem.tokens}}`, which override any example value below.
+Always cross-check the concrete numbers against the project's own `{{designSystem.tokens}}` and the design system's aesthetics docs under `{{designSystem.path}}`.
 
 ## The Critique Loop
 
