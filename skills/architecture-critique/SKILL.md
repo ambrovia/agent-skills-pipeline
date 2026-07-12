@@ -145,12 +145,12 @@ Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `protot
 
 ### 11. Feasibility (probes)
 
-- Does the plan include a reference to `feasibility.md` with a table of load-bearing assumptions?
-- For each non-trivial assumption (external API, new library, perf claim, migration shape, IAM capability): is there a probe under `.pipeline/work/<id>/probes/` with `verdict.md`?
-- Did web-research probes cite primary sources (official docs, release notes) with URLs — not vague "should work"?
-- Did code POCs include captured output proving they ran?
-- If probes were skipped: does `feasibility.md` cite file:line precedent for every assumption?
-- **Smell:** plan assumes a third-party capability without a probe. `NO-GO` verdict ignored. Probe theatre (empty `result.md`). Architecture proceeds without `approvals.requirements` set in `progress.json`.
+Judge feasibility **only for the load-bearing, new, or unknown parts** — a new capability/concept, a larger system, an external API/library, a non-obvious perf or migration claim. Obvious, small, pattern-following work needs no proof; do not demand one.
+
+- For the parts that warranted it, does `feasibility.md` give a verdict and the details a reviewer needs?
+- Did web research cite primary sources (official docs, release notes) with URLs — not vague "should work"? Did any POC stay tiny/manual (a sketch, not a full implementation) with captured output?
+- Is any *genuinely uncertain* load-bearing assumption left unproven? **That** is the CRITICAL — not a missing probe on something obvious.
+- **Smell:** a new / complex / load-bearing capability assumed to work with no research or sketch; a `NO-GO` verdict ignored; probe theatre; **or** over-probing — ceremony proving the obvious. Architecture proceeds without `approvals.requirements` set in `progress.json`.
 
 ## Scoring guide
 
@@ -192,7 +192,7 @@ These are recurrences the compound-candidates log keeps surfacing — every one 
 - **Spec / codebase drift.** Plan references tables, routes, components that don't exist. Caught by reading the plan-reconciliation section against `grep` reality during scoring.
 - **Protected-tests drift.** Plan doesn't enumerate which test contracts are frozen. Caught by Dimension 10.
 - **Route-checklist gap.** Plan enumerates a guard but not the route × file matrix the guard must cover. Caught by Dimension 8.
-- **Unprobed feasibility.** Plan depends on external API / library / migration assumptions without probes. Caught by Dimension 11.
+- **Unprobed feasibility.** Plan depends on a *new / load-bearing* external API / library / migration assumption with no research or sketch. Caught by Dimension 11 (obvious, small work is exempt).
 - **UI selector drift.** Plan changes UI shape without listing affected e2e specs in protected-tests. Caught by Dimension 10 + cross-referencing the changed component against e2e selectors.
 
 When the plan ships these gaps, this skill blocks; when the plan addresses them, the downstream review/security/definition-of-done acts have less to surface.

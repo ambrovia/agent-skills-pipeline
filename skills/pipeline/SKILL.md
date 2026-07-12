@@ -59,8 +59,7 @@ package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the
         ├── plan.md            # /work-planning — the WP spec + ACs (the plan of record)
         ├── requirements.md    # /refine — sharpened goal, success, scope, guide draft
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
-        ├── feasibility.md     # /architecture — probe summary table
-        ├── probes/<slug>/     # /architecture — web-research + mini-POC feasibility evidence
+        ├── feasibility.md     # /architecture — feasibility findings + verdicts for the reviewer (only when something was load-bearing/new/unknown)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
@@ -75,7 +74,7 @@ document** rather than folding into `plan.md`:
 
 - `/refine` → `requirements.md` (sharpened goal, success, scope, guide draft)
 - `/design` → `design/` (brief, variants, `approved.md`) — UI only
-- `/architecture` → `architecture.md` + `feasibility.md` (+ raw evidence under `probes/`)
+- `/architecture` → `architecture.md` (+ `feasibility.md` when a feasibility check was warranted)
 
 Each phase **references `plan.md`** and **updates `plan.md` only if the overall plan changes**
 (scope, acceptance criteria, intent). All downstream personas read these files; none may depend on a
@@ -122,8 +121,9 @@ null** — see the skip rule at the end.
 
 **Ordering principle:** the human concept-review gates are **mandatory** — no work package proceeds
 past the **requirement** gate (Phase 3) into design or architecture, and no UI work package proceeds
-past the **design** gate (Phase 5), until the founder approves. Architecture must **prove feasibility**
-(web research + mini POCs) before the critique loop clears the plan for build.
+past the **design** gate (Phase 5), until the founder approves. Architecture must **prove feasibility for
+the load-bearing / new / unknown parts** (web research + tiny POCs) — not the obvious ones — before the
+critique loop clears the plan for build.
 
 | Phase | Persona | Model | Skills | Purpose |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ past the **design** gate (Phase 5), until the founder approves. Architecture mus
 | 3 | **pipeline-planner** (or orchestrator park) | — | `human-concept-review` (requirements) | **Mandatory — never skipped, never auto-approved.** Founder reviews and approves `requirements.md` (value, success, scope, guide draft, AC alignment) against the `plan.md` spec. Interactive + founder present → planner revises to approval, sets `approvals.requirements` in `progress.json`. Autonomous / no founder → **park** (`status: awaiting-human-concept-review`). No design or architecture may start until this approval lands. |
 | 4 | **pipeline-planner** | `{{models.design}}` | `design` | Variant exploration when the WP has a UI surface. Consumes the **approved** `requirements.md`; artifacts go under `.pipeline/work/<id>/design/`. **Skip if no UI / no design system.** |
 | 5 | **pipeline-planner** (or orchestrator park) | — | `human-concept-review` (design) | **Mandatory when design ran.** Founder reviews the rendered variant in the component viewer + refreshed guide draft; the skill launches the viewer (idempotent: reuse if already on `:5173`, else copy + `npm install`, background `npm run dev`). Interactive → planner revises to approval, sets `approvals.design` in `progress.json`. Autonomous / no founder → **park**. **Skip only when Phase 4 design was skipped.** |
-| 6 | **pipeline-planner** | `{{models.design}}` | `architecture` | Write `architecture.md` + `feasibility.md` — technical plan + **feasibility probes** (web research, mini POCs) proving load-bearing assumptions. Consumes `plan.md` + approved `requirements.md` (+ approved design when UI); update `plan.md` only if the plan changes. |
+| 6 | **pipeline-planner** | `{{models.design}}` | `architecture` | Write `architecture.md` (+ `feasibility.md` when warranted) — technical plan + **feasibility check** on the load-bearing / new / unknown parts only (web research + tiny manual POCs), not the obvious ones. Consumes `plan.md` + approved `requirements.md` (+ approved design when UI); update `plan.md` only if the plan changes. |
 | 7 | **pipeline-reviewer** + **pipeline-planner** | `{{models.review}}` | `design-critique` (if design ran) → `architecture-critique` → pipeline-planner revision loop | Independent evaluation of design + `architecture.md`. CRITICAL/WARNING findings → pipeline-planner revises, pipeline-reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved `architecture.md` (+ `plan.md` spec) in `.pipeline/work/<id>/`. |
 | 8 | **pipeline-builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
 | 9 | **pipeline-reviewer** + **pipeline-builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved `architecture.md` + `plan.md` ACs in `.pipeline/work/<id>/` (warm Phase 7 session reused if the host supports it), writes `review.md`. Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |

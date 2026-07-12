@@ -9,7 +9,7 @@ user-invocable: true
 
 # Architecture — the technical plan for a work package
 
-**Writes `architecture.md` + `feasibility.md`.** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target) and `.pipeline/work/<id>/feasibility.md` (the probe summary). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the approved `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
+**Writes `architecture.md` (+ `feasibility.md` when a feasibility check was warranted).** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target) and, only when something load-bearing/new/unknown needed proving, `.pipeline/work/<id>/feasibility.md` (findings + verdicts for the reviewer). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the approved `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
 
 **Why:** A clear plan prevents wasted implementation time. Without architectural planning, the pipeline-builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The pipeline-reviewer catches errors before they become expensive rework.
 
@@ -49,7 +49,9 @@ Stop interrogating when the path is clear, not when you run out of questions. Th
 
 ## Phase 1 — Feasibility check
 
-Before locking contracts, prove the plan is **actually feasible** — the technical counterpart to `/design`'s prototype. For any load-bearing assumption not already grep-verified here (external API, new library, perf claim, migration), check it with quick web research (the pinned version, primary sources) and/or a throwaway mini-POC under `.pipeline/work/<id>/probes/<slug>/`, then record a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict in a short assumptions→probe→verdict table in `.pipeline/work/<id>/feasibility.md` (raw evidence stays under `probes/`). `architecture-critique` treats any unprobed load-bearing assumption as CRITICAL; skip only when every load-bearing decision reuses a cited existing pattern — then write `Unprobed assumptions: none` with file:line evidence.
+Prove the plan is feasible **only where it's genuinely uncertain** — the technical counterpart to `/design`'s prototype. Probe the **load-bearing, new, or unknown** parts: a new capability or concept, a larger system, an external API/library, a non-obvious perf or migration claim. **Skip the obvious and small** — work that reuses a known pattern needs no proof; TDD and iteration straighten the normal stuff out.
+
+For the parts that warrant it: do a quick **web search for reference implementations and patterns** (pinned versions, primary sources) and/or a **tiny, manual mini-POC** — a throwaway sketch that answers the one open question, never a full implementation — kept under `.pipeline/work/<id>/probes/<slug>/` (your scratch, for you). Record what you found and a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict, **with the details the reviewer needs**, in `.pipeline/work/<id>/feasibility.md`. If nothing was load-bearing or unknown, skip this — a one-line `feasibility.md` (or none) is fine.
 
 ## Phase 2 — Plan reconciliation (spec ⇆ reality)
 
