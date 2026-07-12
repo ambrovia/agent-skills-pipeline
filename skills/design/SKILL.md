@@ -1,7 +1,7 @@
 ---
 name: design
 description: "Explore 1-3 UX/UI variants (gated by routine vs novel), score them in-session against the 9-dimension rubric, settle on one. Runs BEFORE architecture when a work package has any UI surface — a new page, primitive, component shape, interaction flow, or redesign of an existing surface."
-phase: 1
+phase: 4
 persona: pipeline-planner
 applies-to: [frontend, application]
 user-invocable: true

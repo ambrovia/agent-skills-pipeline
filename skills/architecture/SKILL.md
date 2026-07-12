@@ -1,7 +1,7 @@
 ---
 name: architecture
 description: "Produce the technical plan for a work package — feasibility probes (web research + mini POCs), types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements and AFTER /design (when the work package has UI)."
-phase: 1
+phase: 6
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -46,11 +46,11 @@ Sample interrogation lines (adapt to the work package):
 
 Stop interrogating when the path is clear, not when you run out of questions. Three to seven branches is typical. If the work package already pins a decision, don't re-litigate it — confirm and move on.
 
-## Phase 0b — Feasibility check
+## Phase 1 — Feasibility check
 
 Before locking contracts, prove the plan is **actually feasible** — the technical counterpart to `/design`'s prototype. For any load-bearing assumption not already grep-verified here (external API, new library, perf claim, migration), check it with quick web research (the pinned version, primary sources) and/or a throwaway mini-POC under `.pipeline/work/<id>/probes/<slug>/`, then record a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict in a short assumptions→probe→verdict table in `.pipeline/work/<id>/feasibility.md` (raw evidence stays under `probes/`). `architecture-critique` treats any unprobed load-bearing assumption as CRITICAL; skip only when every load-bearing decision reuses a cited existing pattern — then write `Unprobed assumptions: none` with file:line evidence.
 
-## Phase 1 — Plan reconciliation (spec ⇆ reality)
+## Phase 2 — Plan reconciliation (spec ⇆ reality)
 
 Before locking the plan, reconcile the spec against the actual codebase. Spec/codebase drift discovered at write-tests time is too late — catch it here.
 
@@ -61,7 +61,7 @@ For every named symbol the spec references — table, route, component, file, co
 
 Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
 
-## Phase 2 — Acceptance criteria + tasks
+## Phase 3 — Acceptance criteria + tasks
 
 Read the `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`. Read existing code in the affected areas of `{{paths.source}}` and the relevant doc sections identified in doc discovery above.
 
@@ -93,7 +93,7 @@ Produce:
 
 Where a criterion is "type safety" or "the whole change is green," the verification is the project's verify command, `{{verify}}` (or a fast typecheck, if the project defines one, for incremental checks).
 
-## Phase 3 — Design-it-twice (for non-trivial decisions)
+## Phase 4 — Design-it-twice (for non-trivial decisions)
 
 When a sub-decision in the plan is non-trivial — a schema with multiple plausible shapes, an API where versioning matters, a primitive (a load-bearing noun) that several work packages will consume — sketch **two** alternative shapes and pick. The reverse cost of getting it wrong is the budget for this phase.
 

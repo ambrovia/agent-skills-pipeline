@@ -1,7 +1,7 @@
 ---
 name: ship
 description: "Verify, commit, push, and wait for CI green — the single gate between code and a merge-ready PR. Use to ship a completed work package: run the verify command, open/ready a PR via the project's VCS, and confirm CI is green. Stops at CI-green PR open; does not merge."
-phase: 6
+phase: 11
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[work-package-id or branch description]"
@@ -22,8 +22,8 @@ sufficient — the PR check must pass.
 
 ## When this runs
 
-Phase 6, after code review has emitted a DONE verdict for the work package and
-the change is locally complete.
+After Phase 9 code review has emitted a DONE verdict for the work package and
+Phase 10 retro has completed, the change is locally complete.
 
 ## What it produces
 

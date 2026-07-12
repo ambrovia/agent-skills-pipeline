@@ -2,7 +2,7 @@
 name: human-concept-review
 description: "Mandatory pipeline gate: the founder approves the work package requirement (always) and the design (when UI) before agents plan implementation or build. Two passes — requirements after /refine-critique, design after /design. Interactive loop with planner revision; autonomous runs park."
 argument-hint: "[workpackage-id] [requirements|design]"
-phase: 2
+phase: 3
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
