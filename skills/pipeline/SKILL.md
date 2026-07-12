@@ -146,6 +146,16 @@ the pipeline-reviewer's Phase 7 session warm, it already holds those decisions a
 it reconstitutes them from the plan artifact. Same audit either way. The pipeline-reviewer's AC-completeness
 audit reads a *live* change against the spec — never the pipeline-builder's notes about the change.
 
+### Review brief — orient the human in chat before each review gate
+
+Before each review or gate phase (2, 3, 5, 7, 9), post a short, jargon-free brief **directly in the chat as a message to the human** — not to a file — so they start oriented, not cold. A few sentences each:
+
+- **Requirements & user value** — what the WP must deliver and who is better off.
+- **What's being built, how it works, tech stack** — the mechanism in plain words.
+- **Built vs planned** *(Phase 9)* — what actually shipped against the plan, with deltas called out, plus how it works and the user value it lands.
+
+Keep it concise — an orientation, not a re-derivation.
+
 ### Spawn discipline (tool-agnostic)
 
 Spawn each persona as a **subagent in your host tool** — Claude Code agents, or
