@@ -28,7 +28,7 @@ Phase 1, the first pre-build act for a work package whose goal is unclear or tha
 
 ## Required reading (do this first)
 
-1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why.
+1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why, including the **Engineering tier** (a fixed input: the scale you calibrate success and scope to; `/work-planning` owns it — do not re-question it here).
 2. Existing canonical-shapes / contract docs under `{{paths.docs}}` — does the noun already have a contract?
 3. List `{{paths.docs}}` to identify relevant topic folders, then read each topic's index and drill into the specific files that match the noun.
 
@@ -38,10 +38,10 @@ If the spec contradicts an existing requirements / concept doc, that is **CRITIC
 
 ## Phase 0 — Sharpen the goal
 
-Settle the goal in your own words, then confirm it with the maintainer:
+Settle the goal in your own words, then confirm it with the maintainer. **Calibrate to the WP's Engineering tier** (`plan.md`): an `mvp` goal is deliberately narrower than a `production`/`critical` one. Take the tier as set; don't re-open it here.
 
 - **Value & audience** — what value this delivers, and to whom. The one question always worth asking a reachable maintainer; a misread goal is far cheaper to correct here than after the build.
-- **Success** — what a user or the system can observably do once this ships that they couldn't before.
+- **Success** — what a user or the system can observably do once this ships that they couldn't before, at the tier's rigor.
 - **Scope** — what the work deliberately leaves out; the exclusions bound it as much as the inclusions.
 
 Ask only the few questions that would change the goal or its scope; lead with your read, and if an answer moves the scope, settle the goal before anything downstream.

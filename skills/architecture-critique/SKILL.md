@@ -48,9 +48,10 @@ A scored critique (see Output Format) that either ships the plan (score ≥ 7) o
 1. Read the plan — and independently re-verify every load-bearing factual claim it makes
    about the codebase (tables, routes, components, precedent shapes) by grep/read, citing
    file:line; treat "verified against code" as a hypothesis, not proof
-2. Challenge it adversarially (over-engineering, missing deps, AC gaps, scope creep,
-   missing security/abuse cases, missing protected-test list, route-checklist gaps,
-   and implementability holes — any task that forces the builder to decide, not just do)
+2. Challenge it adversarially (rigor mismatched to the engineering tier — over- OR
+   under-engineering, missing deps, AC gaps, scope creep, missing security/abuse cases,
+   missing protected-test list, route-checklist gaps, and implementability holes — any
+   task that forces the builder to decide, not just do)
 3. Score it (0-10) against the 10 dimensions below
 4. List specific findings (CRITICAL / WARNING / SUGGESTION) with plan-section references
 5. The pipeline-planner fixes the highest-priority issue IN THE PLAN
@@ -125,14 +126,14 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 - Does the plan name the *route checklist* (the route × file matrix) for any guard/middleware enumerated in the spec?
 - **Smell:** happy-path-only ACs. "Returns an error" without specifying status. Missing rate-limit on writes. Missing validation at trust boundary. Missing route in route-checklist.
 
-### 8. Simplicity / over-engineering risk
+### 8. Tier-fit — simplicity vs. over- AND under-engineering
 
-- Is there a feature flag, abstract base class, plugin point, or registry that no caller demands today?
-- Is there error handling for cases that can't happen?
-- Is there validation in internal code that's already validated at the boundary?
-- Is there a backwards-compatibility shim for code with no callers yet?
+Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `prototype | mvp | production | critical`), not against an absolute maximum. Both directions are defects:
+
+- **Over the tier** (the classic over-engineering smell): a feature flag, abstract base class, plugin point, or registry no caller demands today; error handling for cases that can't happen; validation already done at the boundary; a back-compat shim for code with no callers; audit trails / retries / defensive abstractions on a `prototype` or `mvp`.
+- **Under the tier**: a `production` / `critical` plan with happy-path-only handling, no observability, thin security, no failure-mode analysis, or no rollback — rigor the tier demands but the plan omits.
 - Is the design-it-twice section absent from a non-trivial decision, or theatre-present on a forced one?
-- **Smell:** abstraction with one implementation. "Future-proof" anything. Three similar tasks compressed into a generic helper before the third repeat. Commented-out scaffolding for "next phase".
+- **Smell:** abstraction with one implementation or "future-proof" anything **on a low tier**; missing hardening/observability/security depth **on a high tier**. Three similar tasks compressed into a generic helper before the third repeat. Commented-out scaffolding for "next phase".
 
 ### 9. Verifiability
 

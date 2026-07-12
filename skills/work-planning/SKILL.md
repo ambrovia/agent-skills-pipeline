@@ -49,6 +49,8 @@ Settle **what this track is about** at a strategic altitude — a few sharp ques
 first, the maintainer confirms or redirects. Not per-work-package design; that's `/refine`,
 later. Ask only what's unsettled.
 
+**First, re-confirm the engineering tier.** Re-check that the set tier (`{{engineering.tier}}` + any track override) still fits — products move `prototype → mvp → production → critical`, and building at the wrong scale makes the spec wrong. State your read, have the maintainer confirm; **if it's unset, stale, or ambiguous, STRICT HALT and resolve it before registering anything.** Record it on every WP (the **Engineering tier** field below).
+
 1. **Value & frame.** "What is this track fundamentally about — what value does it generate, and what's the one boundary / primitive / load-bearing noun it establishes? My read: …"
 2. **Shape of the work.** "What are the work packages this breaks into, roughly?" For each, classify two things up front:
    - **Refinement?** Is the WP's goal still unclear enough that `/refine` should run before build to sharpen it? (Unclear / novel-noun → Yes; obvious extension → No.)
@@ -111,6 +113,8 @@ Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this orde
 **Depends on.** A bulleted list of work-package IDs, or "None." For each declared dep, one sentence on *why this work package cannot start until that one is `done`*.
 
 **Complexity.** S | M | L — drives scheduler dispatch (see sizing rule).
+
+**Engineering tier.** prototype | mvp | production | critical — the scale this WP is built to (defaults to `{{engineering.tier}}`; change only with explicit maintainer reason). Calibrates *rigor*, not size; downstream phases trust it and don't re-question it, so it must be correct here.
 
 **Pre-build gates.** Two explicit declarations so the maintainer (and `/pipeline`) know what runs *before* this WP is built, each with a one-line reason:
 - **Refinement:** `Required — run /refine first (goal unclear, or introduces/reshapes: <noun>)` | `Not required — goal is clear and reuses requirements already locked in {{paths.docs}}`.

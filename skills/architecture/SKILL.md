@@ -16,6 +16,7 @@ user-invocable: true
 **The implementability bar — the plan must be executable, not interpretable.** The builder turns the plan into code by *doing*, not *deciding*. That means the architecture is actually defined: the contracts (types/signatures/schemas), the data flow, the states, the file/repo structure, and the tech stack — with concrete files named wherever they're known. If the builder would have to choose a data shape, invent a contract, pick a library, or infer intent, the plan isn't done — resolve it here. The plan holds the decisions; the build is the typing.
 
 **Fixed inputs (do NOT re-litigate):**
+- **Engineering tier** (`prototype | mvp | production | critical`) from `plan.md` — calibrate the plan's rigor (hardening, error handling, security, observability, feasibility-probe depth) to it: lean on a `prototype`, exhaustive on a `critical`. Planning above or below the tier is a defect. Trust it as set; do not re-question it.
 - **Founder-approved** requirement from `/human-concept-review` Pass 1 — read `.pipeline/work/<id>/requirements.md` and confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`. If it is not approved, stop — architecture does not run before human requirement approval.
 - Approved design from `/design` + `/human-concept-review` Pass 2 (UI work packages), at `.pipeline/work/<id>/design/approved.md` with `approvals.design` set. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
 
