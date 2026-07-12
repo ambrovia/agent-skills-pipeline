@@ -64,7 +64,7 @@ The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground 
 ## Pre-flight checks (refuse to proceed if any fails)
 
 1. **Track letter is valid.** Must match an existing per-track coordination file `.pipeline/<track>.md` or be a deliberate new track (in which case create `.pipeline/<track>.md` first with the standard header + scope-rules section other tracks use).
-2. **Work-package ID is unique.** Read the WP registry in `.pipeline/<track>.md`; the generated ID (e.g. `L30`) must not collide with any existing entry, and no `.pipeline/work/<id>/` folder may already exist for it.
+2. **Work-package ID is unique.** Read the WP registry in `.pipeline/<track>.md`; the generated ID (e.g. `L30`) must not collide with any existing entry.
 3. **Strategic-frame gate.** The track's **strategic frame** — its load-bearing primitive / boundary and the frame every work package shares — must be defined in `{{paths.docs}}` before registering. Run the strategic-framing questionnaire to settle it; if it's vague or contested, **hold** and resolve the open questions. A per-WP noun needing its own `/refine` does not block registration — flag the **Refinement** gate so the pipeline runs it at build time. `/pipeline` enforces this at runtime (`blocked: concept-missing` if a WP reaches build with no frame).
 4. **Justification check.** The work package must have a clear answer to: "Who specifically benefits, and what's the cost of NOT building this?" If the only argument is "it would be nice," "other products have it," or "the research says so," the work package is not justified. Features are complexity — every one makes the system harder to understand, maintain, and explain. The burden of proof is on the work package to earn its existence. Refuse to register if the justification is weak.
 5. **Existing-implementation check.** Before writing the spec, search `{{paths.source}}` for the capability being proposed. Read the relevant source files — schemas, routes, services, UI pages. If the feature largely exists, the spec must document what's already built (in a "What exists today" paragraph) and identify only the genuine gap. Proposing to build something that already exists is the #1 failure mode in work-planning. When in doubt, spawn an Explore agent to audit the relevant subsystem.
@@ -163,7 +163,7 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
     | <ID> | <Title> | frontend\|backend\|application\|framework\|infra | S\|M\|L | depends: <ID>, <ID> (or —) | status: planned |
     ```
     If the track doesn't exist yet, create `.pipeline/<track>.md` first with the standard header (track frame summary, scope rules, reference docs) + an empty registry table + dependency-graph section.
-3. **Validate.** Run the project's verify command, `{{verify}}` — coordination-file checks must pass (these catch a duplicate ID, an invalid complexity, an unknown type, or a dangling/cyclic dep). If the project defines a faster typecheck/lint subset, run that first as a sanity pass.
+3. **Validate.** Run the project's verify command, `{{verify}}` — coordination-file checks must pass (these catch a duplicate ID, an invalid complexity, an unknown type, or a dangling dep). If the project defines a faster typecheck/lint subset, run that first as a sanity pass.
 4. **Single commit.** All changes ship together: the seeded `.pipeline/work/<id>/plan.md` + the `.pipeline/<track>.md` registry/dependency update. Message: `plan: register <ID> — <title>`.
 
 ---

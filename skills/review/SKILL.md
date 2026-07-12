@@ -40,7 +40,7 @@ Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths,
 ## Required reading (do ALL before reviewing code)
 
 1. The approved spec `.pipeline/work/<id>/plan.md` (`## Acceptance criteria`) and the technical plan `.pipeline/work/<id>/architecture.md` — extract **every** acceptance criterion (concrete, verification-method-bearing ACs live in `plan.md`'s `## Acceptance criteria` and in `architecture.md`); always start here, especially `architecture.md`'s **Security & abuse cases** block.
-2. The `## Work package` section of `.pipeline/work/<id>/plan.md` — the outcome-level intent the plan refines; read it for intent and scope.
+2. The `## Work package` section of `.pipeline/work/<id>/plan.md` — the outcome-level spec the plan refines; read it for intent and scope.
 3. The specific authoritative files named in the plan's **Required reading** section — read each end-to-end.
 4. The locked concept output for the work package, if present.
 5. The approved design output for the work package (UI work, only when a design system is configured).

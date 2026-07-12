@@ -28,8 +28,7 @@ treat it as a scheduler bug: mark every WP `blocked` with reason `mixed-batch` a
 ## State contract — non-negotiable
 
 **Everything for a work package lives in one folder: `.pipeline/work/<id>/`.** One folder per work
-package, co-located, so any agent can rediscover prior work and continue without hunting across
-directories. You own exactly `.pipeline/work/<id>/` for **each ID in the target, and no others.**
+package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the target, and no others.**
 
 ```
 .pipeline/
@@ -37,12 +36,12 @@ directories. You own exactly `.pipeline/work/<id>/` for **each ID in the target,
 └── work/
     └── <id>/
         ├── plan.md            # /work-planning — the WP spec + ACs (the plan of record)
-        ├── requirements.md    # /refine — sharpened goal, success, scope, guide draft, AC alignment
+        ├── requirements.md    # /refine — sharpened goal, success, scope, guide draft
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
-        └── progress.json      # run state: status, currentStep, approvals, critique scores
+        └── progress.json      # run state: status, currentStep, critique scores
 ```
 
 ### `plan.md` — the plan of record; each phase writes its own document
@@ -51,21 +50,17 @@ directories. You own exactly `.pipeline/work/<id>/` for **each ID in the target,
 criteria, validation scenarios) and the durable plan of record. Each later phase writes **its own
 document** rather than folding into `plan.md`:
 
-- `/refine` → `requirements.md` (sharpened goal, success, scope, guide draft, AC alignment)
+- `/refine` → `requirements.md` (sharpened goal, success, scope, guide draft)
 - `/design` → `design/` (brief, variants, `approved.md`) — UI only
 - `/architecture` → `architecture.md` (the technical plan)
 
 Each phase **references `plan.md`** and **updates `plan.md` only if the overall plan changes**
-(scope, acceptance criteria, intent). So `plan.md` stays the single source of truth for *what* the
-WP is, while the phase docs carry the *how*. Because each phase's output is a discrete file (and any
-plan change is a diff on `plan.md`), the **reviewer can diff each document** to judge whether that
-phase moved in the right direction — the antidote to agents going off-track after refine. All
-downstream personas read these files; none may depend on a warm producer session.
+(scope, acceptance criteria, intent). All downstream personas read these files; none may depend on a
+warm producer session.
 
-### Run state, approvals, scores
+### Run state, scores
 
-`progress.json` is the run-state file (not a document): `status`, `currentStep`, the founder
-approval recorded by `/human-concept-review` when it runs, and critique scores. Read it to resume
+`progress.json` is the run-state file: `status`, `currentStep`, and critique scores. Read it to resume
 (skip if `status: done`; resume `in_progress` from `currentStep`); write it after **every**
 status/step change. **NEVER** read or write another WP's folder.
 
@@ -74,10 +69,8 @@ status/step change. **NEVER** read or write another WP's folder.
 Cross-work-package coordination lives in a **per-track** file at `.pipeline/<track>.md` (one per
 work track, e.g. `.pipeline/L.md`), not one global manifest. It holds that track's work-package
 registry (id, title, type, complexity, status), the track's dependency graph, and any cross-track
-references. Smaller per-track files mean fewer merge conflicts than a single giant
-manifest + dependency graph. A WP's track is its id prefix (`L30` → `.pipeline/L.md`). These files
-are your **read-only** reference for spec pointers and the dependency graph. (`pipeline.config` —
-project rules, paths, models, design system — is separate and unchanged.)
+references. A WP's track is its id prefix (`L30` → `.pipeline/L.md`). These files
+are your **read-only** reference for spec pointers and the dependency graph.
 
 Record session start time.
 
@@ -105,12 +98,12 @@ null** — see the skip rule at the end.
 
 | Phase | Persona | Model | Skills | Purpose |
 |---|---|---|---|---|
-| 1 | **pipeline-planner** | `{{models.design}}` | `refine` (if needed) → `design` → `architecture` | Requirement (value + noun shape + guide draft) + variant exploration (if UI) + technical plan. Produces `requirements.md`, `design/`, `architecture.md` in `.pipeline/work/<id>/`; updates `plan.md` only if scope/ACs shift. Production only. `refine` runs only when the WP's goal is unclear or it introduces/reshapes a noun; skip when the requirement is already sharp. |
+| 1 | **pipeline-planner** | `{{models.design}}` | `refine` (if needed) → `design` → `architecture` | Requirement (value + noun shape + guide draft) + variant exploration (if UI) + technical plan. Produces `requirements.md`, `design/`, `architecture.md` in `.pipeline/work/<id>/`; updates `plan.md` only if scope/ACs shift. Production only. `refine` runs only when the WP's goal is unclear or it introduces/reshapes a noun; skip when the requirement is already sharp in `{{paths.docs}}`. |
 | 2 | **pipeline-reviewer** + **pipeline-planner** | `{{models.review}}` | `refine-critique` (if `refine` ran) → `design-critique` → `architecture-critique` → pipeline-planner revision loop | Independent evaluation. CRITICAL/WARNING findings → pipeline-planner revises, pipeline-reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved `architecture.md` (+ `plan.md` spec) in `.pipeline/work/<id>/`. |
 | 2.5 | **pipeline-planner** (or orchestrator park) | conditional | `human-concept-review` | **Stakes-gated, conditional.** Runs only when `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` (a novel design or a significant guide rewrite). Interactive + founder present → the `human-concept-review` skill **launches the component viewer itself** (idempotent: reuse if already on `:5173`, copy + `npm install` only if missing, background `npm run dev`), the founder reviews the rendered variant + guide draft, pipeline-planner revises to approval. Autonomous / no founder → the orchestrator **parks** (`status: awaiting-human-concept-review`) and does **not** stand up the viewer; siblings proceed. On resume, the founder runs `/human-concept-review`, which owns the launch. Otherwise → skipped silently. |
 | 3 | **pipeline-builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
 | 4 | **pipeline-reviewer** + **pipeline-builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved `architecture.md` + `plan.md` ACs in `.pipeline/work/<id>/` (warm Phase 2 session reused if the host supports it), writes `review.md`. Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
-| 5 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Appends to `.pipeline/work/<id>/retro.jsonl`. **Runs before ship.** |
+| 5 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Writes to `.pipeline/work/<id>/retro.jsonl`. **Runs before ship.** |
 | ship | **pipeline-builder** | `{{models.build}}` | `ship` | Land the change: pass `{{verify}}`, open/ready the PR, wait for CI green. Not a tracked phase — the merge is proof of completion. |
 
 **Producer / evaluator separation is the whole point.** The **pipeline-planner** produces; a *different*
@@ -205,7 +198,7 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
 
 For the full **anti-rationalization table** ("the plan is done, I can stop" / "this story is
 simple, skip the review" / "the pipeline-reviewer is redundant, tests passed" / "the retro is
-navel-gazing") and the **ordering rationale** (why the reviewer critiques, why ship runs after
+navel-gazing") and the **ordering rationale** (why the pipeline-reviewer critiques, why ship runs after
 retro, why variant count is conditional), see `references/rationale.md`. Read it before you
 talk yourself out of a phase.
 

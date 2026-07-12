@@ -148,8 +148,7 @@ The annotation overlay is the **inspector rail** docked to the right edge of the
 6. Viewer hot-reloads; founder re-inspects the live render, annotates the next pass.
 7. Repeat until the founder approves.
    On approval → write/refresh .pipeline/work/<id>/design/approved.md (and the
-   refreshed guide draft in .pipeline/work/<id>/requirements.md), record the approval in
-   .pipeline/work/<id>/progress.json, then proceed to /architecture → /write-code.
+   refreshed guide draft in .pipeline/work/<id>/requirements.md), proceed to /architecture → /write-code.
    The approved story flows straight into build — no mockup→code rebuild step.
 ```
 
@@ -162,7 +161,7 @@ The founder reviews the guide draft in the same passes — read it alongside the
 
 ## Output
 
-- Revised, founder-approved variant (in-place edits to the real component/story) + refreshed `.pipeline/work/<id>/design/approved.md` + the refreshed guide draft in `requirements.md`, with the approval recorded in `.pipeline/work/<id>/progress.json`, all reflecting the founder's feedback,
+- Revised, founder-approved variant (in-place edits to the real component/story) + refreshed `.pipeline/work/<id>/design/approved.md` + the refreshed guide draft in `requirements.md`, all reflecting the founder's feedback,
 
   **OR**
 
