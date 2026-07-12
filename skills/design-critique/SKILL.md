@@ -11,7 +11,7 @@ user-invocable: true
 
 **Why:** The agent that created variants cannot objectively score them. Evaluation must be a different agent — the pipeline-reviewer — reading the pipeline-planner's output cold. True producer/evaluator separation: different personas, not just different cognitive modes. Run this on a fresh high-capability agent ({{models.review}}) that did not produce the variants.
 
-This is the **evaluation** counterpart to `/design` (production). The pipeline-reviewer persona scores what the pipeline-planner produced. `/design` generates variants; `/design-critique` scores them. The design decisions land in the approved plan (`.pipeline/plans/<id>.md`), so the Phase 4 code review reads them there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to `/design` (production). The pipeline-reviewer persona scores what the pipeline-planner produced. `/design` generates variants; `/design-critique` scores them. The design decisions land in `.pipeline/work/<id>/design/approved.md`, so the Phase 4 code review reads them there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
 ## Project rules
 
@@ -24,7 +24,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 ## When This Runs
 
 - **In the pipeline:** Phase 2, after the pipeline-planner completes `/design`. Reviewer session.
-- **On explicit `/design-critique <work-package-id>`:** full audit of variants under the work package's design directory, e.g. `.pipeline/work-packages/<id>/design/<variant-slug>/`.
+- **On explicit `/design-critique <work-package-id>`:** full audit of variants under the work package's design directory, e.g. `.pipeline/work/<id>/design/<variant-slug>/`.
 - **Post-implementation:** score the rendered component against the approved mockup.
 
 If `pipeline.config` `designSystem` is `null`, stop — there is no design system to critique against.
@@ -42,7 +42,7 @@ Deep reference, only when the dimension is in scope: `references/hierarchy.md`, 
 
 ## The Critique Loop
 
-Read the variants produced by `/design` under `.pipeline/work-packages/<id>/design/<variant-slug>/`.
+Read the variants produced by `/design` under `.pipeline/work/<id>/design/<variant-slug>/`.
 
 ```
 1. Screenshot each variant's mockup (or read its spec if no mockup exists)
@@ -155,7 +155,7 @@ DESIGN-CRITIQUE: variant=<slug> score=<int>/10  rounds=<n>  axes: H:_ S:_ T:_ C:
 - List 1-2 things the component does right (reinforces good patterns)
 ```
 
-The retro reads `rounds=<n>` to track design-quality drift over time. Record the result to the work package's progress file: `.pipeline/progress/<id>.json`.
+The retro reads `rounds=<n>` to track design-quality drift over time. Record the result to the work package's progress file: `.pipeline/work/<id>/progress.json`.
 
 ## Screenshot Workflow
 
@@ -203,7 +203,7 @@ If the design system defines density tiers, an AST rule typically gates literal 
 - Every variant has a `DESIGN-CRITIQUE:` line with per-axis scores and a `rounds` count.
 - Each surviving variant scores ≥ 7, or has been regenerated / kicked back to `/design`.
 - Findings are split CRITICAL / WARNING / SUGGESTION with concrete fixes.
-- The result is recorded to `.pipeline/progress/<id>.json`.
+- The result is recorded to `.pipeline/work/<id>/progress.json`.
 
 ## Target
 

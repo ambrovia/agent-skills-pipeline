@@ -87,11 +87,12 @@ Otherwise, before any UI code, read the design system at {{designSystem.path}} a
 
 ## Working with project state
 
-Honor the `.pipeline/` state convention when present: the locked plan you execute is
-`.pipeline/plans/<id>.md` (read it before writing tests or code — don't assume a warm pipeline-planner
-session). Work packages live in `.pipeline/work-packages/`, the manifest in
-`.pipeline/pipeline-manifest.yml`, and per-package progress in `.pipeline/progress/<id>.json`.
-Update progress as you go.
+Honor the `.pipeline/` state convention when present: your executable target is
+`.pipeline/work/<id>/architecture.md` (the technical plan), read alongside the spec ACs in
+`.pipeline/work/<id>/plan.md` (`## Work package` + `## Acceptance criteria`) — read both before writing
+tests or code, don't assume a warm pipeline-planner session. Cross-work-package coordination lives in
+the per-track file `.pipeline/<track>.md`, and per-package run state in
+`.pipeline/work/<id>/progress.json`. Update progress as you go.
 
 ## What you do NOT do
 

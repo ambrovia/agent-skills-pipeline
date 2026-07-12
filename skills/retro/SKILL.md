@@ -24,16 +24,16 @@ repeat every work package. Observations compound; the log is the memory.
 
 ## What it produces
 
-Appended lines in `.pipeline/retro-log/<work-package-id>.jsonl` — **one file per work package**,
-created if absent. Each observation is one JSON line:
+Appended lines in `.pipeline/work/<id>/retro.jsonl` — **one file per work package**,
+co-located with the rest of the work package's state, created if absent. Each observation is one JSON line:
 
 ```json
 {"date": "2026-06-16", "workpackage": "A1", "type": "friction|failure|gap|success|escalation", "observation": "specific sentence", "severity": "low|medium|high|critical", "tags": ["consistent", "tags"]}
 ```
 
 The per-work-package split is deliberate: a single shared log produces a merge conflict every time
-two branches each append. Writing to `.pipeline/retro-log/<work-package-id>.jsonl` means parallel
-branches touch different files and never collide. Always write to the file named for the work
+two branches each append. Writing to `.pipeline/work/<id>/retro.jsonl` means parallel
+branches touch different files and never collide. Always write to the file co-located with the work
 package you are retro-ing — never a shared log. (If the target is a whole pipeline run spanning
 work packages, write each entry to its own work package's file.)
 
@@ -41,9 +41,9 @@ work packages, write each entry to its own work package's file.)
 
 Collect insights about `<target>` from every available source:
 
-1. **Pipeline progress** — read `.pipeline/progress/<id>.json` for attempts, step
-   failures, and blocked work packages. Cross-check against
-   `.pipeline/pipeline-manifest.yml` and `.pipeline/work-packages/` for what was meant
+1. **Pipeline progress** — read `.pipeline/work/<id>/progress.json` for attempts, step
+   failures, and blocked work packages. Cross-check against the per-track
+   `.pipeline/<track>.md` and `.pipeline/work/<id>/plan.md` for what was meant
    to happen vs. what did.
 2. **VCS history** — use {{vcs}} / `git log` for commits, reverts, fixups. How many
    commits? Any rework? Did CI fail and force a redo?
@@ -92,7 +92,7 @@ them when it first runs.
 
 - Every source above has been checked for `<target>`.
 - Each distinct observation is appended as its own JSON line in
-  `.pipeline/retro-log/<work-package-id>.jsonl`.
+  `.pipeline/work/<id>/retro.jsonl`.
 - Any matching compound candidates have been referenced or updated in the tracker.
 - Any `critical` escalation is also surfaced as a visible warning in the output.
 

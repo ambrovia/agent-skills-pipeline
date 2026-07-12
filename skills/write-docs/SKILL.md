@@ -111,7 +111,7 @@ Before describing any feature, component, or interaction: search `{{paths.source
 
 ### As a writer
 
-1. Read the work package's acceptance criteria (`.pipeline/work-packages/<id>` and `progress/<id>.json` for state).
+1. Read the work package's acceptance criteria (`.pipeline/work/<id>/plan.md`, with state in `.pipeline/work/<id>/progress.json`).
 2. Before writing, plan the funnel: what's the 10-second value? What's the first concrete aid? What's the exit action?
 3. Write the opening 50-80 words first. This is the most important text on the page.
 4. Apply P1-P15 as you draft. Check sentence length as you go (count words in any sentence that feels long).

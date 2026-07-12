@@ -23,16 +23,16 @@ Phase 1, the first pre-build act for a work package whose goal is unclear or tha
 
 ## What it produces
 
-- `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement output (**always**). Carries the `DOC-CLASS` line and the guide draft. This is what `/design` and `/architecture` read as a fixed input.
+- **`.pipeline/work/<id>/requirements.md`** — refine's own document (**always**). It carries the `DOC-CLASS` line, the sharpened goal, the guide draft, and an **AC alignment table** mapping each acceptance criterion to how the requirement covers it. It **references `plan.md`** (the WP spec) and **updates `plan.md` only if the overall plan changes** (scope, ACs, intent) — otherwise `plan.md` stays as `/work-planning` seeded it. `/design` and `/architecture` read `requirements.md` as fixed input. Because it is a discrete file (and any plan change is a diff on `plan.md`), the reviewer sees exactly what refine changed against the seed.
 - A ground-truth doc under `{{paths.docs}}` when the requirement reshapes an existing layer — the **specific** file, never a generic folder dump.
 
 ## Required reading (do this first)
 
-1. The work package in `.pipeline/work-packages/<id>.md` (or `.pipeline/work-packages/<id>/`) — what it asks for and why.
+1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why. Refine must not weaken them; a contradiction is **CRITICAL**.
 2. Existing canonical-shapes / contract docs under `{{paths.docs}}` — does the noun already have a contract?
 3. List `{{paths.docs}}` to identify relevant topic folders, then read each topic's index and drill into the specific files that match the noun.
 
-**Output a "Required reading" section** in your requirements doc, listing the specific doc files downstream agents (`/design`, `/architecture`, `/pipeline`) must read for this work package.
+**Output a "Required reading" note** inside `requirements.md`, listing the specific doc files downstream agents (`/design`, `/architecture`, `/pipeline`) must read for this work package.
 
 If the spec contradicts an existing requirements / concept doc, that is **CRITICAL**. Surface it; never silently re-define.
 
@@ -50,17 +50,23 @@ Ask only the few questions that would change the goal or its scope; lead with yo
 
 State the goal as the user/dev guide that would explain the feature once it shipped — what a user can now do or see, or how a developer uses the capability. Working back from that end state pressure-tests the goal: if the guide is hard to write, the goal isn't sharp yet. Keep this draft — `/human-concept-review` reviews it, and `/write-docs` later reconciles it into `{{paths.docs}}` against what actually shipped.
 
-## Phase 2 — Write requirements.md and emit DOC-CLASS
+## Phase 2 — Write requirements.md
 
-Write `.pipeline/work-packages/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), the **Guide draft** from Phase 1, and the `DOC-CLASS` line. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
+Write (or revise) **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement `/design` and `/architecture` read as fixed input. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan (scope, ACs, intent):
 
-**Emit the `DOC-CLASS` line** at the top of `requirements.md` — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
+1. **Sharpened goal** — value, success, scope (with real non-goals).
+2. **Guide draft** from Phase 1.
+3. **AC alignment table** — one row per acceptance criterion in `## Acceptance criteria`: the AC text, how the requirement covers it, and any gap flag.
+4. **Required reading** — specific doc files downstream agents must read.
+5. **`DOC-CLASS` line** — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
 
 ```
 DOC-CLASS: significant|minor|none
 ```
 
 `significant` = a new user/dev-guide page or a large rewrite. `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
+
+When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
 
 ## Phase 3 — Clarify any nouns (only if the work introduces one)
 
@@ -74,7 +80,7 @@ Stop there: a distinct, unambiguous noun, not a data model. No cardinality / lif
 
 ## Done when
 
-- `requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, and — if the work introduced a noun — its definition + hard rules.
+- `.pipeline/work/<id>/requirements.md` exists with the `DOC-CLASS` line, the sharpened goal (value, success, scope), a guide draft, an AC alignment table, and — if the work introduced a noun — its definition + hard rules.
 - The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
 - A "Required reading" section names the specific docs downstream agents must read.
 - No spec/doc contradiction is left silent.

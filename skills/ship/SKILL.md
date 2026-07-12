@@ -35,8 +35,9 @@ to merge.
 ### 0. Code-review gate (MANDATORY — do not skip)
 
 Verify that code review is complete before shipping. Check that the pipeline-reviewer
-emitted "Verdict: DONE" for this work package (see
-`.pipeline/progress/<id>.json`). If no review verdict exists, stop — do not
+emitted "Verdict: DONE" for this work package (the `verdict` field in
+`.pipeline/work/<id>/progress.json`, with the full findings in
+`.pipeline/work/<id>/review.md`). If no review verdict exists, stop — do not
 proceed to verify/ship. Shipping without code review is a process violation, not
 an efficiency gain.
 
@@ -113,7 +114,7 @@ is green.**
    verify ran (re-run verify on the final tree).
 3. Fix the issue, then re-run from step 2 (merge main, verify, push).
 4. Max 3 push attempts. After 3, mark the work package `blocked` with reason
-   `ci-red-after-3-fixes` in `.pipeline/progress/<id>.json`.
+   `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 
 **Ship is only complete when the PR checks return green.** Do not declare success
 before this.

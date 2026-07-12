@@ -13,7 +13,7 @@ Read-only review. Produce findings — do **NOT** make code changes.
 
 Six lenses plus an acceptance-criteria completeness audit, one session. Three positive lenses check that the code respects its contracts. Three negative lenses check what the contracts don't cover. The design lens is skipped silently if no UI files changed (and entirely if no design system is configured — `pipeline.config` `designSystem: null`).
 
-**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context pipeline-reviewer catches contract violations the implementer rationalized away, gaps the pipeline-builder didn't notice, and complexity the pipeline-builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/plans/<id>.md` — warm from Phase 2 if the host kept the pipeline-reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
+**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context pipeline-reviewer catches contract violations the implementer rationalized away, gaps the pipeline-builder didn't notice, and complexity the pipeline-builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/work/<id>/plan.md` — warm from Phase 2 if the host kept the pipeline-reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
 
 ## Project rules
 
@@ -35,12 +35,12 @@ Audit against every `pipeline.config rules` slot below as binding — a violatio
 
 ## What it produces
 
-Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths, line numbers, and a spec reference for each. An AC table mapping every acceptance criterion to PASS (with evidence) or FAIL (with a gap). A verdict: **DONE** or **NOT DONE**. Screenshot evidence for visual findings. Results recorded to `.pipeline/progress/<id>.json`.
+Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths, line numbers, and a spec reference for each. An AC table mapping every acceptance criterion to PASS (with evidence) or FAIL (with a gap). A verdict: **DONE** or **NOT DONE**. Screenshot evidence for visual findings. The findings, AC table, and verdict are written to `.pipeline/work/<id>/review.md`; the verdict and finding counts are also recorded to `.pipeline/work/<id>/progress.json` so the loop and the retro can read them.
 
 ## Required reading (do ALL before reviewing code)
 
-1. The approved plan in `.pipeline/plans/<id>.md` — extract **every** acceptance criterion (the concrete, verification-method-bearing ACs live here); always start here, especially its **Security & abuse cases** block.
-2. The work package in `.pipeline/work-packages/<id>.md` — the outcome-level spec the plan refines; read it for intent and scope.
+1. The approved spec `.pipeline/work/<id>/plan.md` (`## Acceptance criteria`) and the technical plan `.pipeline/work/<id>/architecture.md` — extract **every** acceptance criterion (concrete, verification-method-bearing ACs live in `plan.md`'s `## Acceptance criteria` and in `architecture.md`); always start here, especially `architecture.md`'s **Security & abuse cases** block.
+2. The `## Work package` section of `.pipeline/work/<id>/plan.md` — the outcome-level intent the plan refines; read it for intent and scope.
 3. The specific authoritative files named in the plan's **Required reading** section — read each end-to-end.
 4. The locked concept output for the work package, if present.
 5. The approved design output for the work package (UI work, only when a design system is configured).
@@ -125,7 +125,7 @@ CRITICAL / WARNING / OBSERVATION — file:line — spec ref (doc + section) — 
 VERDICT: DONE | NOT DONE
 ```
 
-Record the verdict and finding counts to `.pipeline/progress/<id>.json` so the loop and the retro can read them.
+Write the full findings, AC table, and verdict to `.pipeline/work/<id>/review.md`, and record the verdict and finding counts to `.pipeline/work/<id>/progress.json` so the loop and the retro can read them.
 
 ## Don't rationalize passing
 
@@ -138,4 +138,4 @@ Record the verdict and finding counts to `.pipeline/progress/<id>.json` so the l
 - All six applicable lenses have been run end-to-end (each finding carries a file:line and a spec reference).
 - Every acceptance criterion has a PASS (with evidence) or FAIL (with a gap) in the AC table.
 - A verdict is emitted: **DONE** (every criterion passes, zero CRITICAL findings) or **NOT DONE** (lists every gap and CRITICAL finding).
-- Verdict and finding counts are written to `.pipeline/progress/<id>.json`. No code was changed.
+- The findings, AC table, and verdict are written to `.pipeline/work/<id>/review.md`, and the verdict and finding counts are recorded to `.pipeline/work/<id>/progress.json`. No code was changed.
