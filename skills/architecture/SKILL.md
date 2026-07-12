@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: "Produce the technical plan for a work package — types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER /refine (when needed) and AFTER /design (when the work package has UI)."
+description: "Produce the technical plan for a work package — feasibility probes (web research + mini POCs), types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements and AFTER /design (when the work package has UI)."
 phase: 1
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -9,13 +9,15 @@ user-invocable: true
 
 # Architecture — the technical plan for a work package
 
-**Writes `architecture.md`.** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the requirements doc from `/refine` at `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
+**Writes `architecture.md` + `feasibility.md`.** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target) and `.pipeline/work/<id>/feasibility.md` (the probe summary). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the approved `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
 
 **Why:** A clear plan prevents wasted implementation time. Without architectural planning, the pipeline-builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The pipeline-reviewer catches errors before they become expensive rework.
 
+**The implementability bar — the plan must be executable, not interpretable.** The builder turns the plan into code by *doing*, not *deciding*. That means the architecture is actually defined: the contracts (types/signatures/schemas), the data flow, the states, the file/repo structure, and the tech stack — with concrete files named wherever they're known. If the builder would have to choose a data shape, invent a contract, pick a library, or infer intent, the plan isn't done — resolve it here. The plan holds the decisions; the build is the typing.
+
 **Fixed inputs (do NOT re-litigate):**
-- Requirements doc from `/refine` at `.pipeline/work/<id>/requirements.md` — includes which docs were read and the relevant canonical contracts under `{{paths.docs}}`.
-- Approved design from `/design` (UI work packages), at `.pipeline/work/<id>/design/approved.md`. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
+- **Founder-approved** requirement from `/human-concept-review` Pass 1 — read `.pipeline/work/<id>/requirements.md` and confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`. If it is not approved, stop — architecture does not run before human requirement approval.
+- Approved design from `/design` + `/human-concept-review` Pass 2 (UI work packages), at `.pipeline/work/<id>/design/approved.md` with `approvals.design` set. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
 
 **Doc discovery:** Read the "Required reading" from `/refine` output if available. Otherwise list `{{paths.docs}}` to identify relevant topic folders. **Output a "Required reading" section in the plan** listing the specific doc files the engineer must read before implementing. This is the natural filter — downstream skills read only what the plan prescribes.
 
@@ -43,6 +45,10 @@ Sample interrogation lines (adapt to the work package):
 - "What changes if the user's mental model about W is wrong?"
 
 Stop interrogating when the path is clear, not when you run out of questions. Three to seven branches is typical. If the work package already pins a decision, don't re-litigate it — confirm and move on.
+
+## Phase 0b — Feasibility check
+
+Before locking contracts, prove the plan is **actually feasible** — the technical counterpart to `/design`'s prototype. For any load-bearing assumption not already grep-verified here (external API, new library, perf claim, migration), check it with quick web research (the pinned version, primary sources) and/or a throwaway mini-POC under `.pipeline/work/<id>/probes/<slug>/`, then record a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict in a short assumptions→probe→verdict table in `.pipeline/work/<id>/feasibility.md` (raw evidence stays under `probes/`). `architecture-critique` treats any unprobed load-bearing assumption as CRITICAL; skip only when every load-bearing decision reuses a cited existing pattern — then write `Unprobed assumptions: none` with file:line evidence.
 
 ## Phase 1 — Plan reconciliation (spec ⇆ reality)
 
@@ -97,5 +103,7 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 ## Done when
 
-- `architecture.md` has been written with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
-- `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on that session existing.
+- **Implementability holds:** the architecture is defined — contracts (types/signatures/schemas), data flow, states, file/repo structure, and tech stack specified, with concrete files named where known and no real decision (data shape, contract, library, intent) deferred to the builder.
+- Feasibility probes ran (or were explicitly skipped with file:line precedent); `feasibility.md` exists with its table and evidence under `.pipeline/work/<id>/probes/`.
+- `architecture.md` has been written with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on a warm planner session.

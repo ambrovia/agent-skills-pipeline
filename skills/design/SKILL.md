@@ -33,7 +33,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 - **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
 - **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 2 critique on the existing `approved.md`.
 
-**Fixed input from `/refine`:** the requirement output at `.pipeline/work/<id>/requirements.md` is the conceptual model these variants must respect. Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue, not a design issue.
+**Fixed input from `/refine`:** the founder-approved `.pipeline/work/<id>/requirements.md` (confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`). Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue — return to Pass 1, not a design issue.
 
 ## Inputs
 
