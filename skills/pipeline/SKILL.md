@@ -25,17 +25,26 @@ The target is either:
 Cross-track or cross-complexity batches are never dispatched. If you receive a mixed group,
 treat it as a scheduler bug: mark every WP `blocked` with reason `mixed-batch` and exit.
 
-## First: work in a clean worktree off `origin/main`
+## First: get into the right worktree — before you read the work package
 
-**Before anything else, switch into a dedicated git worktree on a fresh branch based off `origin/main`** — never run the pipeline on the main checkout or a stale/dirty base. Fetch first so the base is current, then create (or reuse) the worktree and work there for the whole run:
+**Do this before you even look at the work package.** The current checkout, an existing worktree, and `origin/main` may each hold a *different, newer* state of this WP — its spec, prior phase artifacts, or an in-progress branch. Read the WP from the wrong base and you silently redo or discard real work. So resolve the worktree first, then read anything.
+
+Every run, in order:
+
+1. **`git fetch origin`** — make `origin/main` and all remote branches current before deciding anything.
+2. **If a worktree/branch for this target already exists, switch into it** — it likely carries this WP's in-progress state; do **not** recreate it. Bring it up to date on top of the latest `origin/main` (rebase or merge) so you build on the newest base.
+3. **Otherwise, create a fresh worktree** on a new branch based off `origin/main`.
 
 ```bash
 git fetch origin
-git worktree add ../<repo>.worktrees/pipeline-<target> -b pipeline/<target> origin/main
-cd ../<repo>.worktrees/pipeline-<target>
+# reuse the target's worktree if it exists, else create one off origin/main
+git worktree list | grep -q "pipeline-<target>" \
+  && cd "$(git worktree list | awk '/pipeline-<target>/{print $1; exit}')" \
+  || { git worktree add ../<repo>.worktrees/pipeline-<target> -b pipeline/<target> origin/main \
+       && cd ../<repo>.worktrees/pipeline-<target>; }
 ```
 
-If your harness has native worktree support (e.g. a `--worktree` launch flag), use it and confirm the branch is based on `origin/main`. All subsequent phases — planning, build, and ship — run inside this worktree.
+Never run the pipeline on the main checkout or a stale/dirty base. If your harness has native worktree support (e.g. a `--worktree` launch flag), use it and confirm the branch is based on `origin/main`. All subsequent phases — reading the WP, planning, build, and ship — run inside this worktree.
 
 ## State contract — non-negotiable
 
