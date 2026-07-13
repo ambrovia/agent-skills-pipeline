@@ -1,7 +1,7 @@
 ---
 name: design-critique
-description: "Score design variants against a 9-dimension rubric as a fresh pipeline-reviewer. Trigger in Phase 2 after the pipeline-planner finishes producing variants, on explicit /design-critique <work-package-id>, or to score a rendered implementation against its approved mockup. Skip if no design system is configured."
-phase: 2
+description: "Score design variants against a 9-dimension rubric as a fresh pipeline-reviewer. Trigger in Phase 5 after the pipeline-planner finishes producing variants, on explicit /design-critique <work-package-id>, or to score a rendered implementation against its approved mockup. Skip if no design system is configured."
+phase: 5
 persona: pipeline-reviewer
 applies-to: [frontend, application]
 user-invocable: true
@@ -11,7 +11,7 @@ user-invocable: true
 
 **Why:** The agent that created variants cannot objectively score them. Evaluation must be a different agent — the pipeline-reviewer — reading the pipeline-planner's output cold. True producer/evaluator separation: different personas, not just different cognitive modes. Run this on a fresh high-capability agent ({{models.review}}) that did not produce the variants.
 
-This is the **evaluation** counterpart to `/design` (production). The pipeline-reviewer persona scores what the pipeline-planner produced. `/design` generates variants; `/design-critique` scores them. The design decisions land in `.pipeline/work/<id>/design/approved.md`, so the Phase 4 code review reads them there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to `/design` (production). The pipeline-reviewer persona scores what the pipeline-planner produced. `/design` generates variants; `/design-critique` scores them. The design decisions land in `.pipeline/work/<id>/design/approved.md`, so the Phase 8 code review reads them there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
 ## Project rules
 
@@ -23,7 +23,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## When This Runs
 
-- **In the pipeline:** Phase 2, after the pipeline-planner completes `/design`. Reviewer session.
+- **In the pipeline:** Phase 5, after the pipeline-planner completes `/design`. Reviewer session.
 - **On explicit `/design-critique <work-package-id>`:** full audit of variants under the work package's design directory, e.g. `.pipeline/work/<id>/design/<variant-slug>/`.
 - **Post-implementation:** score the rendered component against the approved mockup.
 
@@ -56,6 +56,10 @@ Read the variants produced by `/design` under `.pipeline/work/<id>/design/<varia
 Variants below 5 fail and get regenerated; variants 5-7 get noted findings; variants ≥7 advance. If all variants score below 5, the brief was wrong — go back to `/design` Phase 0 and re-interrogate. Do not push weak variants into the comparison.
 
 **Read screenshots, not code, when scoring.** Reading code to score visual hierarchy is theatre.
+
+## Calibrate to the Engineering tier
+
+Scale *completeness and polish depth* to the WP's tier (`plan.md`): a `prototype`/`mvp` isn't failed for missing Premium Polish (dim. 9) or exhaustive state/mobile coverage; `production`/`critical` require them. The craft bar — hierarchy, tokens, anti-slop, accessibility — always applies; "it's only an MVP" never excuses slop.
 
 ## Scoring Dimensions (0-10 each, averaged)
 

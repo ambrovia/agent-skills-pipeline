@@ -1,7 +1,7 @@
 ---
 name: write-code
 description: "Write the minimum code to make all failing tests pass (TDD green phase). Use when a work package has red tests in place and needs implementation against a clear target, before review. Triggers on a build/implement task for a planned work package."
-phase: 3
+phase: 7
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true

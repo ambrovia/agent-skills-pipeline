@@ -7,6 +7,16 @@
 # what "green" means is up to you, as long as one command produces it.
 verify: "npm run verify"
 
+# The scale every planning + critique phase calibrates rigor to (over- and
+# under-building both count as defects). /work-planning re-confirms it each run
+# and HALTs if unclear. Overridable per-track and per-work-package.
+#   prototype  — spike / throwaway: speed, minimal tests, no hardening
+#   mvp        — small / early product: happy path + key edges, light hardening
+#   production — real users & data: full tests, error handling, security, observability
+#   critical   — regulated / high blast radius: exhaustive rigor, audit trails
+engineering:
+  tier: mvp
+
 # Where the code lives. Used to scope reviews.
 paths:
   source: ["src/**"]

@@ -25,6 +25,19 @@ The target is either:
 Cross-track or cross-complexity batches are never dispatched. If you receive a mixed group,
 treat it as a scheduler bug: mark every WP `blocked` with reason `mixed-batch` and exit.
 
+## First: get into the right worktree — before you read the work package
+
+Resolve the worktree **before reading the WP**: an existing worktree or `origin/main` may hold newer WP state, so reading from a stale base silently redoes or discards work. Each run: `git fetch origin`, reuse the target's worktree if it exists (bring it up to date on `origin/main`), else create one off `origin/main`. Never run on the main checkout or a dirty base.
+
+```bash
+git fetch origin
+# reuse the target's worktree if it exists, else create one off origin/main
+git worktree list | grep -q "pipeline-<target>" \
+  && cd "$(git worktree list | awk '/pipeline-<target>/{print $1; exit}')" \
+  || { git worktree add ../<repo>.worktrees/pipeline-<target> -b pipeline/<target> origin/main \
+       && cd ../<repo>.worktrees/pipeline-<target>; }
+```
+
 ## State contract — non-negotiable
 
 **Everything for a work package lives in one folder: `.pipeline/work/<id>/`.** One folder per work
@@ -38,6 +51,7 @@ package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the
         ├── plan.md            # /work-planning — the WP spec + ACs (the plan of record)
         ├── requirements.md    # /refine — sharpened goal, success, scope, guide draft
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
+        ├── feasibility.md     # /architecture — feasibility findings + verdicts for the reviewer (only when something was load-bearing/new/unknown)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
@@ -52,15 +66,16 @@ document** rather than folding into `plan.md`:
 
 - `/refine` → `requirements.md` (sharpened goal, success, scope, guide draft)
 - `/design` → `design/` (brief, variants, `approved.md`) — UI only
-- `/architecture` → `architecture.md` (the technical plan)
+- `/architecture` → `architecture.md` (+ `feasibility.md` when a feasibility check was warranted)
 
 Each phase **references `plan.md`** and **updates `plan.md` only if the overall plan changes**
 (scope, acceptance criteria, intent). All downstream personas read these files; none may depend on a
 warm producer session.
 
-### Run state, scores
+### Run state, approvals, scores
 
-`progress.json` is the run-state file: `status`, `currentStep`, and critique scores. Read it to resume
+`progress.json` is the run-state file (not a document): `status`, `currentStep`, the founder
+approvals (`approvals.requirements`, `approvals.concept`, `approvals.final`), and critique scores. Read it to resume
 (skip if `status: done`; resume `in_progress` from `currentStep`); write it after **every**
 status/step change. **NEVER** read or write another WP's folder.
 
@@ -98,20 +113,37 @@ null** — see the skip rule at the end.
 
 | Phase | Persona | Model | Skills | Purpose |
 |---|---|---|---|---|
-| 1 | **pipeline-planner** | `{{models.design}}` | `refine` (if needed) → `design` → `architecture` | Requirement (value + noun shape + guide draft) + variant exploration (if UI) + technical plan. Produces `requirements.md`, `design/`, `architecture.md` in `.pipeline/work/<id>/`; updates `plan.md` only if scope/ACs shift. Production only. `refine` runs only when the WP's goal is unclear or it introduces/reshapes a noun; skip when the requirement is already sharp in `{{paths.docs}}`. |
-| 2 | **pipeline-reviewer** + **pipeline-planner** | `{{models.review}}` | `refine-critique` (if `refine` ran) → `design-critique` → `architecture-critique` → pipeline-planner revision loop | Independent evaluation. CRITICAL/WARNING findings → pipeline-planner revises, pipeline-reviewer re-critiques (**max 3 rounds**). Builder receives a clean, approved `architecture.md` (+ `plan.md` spec) in `.pipeline/work/<id>/`. |
-| 2.5 | **pipeline-planner** (or orchestrator park) | conditional | `human-concept-review` | **Stakes-gated, conditional.** Runs only when `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` (a novel design or a significant guide rewrite). Interactive + founder present → the `human-concept-review` skill **launches the component viewer itself** (idempotent: reuse if already on `:5173`, copy + `npm install` only if missing, background `npm run dev`), the founder reviews the rendered variant + guide draft, pipeline-planner revises to approval. Autonomous / no founder → the orchestrator **parks** (`status: awaiting-human-concept-review`) and does **not** stand up the viewer; siblings proceed. On resume, the founder runs `/human-concept-review`, which owns the launch. Otherwise → skipped silently. |
-| 3 | **pipeline-builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
-| 4 | **pipeline-reviewer** + **pipeline-builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved `architecture.md` + `plan.md` ACs in `.pipeline/work/<id>/` (warm Phase 2 session reused if the host supports it), writes `review.md`. Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
-| 5 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Writes to `.pipeline/work/<id>/retro.jsonl`. **Runs before ship.** |
+| 1 | **pipeline-planner** | `{{models.design}}` | `refine` (if needed) | Write `requirements.md` — sharpen the goal, success, scope, guide draft; update `plan.md` only if scope/ACs shift. Runs when the goal is unclear or the WP introduces/reshapes a noun; otherwise confirm the seeded plan is sharp enough for human review. |
+| 2 | **pipeline-reviewer** + **pipeline-planner** | `{{models.review}}` | `refine-critique` (if `refine` ran) → pipeline-planner revision loop | Score `requirements.md` before any human or design work — judge whether refine sharpened in the right direction against `plan.md`. CRITICAL/WARNING → planner revises `requirements.md` (**max 3 rounds**). |
+| 3 | **orchestrator** (+ pipeline-planner for revisions) | — | Human requirement review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the requirement summary in chat (see *Human review gates*). Founder approves `requirements.md` (value, success, scope, guide draft, AC alignment) against `plan.md`. Interactive → pipeline-planner revises to approval, sets `approvals.requirements` in `progress.json`. Autonomous / no founder → **park** (`status: awaiting-human-review`). No design or architecture may start until this lands. |
+| 4 | **pipeline-planner** | `{{models.design}}` | `design` (if UI) → `architecture` | Design variant exploration (UI only) **then** the technical plan, produced together. Consumes the **approved** `requirements.md`. Design artifacts go under `.pipeline/work/<id>/design/`; then `architecture.md` (+ `feasibility.md` when warranted) with a **feasibility check** on the load-bearing / new / unknown parts only (web research + tiny manual POCs). The design is a **peer input** to architecture here — not yet human-approved; both are approved together at the Phase 6 concept gate. Update `plan.md` only if the plan changes. **Skip design if no UI / no design system.** |
+| 5 | **pipeline-reviewer** + **pipeline-planner** | `{{models.review}}` | `design-critique` (if design ran) → `architecture-critique` → pipeline-planner revision loop | Independent evaluation of design + `architecture.md`. CRITICAL/WARNING findings → pipeline-planner revises, pipeline-reviewer re-critiques (**max 3 rounds**). |
+| 6 | **orchestrator** (+ pipeline-planner for revisions) | — | Human concept review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the concept summary. Founder reviews design + `architecture.md` together — for UI, the rendered variant via the `design` viewer (design owns it) + annotations. Interactive → pipeline-planner revises to approval, sets `approvals.concept` in `progress.json`. Autonomous / no founder → **park**. No build may start until this lands. |
+| 7 | **pipeline-builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
+| 8 | **pipeline-reviewer** + **pipeline-builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved `architecture.md` + `plan.md` ACs in `.pipeline/work/<id>/` (warm Phase 5 session reused if the host supports it), writes `review.md`. Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
+| 9 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Appends to `.pipeline/work/<id>/retro.jsonl`. **Runs before ship.** |
+| 10 | **orchestrator** (+ pipeline-builder for fixes) | — | Human final review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the built-vs-planned summary. Founder confirms the built result against the requirement + architecture before ship. Interactive → approve, or send fixes back to build (Phase 7); sets `approvals.final` in `progress.json`. Autonomous / no founder → **park**. |
 | ship | **pipeline-builder** | `{{models.build}}` | `ship` | Land the change: pass `{{verify}}`, open/ready the PR, wait for CI green. Not a tracked phase — the merge is proof of completion. |
 
 **Producer / evaluator separation is the whole point.** The **pipeline-planner** produces; a *different*
-agent, the **pipeline-reviewer**, evaluates. In Phase 4 the pipeline-reviewer checks the code against the approved
-`architecture.md` (+ `plan.md` ACs) in `.pipeline/work/<id>/` — the same contract it critiqued in Phase 2. If the host keeps
-the pipeline-reviewer's Phase 2 session warm, it already holds those decisions and saves a re-read; if not,
+agent, the **pipeline-reviewer**, evaluates. In Phase 8 the pipeline-reviewer checks the code against the approved
+`architecture.md` (+ `plan.md` ACs) in `.pipeline/work/<id>/` — the same contract it critiqued in Phase 5. If the host keeps
+the pipeline-reviewer's Phase 5 session warm, it already holds those decisions and saves a re-read; if not,
 it reconstitutes them from the plan artifact. Same audit either way. The pipeline-reviewer's AC-completeness
 audit reads a *live* change against the spec — never the pipeline-builder's notes about the change.
+
+### Human review gates — the orchestrator summarizes, the human approves
+
+The three human gates (Phases 3, 6, 10) are **not a skill** — a human review does no work of its own. It is the orchestrator **telling the human, in chat, what has been done, where it lives, and how to speak about it**, then the human approving or sending it back. No artifact, no bundled tool — chat prose only. Post a short, jargon-free summary, a few sentences each — an orientation, not a re-derivation:
+
+- **Requirements & user value** — what the WP must deliver and who is better off.
+- **What's being built, how it works, tech stack** — the mechanism in plain words, and where the artifacts live (`requirements.md`, `design/`, `architecture.md`).
+- **Built vs planned** *(Phase 10)* — what actually shipped against the plan, with deltas called out.
+
+Then run the gate:
+
+- **Interactive (founder present)** → the founder responds; the relevant producer revises — pipeline-planner for `requirements.md` (Phase 3) / design + `architecture.md` (Phase 6), pipeline-builder for fixes back through build (Phase 10) — loop until the founder approves; set `approvals.requirements` / `approvals.concept` / `approvals.final` in `progress.json`. For a UI concept gate, the founder reviews the rendered variant via the **`design` viewer** (design owns the render + annotation loop).
+- **Autonomous (no founder)** → **park**: `status: awaiting-human-review`, `currentStep: human-review-requirements` / `-concept` / `-final`. Never auto-approve; sibling work packages may proceed.
 
 ### Spawn discipline (tool-agnostic)
 
@@ -122,7 +154,7 @@ spawned at any phase reconstitutes from those files and produces the same result
 
 **Session reuse is an optimization, not a requirement.** Where the host supports it (warm sessions,
 agent teams, message-an-existing-agent), keep the three personas alive across phases — the pipeline-reviewer
-in Phase 4 reusing its Phase 2 session, the pipeline-builder carrying Phase 3 into Phase 4 fix-apply and
+in Phase 8 reusing its Phase 5 session, the pipeline-builder carrying Phase 7 into Phase 8 fix-apply and
 ship — to save context/cache-creation cost. Where it doesn't (no durable sessions, or subagents
 that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
 just not free. Never gate the pipeline on session reuse being available. The retro agent is always
@@ -130,26 +162,35 @@ ephemeral.
 
 ### Loop rules
 
-- **Critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
-  who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
-  are reached. If it never clears after the cap: mark `blocked` with reason
+- **Refine critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
+  who revises `requirements.md` and the pipeline-reviewer re-critiques. Repeat until the score clears the
+  bar or **3 rounds** are reached. If it never clears: mark `blocked` with reason
   `concept-or-spec-misalignment` (the requirement may need another `/refine` pass, or the
   strategic frame may need upstream `/work-planning` work).
-- **Review loop (Phase 4):** if the verdict is NOT DONE, send findings to the pipeline-builder, who
+- **Human review gates (Phases 3, 6 & 10):** never skip, never auto-approve. These are orchestrator-run
+  gates, not a skill (see *Human review gates*). Autonomous runs **park** — they do not proceed past the
+  requirement gate (Phase 3), the concept gate (Phase 6, design + architecture), or the final review gate
+  (Phase 10) without founder approval. On resume, the orchestrator re-posts the summary and continues from
+  the parked `currentStep`.
+- **Critique loop (Phase 5):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
+  who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
+  are reached. If it never clears after the cap: mark `blocked` with reason `concept-or-spec-misalignment`.
+- **Review loop (Phase 8):** if the verdict is NOT DONE, send findings to the pipeline-builder, who
   fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
 - **Builder BLOCKER:** if the pipeline-builder hits a plan-vs-reality conflict, it raises a BLOCKER rather
-  than redesigning in flight. Surface to the pipeline-planner for a plan amendment, then re-enter Phase 3.
+  than redesigning in flight. Surface to the pipeline-planner for a plan amendment, then re-enter Phase 7.
   **Max 3 attempts per WP.**
 - **CI red after ship push:** pipeline-builder fixes locally and re-ships. **Max 3 attempts.**
 - After **3 attempts**, mark the WP `blocked` with the relevant reason and move on.
 
-### Ship runs AFTER retro
+### Ship runs AFTER retro and the final review
 
-Land the change only after Phase 5 so the retro output is part of the verified tree. Before
-dispatching ship: write `.pipeline/work/<id>/progress.json` with `status: "done"`,
-`currentStep: "shipped"`, `completedAt` set — this must land before the ship push. The `ship`
-skill owns the full land sequence (sync base → `{{verify}}` → open/ready the PR via `{{vcs}}` →
-wait for CI green). **Ship is the single gate: the WP is not done until ship confirms CI green.**
+Land the change only after the retro (Phase 9) and the human final review (Phase 10) so the retro
+output is part of the verified tree and the founder has signed off. Ship's **first step** writes
+`.pipeline/work/<id>/progress.json` with `status: "done"`, `currentStep: "shipped"`, `completedAt`
+set **and commits it**, so the PR itself shows the pipeline as done. The `ship` skill then owns the
+full land sequence (sync base → `{{verify}}` → open/ready the PR via `{{vcs}}` → wait for CI green).
+**Ship is the single gate: the WP is not done until ship confirms CI green.**
 
 (Optional: projects MAY cache a signed verify attestation to skip re-running CI; off by default.)
 
@@ -172,8 +213,8 @@ fabrication):
   a reviewable claim, not filler.
 
 Close each WP with **Status** — `PR #N · CI green · ready to merge`, or `blocked: <plain reason>`,
-or `parked: awaiting human concept review`. For a batch, a one-line lead ("3 of 4 shipped; X
-blocked on …; Y parked for concept review") then the per-WP blocks. Do **not** report phase
+or `parked: awaiting human review`. For a batch, a one-line lead ("3 of 4 shipped; X
+blocked on …; Y parked for human review") then the per-WP blocks. Do **not** report phase
 numbers, persona names, critique scores, or review-round counts. Keep it scannable.
 
 ## Done when
@@ -185,13 +226,16 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
 
 ## Discipline & skip rules
 
-- **Never stop after planning.** The plan is Phase 1 of 6. It isn't done until the pipeline-builder makes
+- **Never stop after planning.** Planning is only phases 1–6 of 10. It isn't done until the pipeline-builder makes
   it real and the pipeline-reviewer approves.
+- **Never skip a human review gate.** Every work package parks for founder approval on requirements (Phase 3),
+  on the design + architecture concept (Phase 6), and on the built result (Phase 10). "Routine" or
+  "backend-only" is not a skip reason.
 - After each WP, check elapsed time; if a session budget is exceeded (e.g. > 45 min), save
   progress and exit. If context degrades (compaction), finish the current WP and exit.
 - **Skip design + design-critique** when: the WP has no UI surface (pure backend, schema, infra,
-  concept-only), **or** `pipeline.config designSystem` is `null` — then the design phases do not
-  apply at all. Verify by reading the AC
+  concept-only), **or** `pipeline.config designSystem` is `null` — then design does not apply and the
+  Phase 6 concept gate reviews architecture alone. Verify by reading the AC
   list: if no AC mentions a page, component, layout, route, or visible state, skip them. When in
   doubt and a design system exists, run `design` with `routine` classification — one variant is
   cheap and the brief doubles as documentation.

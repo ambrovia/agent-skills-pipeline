@@ -133,9 +133,13 @@ Everything project-specific lives in one file. Copy [`pipeline.config.example.ym
 
 ```yaml
 verify: "go test ./..."   # the single command that must pass before ship
+engineering:
+  tier: mvp               # prototype | mvp | production | critical — the scale all planning/critique calibrates to
 designSystem: null        # null → the design phases are skipped
 vcs: github
 ```
+
+The **engineering tier** is load-bearing: every planning and critique phase matches its rigor to it, so a home-use MVP doesn't get audit-grade enterprise architecture (and vice-versa). `/work-planning` re-confirms the tier on every run and STRICT HALTs to ask if it's unclear; downstream phases within a work package trust the tier as set.
 
 ### Steer skills with project rules
 

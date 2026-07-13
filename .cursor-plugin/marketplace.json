@@ -11,7 +11,7 @@
     {
       "name": "pipeline",
       "source": ".",
-      "description": "Work packages run through design → critique → build → review → retro → ship, driven by pipeline-planner/pipeline-reviewer/pipeline-builder persona subagents. 16 skills + 3 personas + session/edit hooks.",
+      "description": "Work packages run through design → critique → build → review → retro → ship, driven by pipeline-planner/pipeline-reviewer/pipeline-builder persona subagents. 17 skills + 3 personas + session/edit hooks.",
       "version": "0.4.2",
       "author": {
         "name": "Ambrovia"

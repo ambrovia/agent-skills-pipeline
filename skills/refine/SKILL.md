@@ -9,7 +9,7 @@ user-invocable: true
 
 # Refine — sharpen the goal
 
-First of a work package's three pre-build acts: **refine → design → architecture**. It clarifies the **goal** — the user value the work delivers, the product impact it should have, and what success looks like — and bounds the scope, so design and architecture build toward a sharp target. A fuzzy goal is the most expensive thing to get wrong: it ripples through every design variant and every architecture contract. Sharpen the goal first; pinning the shape of any new domain noun the work introduces is a later step, and only when it introduces one.
+First pre-build act in the pipeline: **refine → human requirement review → design + architecture → human concept review**. It clarifies the **goal** — the user value the work delivers, the product impact it should have, and what success looks like — and bounds the scope, so design and architecture build toward a sharp target. A fuzzy goal is the most expensive thing to get wrong: it ripples through every design variant and every architecture contract. Sharpen the goal first; the founder locks it in the human requirement review before agents proceed.
 
 **Per-work-package only.** Inherit the track's *strategic frame* (boundary, primitive, shared nouns — set in `/work-planning` + `{{paths.docs}}`) as fixed input; never contradict it. Sharpen this one work package's requirement.
 
@@ -23,12 +23,12 @@ Phase 1, the first pre-build act for a work package whose goal is unclear or tha
 
 ## What it produces
 
-- **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement output (**always**). Carries the `DOC-CLASS` line and the guide draft. It **references `plan.md`** and **updates `plan.md` only if the overall plan changes**. This is what `/design` and `/architecture` read as a fixed input.
+- **`.pipeline/work/<id>/requirements.md`** — refine's own document, the **primary artifact** for the human requirement review (Phase 3). It carries the `DOC-CLASS` line (informational), the sharpened goal, the guide draft, and an **AC alignment table** mapping each acceptance criterion to how the requirement covers it. It **references `plan.md`** (the WP spec) and **updates `plan.md` only if the overall plan changes** (scope, ACs, intent) — otherwise `plan.md` stays as `/work-planning` seeded it. `/design` and `/architecture` read `requirements.md` as fixed input **after** founder approval. Because it is a discrete file (and any plan change is a diff on `plan.md`), the reviewer sees exactly what refine changed against the seed.
 - A ground-truth doc under `{{paths.docs}}` when the requirement reshapes an existing layer — the **specific** file, never a generic folder dump.
 
 ## Required reading (do this first)
 
-1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why.
+1. The seed sections of `.pipeline/work/<id>/plan.md` — the `## Work package` and `## Acceptance criteria` that `/work-planning` wrote — what it asks for and why, including the **Engineering tier** (a fixed input: the scale you calibrate success and scope to; `/work-planning` owns it — do not re-question it here).
 2. Existing canonical-shapes / contract docs under `{{paths.docs}}` — does the noun already have a contract?
 3. List `{{paths.docs}}` to identify relevant topic folders, then read each topic's index and drill into the specific files that match the noun.
 
@@ -38,29 +38,33 @@ If the spec contradicts an existing requirements / concept doc, that is **CRITIC
 
 ## Phase 0 — Sharpen the goal
 
-Settle the goal in your own words, then confirm it with the maintainer:
+Settle the goal in your own words, then confirm it with the maintainer. **Calibrate to the WP's Engineering tier** (`plan.md`): an `mvp` goal is deliberately narrower than a `production`/`critical` one. Take the tier as set; don't re-open it here.
 
 - **Value & audience** — what value this delivers, and to whom. The one question always worth asking a reachable maintainer; a misread goal is far cheaper to correct here than after the build.
-- **Success** — what a user or the system can observably do once this ships that they couldn't before.
+- **Success** — what a user or the system can observably do once this ships that they couldn't before, at the tier's rigor.
 - **Scope** — what the work deliberately leaves out; the exclusions bound it as much as the inclusions.
 
 Ask only the few questions that would change the goal or its scope; lead with your read, and if an answer moves the scope, settle the goal before anything downstream.
 
 ## Phase 1 — Plan backwards
 
-State the goal as the user/dev guide that would explain the feature once it shipped — what a user can now do or see, or how a developer uses the capability. Working back from that end state pressure-tests the goal: if the guide is hard to write, the goal isn't sharp yet. Keep this draft — `/human-concept-review` reviews it, and `/write-docs` later reconciles it into `{{paths.docs}}` against what actually shipped.
+State the goal as the user/dev guide that would explain the feature once it shipped — what a user can now do or see, or how a developer uses the capability. Working back from that end state pressure-tests the goal: if the guide is hard to write, the goal isn't sharp yet. Keep this draft — the human requirement review is where the founder approves it; `/write-docs` later reconciles it into `{{paths.docs}}` against what actually shipped.
 
 ## Phase 2 — Write requirements.md and emit DOC-CLASS
 
-Write `.pipeline/work/<id>/requirements.md` — the per-work-package requirement `/design` and `/architecture` read: the sharpened goal (value, success, scope), the **Guide draft** from Phase 1, and the `DOC-CLASS` line. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan. When the work reshapes an existing layer, update the specific `{{paths.docs}}` ground-truth file too.
+Write (or revise) **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement the human requirement review (Phase 3) approves before any design or architecture. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan (scope, ACs, intent):
 
-**Emit the `DOC-CLASS` line** at the top of `requirements.md` — the doc half of the human-concept-review gate (the design half is `/design`'s `DESIGN-CLASS`):
+1. **Sharpened goal** — value, success, scope (with real non-goals).
+2. **Guide draft** from Phase 1.
+3. **AC alignment table** — one row per acceptance criterion in `## Acceptance criteria`: the AC text, how the requirement covers it, and any gap flag.
+4. **Required reading** — specific doc files downstream agents must read.
+5. **`DOC-CLASS` line** (informational metadata — does not gate human review):
 
 ```
 DOC-CLASS: significant|minor|none
 ```
 
-`significant` = a new user/dev-guide page or a large rewrite. `minor` = small additions to an existing page. `none` = nothing a reader sees, reads, or does changes. Human concept review runs when **either** `DESIGN-CLASS == novel` OR `DOC-CLASS == significant`.
+`significant` = a new user/dev-guide page or a large rewrite. `minor` = small additions. `none` = no reader-visible doc change expected. Human concept review **always** runs regardless of class.
 
 ## Phase 3 — Clarify any nouns (only if the work introduces one)
 
@@ -78,6 +82,7 @@ Stop there: a distinct, unambiguous noun, not a data model. No cardinality / lif
 - The relevant `{{paths.docs}}` ground truth is updated when the work reshapes a layer.
 - A "Required reading" section names the specific docs downstream agents must read.
 - No spec/doc contradiction is left silent.
+- The requirement is ready for `/refine-critique` then the human requirement review (Phase 3) — no design or architecture work may start until the founder approves.
 
 ## What this skill does NOT do
 

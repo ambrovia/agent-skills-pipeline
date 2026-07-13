@@ -1,7 +1,7 @@
 ---
 name: review
-description: "Read-only review of implemented code against its work-package spec: 3 positive lenses (architecture, design, security), 3 negative lenses (adversarial, simplification, slop), plus an acceptance-criteria completeness audit. Use in Phase 4 after the pipeline-builder produces code, or on demand to review a work package or a set of changed files. Produces findings only — never edits code."
-phase: 4
+description: "Read-only review of implemented code against its work-package spec: 3 positive lenses (architecture, design, security), 3 negative lenses (adversarial, simplification, slop), plus an acceptance-criteria completeness audit. Use in Phase 8 after the pipeline-builder produces code, or on demand to review a work package or a set of changed files. Produces findings only — never edits code."
+phase: 8
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -13,7 +13,7 @@ Read-only review. Produce findings — do **NOT** make code changes.
 
 Six lenses plus an acceptance-criteria completeness audit, one session. Three positive lenses check that the code respects its contracts. Three negative lenses check what the contracts don't cover. The design lens is skipped silently if no UI files changed (and entirely if no design system is configured — `pipeline.config` `designSystem: null`).
 
-**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context pipeline-reviewer catches contract violations the implementer rationalized away, gaps the pipeline-builder didn't notice, and complexity the pipeline-builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/work/<id>/plan.md` — warm from Phase 2 if the host kept the pipeline-reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
+**Why:** The agent that built it is the least qualified to verify it — it is biased toward believing its own work is correct. A fresh-context pipeline-reviewer catches contract violations the implementer rationalized away, gaps the pipeline-builder didn't notice, and complexity the pipeline-builder introduced without realizing it. Run this on a fresh high-capability agent ({{models.review}}) so the review is not anchored by whatever produced the code. It checks the code against the approved plan in `.pipeline/work/<id>/plan.md` — warm from Phase 5 if the host kept the pipeline-reviewer's session, read from the artifact if not. Either way the contract is the written plan, not memory.
 
 ## Project rules
 
@@ -29,7 +29,7 @@ Audit against every `pipeline.config rules` slot below as binding — a violatio
 
 ## When this runs
 
-- **In the pipeline:** Phase 4, after the pipeline-builder completes the build act. Reviewer session.
+- **In the pipeline:** Phase 8, after the pipeline-builder completes the build act. Reviewer session.
 - **On explicit invocation:** review a work package by id, or a set of changed files.
 - **Skip conditions:** the design lens is skipped when no UI files changed; the whole design lens never fires when `designSystem: null`. The security lens always applies. All other lenses always apply.
 

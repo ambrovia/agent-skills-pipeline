@@ -1,7 +1,7 @@
 ---
 name: ship
 description: "Verify, commit, push, and wait for CI green — the single gate between code and a merge-ready PR. Use to ship a completed work package: run the verify command, open/ready a PR via the project's VCS, and confirm CI is green. Stops at CI-green PR open; does not merge."
-phase: 6
+phase: 11
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[work-package-id or branch description]"
@@ -22,8 +22,9 @@ sufficient — the PR check must pass.
 
 ## When this runs
 
-Phase 6, after code review has emitted a DONE verdict for the work package and
-the change is locally complete.
+After Phase 8 code review has emitted a DONE verdict for the work package, Phase 9
+retro has completed, and the Phase 10 human final review has approved, the change is
+locally complete.
 
 ## What it produces
 
@@ -41,7 +42,22 @@ emitted "Verdict: DONE" for this work package (the `verdict` field in
 proceed to verify/ship. Shipping without code review is a process violation, not
 an efficiency gain.
 
-### 1. Stage and commit all code changes
+### 1. Mark the work package done and commit it (FIRST — do not skip)
+
+Before anything else in the ship sequence, record completion so the PR itself
+shows the pipeline is done. Write `.pipeline/work/<id>/progress.json` with
+`status: "done"`, `currentStep: "shipped"`, and `completedAt` set, then commit it:
+
+```bash
+git add .pipeline/work/<id>/progress.json
+git commit -m "chore(<id>): mark pipeline done"
+```
+
+This commit lands in the PR so a reviewer sees the work package as done. If a
+later step blocks (verify red, or CI red after retries), overwrite `status` with
+`blocked` and the reason in a follow-up commit.
+
+### 2. Stage and commit all code changes
 
 Stage files intentionally — never `git add -A` or `git add .`.
 
@@ -51,7 +67,7 @@ package ID. If changes span multiple logical units, make multiple atomic commits
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Choose a scope that
 names the affected area of `{{paths.source}}`, or omit it.
 
-### 2. Merge the main branch (MANDATORY — do not skip)
+### 3. Merge the main branch (MANDATORY — do not skip)
 
 Merge the latest main before verifying so verify runs against the tree that will
 actually merge. This prevents surprises when main has moved since the branch was
@@ -65,7 +81,7 @@ git merge origin/main --no-edit
 If there are merge conflicts, resolve them and commit the merge. The working tree
 must be **completely clean** before proceeding.
 
-### 3. Pre-flight validation (MANDATORY — do not skip)
+### 4. Pre-flight validation (MANDATORY — do not skip)
 
 Run the project's verify command:
 
@@ -83,7 +99,7 @@ exactly what you push.
 (Optional: projects MAY cache a signed verify attestation to skip re-running CI;
 off by default.)
 
-### 4. Push
+### 5. Push
 
 ```bash
 git push -u origin HEAD
@@ -91,7 +107,7 @@ git push -u origin HEAD
 
 Never force push — history is shared.
 
-### 5. Open or update the PR
+### 6. Open or update the PR
 
 Using the project's VCS ({{vcs}}):
 
@@ -102,7 +118,7 @@ Using the project's VCS ({{vcs}}):
 
 Main is protected — commits only land via pull request.
 
-### 6. Wait for CI green (MANDATORY — do not skip)
+### 7. Wait for CI green (MANDATORY — do not skip)
 
 Poll the PR's checks until CI reports a result. **Ship is not complete until CI
 is green.**
@@ -112,14 +128,14 @@ is green.**
 2. Read the error message and identify the cause. Common causes: a check that
    passes locally but not in CI (environment difference), or code committed after
    verify ran (re-run verify on the final tree).
-3. Fix the issue, then re-run from step 2 (merge main, verify, push).
+3. Fix the issue, then re-run from step 3 (merge main, verify, push).
 4. Max 3 push attempts. After 3, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 
 **Ship is only complete when the PR checks return green.** Do not declare success
 before this.
 
-### 7. Merge decision
+### 8. Merge decision
 
 **Do NOT merge automatically.** Ship stops at "CI-green PR open." Merging is a
 human decision — leave the PR open and re-runnable for the maintainer.
@@ -152,6 +168,7 @@ exact commands and credentials.
 
 ## Done when
 
+- The work package is marked `status: done` in `progress.json` and that commit is in the PR.
 - Code review verdict is DONE for the work package.
 - `{{verify}}` passed on a clean, main-merged tree.
 - The branch is pushed and a PR is open (or readied) via {{vcs}}.

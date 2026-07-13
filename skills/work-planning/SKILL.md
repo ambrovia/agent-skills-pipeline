@@ -49,6 +49,8 @@ Settle **what this track is about** at a strategic altitude — a few sharp ques
 first, the maintainer confirms or redirects. Not per-work-package design; that's `/refine`,
 later. Ask only what's unsettled.
 
+**First, re-confirm the engineering tier.** Re-check that the set tier (`{{engineering.tier}}` + any track override) still fits — products move `prototype → mvp → production → critical`, and building at the wrong scale makes the spec wrong. State your read, have the maintainer confirm; **if it's unset, stale, or ambiguous, STRICT HALT and resolve it before registering anything.** Record it on every WP (the **Engineering tier** field below).
+
 1. **Value & frame.** "What is this track fundamentally about — what value does it generate, and what's the one boundary / primitive / load-bearing noun it establishes? My read: …"
 2. **Shape of the work.** "What are the work packages this breaks into, roughly?" For each, classify two things up front:
    - **Refinement?** Is the WP's goal still unclear enough that `/refine` should run before build to sharpen it? (Unclear / novel-noun → Yes; obvious extension → No.)
@@ -89,7 +91,7 @@ The outputs feed the spec: the strategic frame lands in `{{paths.docs}}` ground 
 
 ## Output contract — the spec template
 
-Each work package gets **its own folder** `.pipeline/work/<id>/`, and its spec is **seeded into `.pipeline/work/<id>/plan.md`** — the WP spec, the plan of record. You write the seed: the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections (with the spec fields below under `## Work package`). Later phases write their **own** files alongside it — `/refine` → `requirements.md`, `/design` → `design/`, `/architecture` → `architecture.md` — and update `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). They do NOT add sections to `plan.md`. Do NOT write those downstream docs yourself, and do NOT put implementation detail in the seed.
+Each work package gets **its own folder** `.pipeline/work/<id>/`, and its spec is **seeded into `.pipeline/work/<id>/plan.md`** — the WP spec, the plan of record. You write the seed: the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections (with the spec fields below under `## Work package`). Later phases write their **own** files alongside it — `/refine` → `requirements.md`, `/design` → `design/`, `/architecture` → `architecture.md` + `feasibility.md` — and update `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). They do NOT add sections to `plan.md`. Do NOT write those downstream docs yourself, and do NOT put implementation detail in the seed.
 
 Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this order:
 
@@ -112,11 +114,13 @@ Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this orde
 
 **Complexity.** S | M | L — drives scheduler dispatch (see sizing rule).
 
+**Engineering tier.** prototype | mvp | production | critical — the scale this WP is built to (defaults to `{{engineering.tier}}`; change only with explicit maintainer reason). Calibrates *rigor*, not size; downstream phases trust it and don't re-question it, so it must be correct here.
+
 **Pre-build gates.** Two explicit declarations so the maintainer (and `/pipeline`) know what runs *before* this WP is built, each with a one-line reason:
 - **Refinement:** `Required — run /refine first (goal unclear, or introduces/reshapes: <noun>)` | `Not required — goal is clear and reuses requirements already locked in {{paths.docs}}`.
 - **Design:** `Required — novel surface; /design multi-variant + human review` | `Light — extends <existing component/page>; single-variant /design` | `Not required — backend/infra; skip /design` (also implied when `pipeline.config designSystem: null`).
 
-**Human concept review.** Yes | No — `<one-line reason>`. Forecasts whether the founder will review the user-facing parts (the user/dev-guide draft + the design). Forecast `Yes` when the WP introduces a new essential / base / primitive component, a large redesign, OR a significant rewrite of the user/dev guides; `No` for a routine tweak, a backend/infra-only WP, or an extension of an existing component. **Advisory forecast, NOT the trigger** — the authoritative gate is `DESIGN-CLASS == novel` OR `DOC-CLASS == significant` at review time (a WP forecast `No` that `/design` later classifies `novel` or `/refine` marks `DOC-CLASS: significant` still parks).
+**Human review gates.** Yes — `<one-line reason>`. **Mandatory for every work package** — the requirement gate (Phase 3) after `/refine-critique`, the concept gate (Phase 6, design + architecture) after the critiques, and the final review (Phase 10) before ship. Autonomous `/pipeline` runs park until the founder approves. This forecast is for scheduling expectations only; the gates are never skipped.
 
 **Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package needs refinement (goal unclear or introduces/reshapes a noun), say so and name the noun so the pipeline runs `/refine` first.
 
@@ -165,7 +169,7 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
 
 ## Registration steps (perform in order, in one commit)
 
-1. **Seed the plan.** Create `.pipeline/work/<id>/` and write `plan.md` with the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections per the template above. Later phases write their own docs (`requirements.md`, `design/`, `architecture.md`) alongside it and update `plan.md` only if the overall plan changes.
+1. **Seed the plan.** Create `.pipeline/work/<id>/` and write `plan.md` with the `## Work package`, `## Acceptance criteria`, and `## Validation scenarios` sections per the template above. Later phases write their own docs (`requirements.md`, `design/`, `architecture.md`, `feasibility.md`) alongside it and update `plan.md` only if the overall plan changes.
 2. **Register in the per-track coordination file.** Add a row to the WP registry table in `.pipeline/<track>.md` and record the dependency edges (including any cross-track references) in that file's dependency graph:
     ```markdown
     | <ID> | <Title> | frontend\|backend\|application\|framework\|infra | S\|M\|L | depends: <ID>, <ID> (or —) | status: planned |
