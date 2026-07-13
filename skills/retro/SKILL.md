@@ -1,7 +1,7 @@
 ---
 name: retro
 description: "Collect observations from all sources after a work package or pipeline run. Use at the end of a work package (or the whole pipeline) to log what went well and what created friction. Observe, don't fix. Trigger: 'retro <wp-id>', 'last-session', or 'pipeline'."
-phase: 10
+phase: 9
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true

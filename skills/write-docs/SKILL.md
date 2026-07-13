@@ -1,7 +1,7 @@
 ---
 name: write-docs
 description: "Write or review user-facing documentation as a reading funnel — capture attention in seconds, deliver insight progressively, convert scanners into users. Use when authoring or reviewing docs, guides, product pages, or feature docs. Backed by eye-tracking, engagement, and A/B research."
-phase: 8
+phase: 7
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true

@@ -1,7 +1,7 @@
 ---
 name: human-concept-review
-description: "Mandatory pipeline gate: the founder approves the work package requirement (always) and the design (when UI) before agents plan implementation or build. Two passes — requirements after /refine-critique, design after /design. Interactive loop with planner revision; autonomous runs park."
-argument-hint: "[workpackage-id] [requirements|design]"
+description: "Mandatory pipeline gates: the founder approves the requirement (Phase 3), the design + architecture concept (Phase 6), and the built result (Phase 10). Three gates — requirements after /refine-critique, concept after the design/architecture critiques, final before ship. Interactive loop with planner revision; autonomous runs park."
+argument-hint: "[workpackage-id] [requirements|concept|final]"
 phase: 3
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -10,37 +10,38 @@ user-invocable: true
 
 # Human Concept Review
 
-The **mandatory human gate** on what agents are allowed to build. Agents go off-track most often
-right after `/refine` — they interpret a fuzzy goal, explore the wrong design, or plan architecture
-for something the founder didn't want. This phase stops that by locking the **requirement** with a
-human before any design or architecture work, then locking **design** (when UI) before architecture
-plans implementation.
+The **mandatory human gates** on what agents are allowed to build and ship. Agents go off-track most
+often right after `/refine` — they interpret a fuzzy goal, explore the wrong design, or plan
+architecture for something the founder didn't want. These gates stop that by locking the
+**requirement** with a human before any design or architecture work, locking the **design +
+architecture concept** before build, and confirming the **built result** before ship.
 
-It is the human counterpart to agent-vs-agent critiques (`/refine-critique`, `/design-critique`,
-`/architecture-critique`). No work package proceeds to build without founder approval on
-`requirements.md`. No UI work package proceeds to architecture without founder
-approval on the chosen design.
+It is the human counterpart to the agent-vs-agent critiques (`/refine-critique`, `/design-critique`,
+`/architecture-critique`, `/review`) — which all still run. No work package proceeds to design or
+architecture without founder approval on `requirements.md`, to build without approval on the design +
+architecture concept, or to ship without a final sign-off.
 
-## When this runs — always, two passes
+## When this runs — always, three gates
 
-| Pass | After | Before | Skipped when |
+| Gate | After | Before | Skipped when |
 |---|---|---|---|
 | **requirements** | `/refine` (+ `/refine-critique` if refine ran) | `/design`, `/architecture` | **Never** — every work package |
-| **design** | `/design` | `/architecture` | No UI surface / `designSystem: null` |
+| **concept** | `/design-critique` + `/architecture-critique` | build (`/write-tests`) | **Never** — every work package (design portion only when there's a UI surface) |
+| **final** | `/review` (DONE) + `/retro` | `/ship` | **Never** — every work package |
 
 There is **no stakes gate.** `DOC-CLASS` and `DESIGN-CLASS` are informational metadata from
 upstream skills — they do not control whether this phase runs. A "routine" backend tweak still
-gets a requirements pass. A one-variant routine UI still gets a design pass.
+gets all three gates; its concept gate just reviews architecture alone.
 
 **Presence changes behavior, not whether the gate fires:**
 - Founder present → interactive approve/revise loop.
 - Autonomous `/pipeline` (no founder) → **park** (`status: awaiting-human-concept-review`,
-  `currentStep: human-concept-review-requirements` or `human-concept-review-design`). Never
+  `currentStep: human-concept-review-requirements`, `-concept`, or `-final`). Never
   silently proceed. Never auto-approve.
 
-Invoke explicitly: `/human-concept-review <id>` resumes from the parked step; `/human-concept-review <id> requirements` or `design` forces a pass.
+Invoke explicitly: `/human-concept-review <id>` resumes from the parked step; `/human-concept-review <id> requirements`, `concept`, or `final` forces a gate.
 
-## Pass 1 — Requirements (the load-bearing gate)
+## Gate 1 — Requirements (Phase 3, the load-bearing gate)
 
 **Primary artifact:** `.pipeline/work/<id>/requirements.md` (reviewed against the seeded `## Work package` + `## Acceptance criteria` in `plan.md` — ideally as a diff of what `/refine` wrote).
 
@@ -72,37 +73,62 @@ the founder says the requirement is right.
    a one-line confirmation of value + success). This gates /design and /architecture.
 ```
 
-## Pass 2 — Design (when UI)
+## Gate 2 — Concept: design + architecture (Phase 6)
 
-Runs only after Pass 1 is approved and `/design` produced variants.
+Runs after Gate 1 is approved and `/design` + `/architecture` (and their critiques) produced the
+concept. The founder approves the **design and the technical plan together** — design and
+architecture are peers here, neither pre-approved. For a backend WP (no design), this gate reviews
+architecture alone.
 
-- **Design** — founder opens the chosen variant **live in the component viewer**, annotates
-  elements spatially, and the planner revises the **real component code** the build will ship.
-- **Guide draft** — re-read alongside the render; update if the design changed what the user story
+- **Design** (when UI) — founder opens the chosen variant **live in the component viewer**,
+  annotates elements spatially, and the planner revises the **real component code** the build will
+  ship. See "The viewer application" and "The annotation tool" below.
+- **Architecture** — founder reads `.pipeline/work/<id>/architecture.md` (+ `feasibility.md` when
+  present): the contracts, data flow, states, file/repo layout, tech stack, and the feasibility
+  verdicts. The planner revises `architecture.md` to address feedback.
+- **Guide draft** — re-read alongside the render; update if the concept changed what the user story
   should say.
 
-See "The viewer application" and "The annotation tool" below — unchanged from the design pass.
-
-### Design loop
+### Concept loop
 
 ```
-1. Launch the viewer (idempotent) and open the variant's hash route.
-2. Founder annotates + reads the guide draft.
-3. Planner reads .annotations/annotations.md; revises component code + the guide draft in
-   requirements.md if needed.
-4. Founder clicks "New iteration" for the next round.
-5. Repeat until founder approves.
-6. Write/refresh .pipeline/work/<id>/design/approved.md and set approvals.design in progress.json.
+1. (UI) Launch the viewer (idempotent) and open the variant's hash route; present architecture.md.
+2. Founder annotates the render + reads architecture.md and the guide draft.
+3. Planner reads .annotations/annotations.md; revises component code + architecture.md + the guide
+   draft in requirements.md if needed.
+4. Founder clicks "New iteration" (UI) for the next round.
+5. Repeat until founder approves the design + architecture concept.
+6. Write/refresh .pipeline/work/<id>/design/approved.md (when UI) and set approvals.concept in
+   progress.json. This gates build.
+```
+
+## Gate 3 — Final review (Phase 10, before ship)
+
+Runs after `/review` returns DONE and `/retro` has completed, before `/ship`. The founder confirms
+the **built result** matches what was approved — the last human checkpoint.
+
+- **Built vs approved** — does the implementation deliver the requirement and match the approved
+  design + architecture concept? Deltas from the plan must be called out and accepted, not
+  discovered later.
+- **User value** — can a user/dev now do what the requirement promised, in plain terms.
+
+### Final loop
+
+```
+1. Present the built result against requirements.md + architecture.md (+ the review.md verdict).
+2. Founder approves, or sends specific fixes back to build (Phase 7 re-enter).
+3. Repeat until approved.
+4. Set approvals.final in progress.json. This gates /ship.
 ```
 
 ## What this phase is NOT
 
-- **Not optional.** "Routine", "small", "backend-only" are not skip reasons for Pass 1.
+- **Not optional.** "Routine", "small", "backend-only" are not skip reasons for any gate.
 - **Not the critiques.** Rubric scoring stays with `/refine-critique`, `/design-critique`,
-  `/architecture-critique`.
-- **Not `/visual-polish`.** Polish runs after implementation. This runs before.
-- **Not architecture feasibility.** `/architecture` proves technical assumptions with probes; this
-  phase proves the *requirement and design* match founder intent.
+  `/architecture-critique`, `/review` — all still run.
+- **Not `/visual-polish`.** Polish runs after implementation. Gates 1–2 run before it.
+- **Not architecture feasibility.** `/architecture` proves technical assumptions with probes; these
+  gates prove the *requirement, concept, and result* match founder intent.
 
 ## The viewer application
 
@@ -110,7 +136,7 @@ This skill ships with a self-contained **Vite-based component viewer** in the `v
 
 ### Launching it (agent-owned, interactive path)
 
-The agent running Pass 2 stands the viewer up — the founder never sets it up by hand. Run the bundled launcher, pointed at the project root:
+The agent running the concept gate (Gate 2) stands the viewer up — the founder never sets it up by hand. Run the bundled launcher, pointed at the project root:
 
 ```
 node "<viewer>/launch.mjs" <project-root>
@@ -160,7 +186,7 @@ or `.pipeline/viewer.config.json`:
 
 CSS detection is config-first, then falls back to CSS imported by app main entries, then common files (`index.css`, `global.css`, `app.css`, `styles.css`, `tokens.css`) under `src/`, `packages/*/src/`, and `apps/*/src/`, then `designSystem.tokens` from `pipeline.config.yml`. If no CSS is found, the viewer still runs and prints a warning. Tailwind v4 projects use the target project's `@tailwindcss/vite` package when Tailwind v4 and Tailwind CSS directives are detected; Tailwind v3 projects use the target project's PostCSS config when present. Plain CSS, CSS Modules, SCSS, and CSS-in-JS need no special toolchain beyond Vite's defaults.
 
-> Pass 1 (requirements) does not launch the viewer. In an **autonomous** `/pipeline` run, both passes **park** — see Graceful degradation.
+> Gate 1 (requirements) and Gate 3 (final) do not launch the viewer. In an **autonomous** `/pipeline` run, all gates **park** — see Graceful degradation.
 
 ### Story format
 
@@ -202,29 +228,33 @@ The annotation overlay is the **inspector rail** docked to the right edge of the
 
 ## Graceful degradation
 
-- **Autonomous run:** do NOT attempt annotation or auto-approve. **Park** — the pipeline orchestrator writes `awaiting-human-concept-review` and records which pass (`requirements` or `design`) in `currentStep`. Sibling work packages may proceed.
-- **Interactive run, viewer unavailable (Pass 2 only):** degrade to prose-on-screenshot. Log that spatial annotation was unavailable. Do NOT hard-fail; do NOT auto-approve.
+- **Autonomous run:** do NOT attempt annotation or auto-approve. **Park** — the pipeline orchestrator writes `awaiting-human-concept-review` and records which gate (`requirements`, `concept`, or `final`) in `currentStep`. Sibling work packages may proceed.
+- **Interactive run, viewer unavailable (Gate 2 only):** degrade to prose-on-screenshot. Log that spatial annotation was unavailable. Do NOT hard-fail; do NOT auto-approve.
 
 ## Output
 
-**Pass 1:**
+**Gate 1 (requirements):**
 - Founder-approved `.pipeline/work/<id>/requirements.md`
 - `approvals.requirements` set in `.pipeline/work/<id>/progress.json`
 
-**Pass 2:**
-- Revised, founder-approved variant (in-place edits to the real component/story)
-- Refreshed `.pipeline/work/<id>/design/approved.md` + `approvals.design` set in `progress.json`
-- Refreshed guide draft in `requirements.md` if the design pass changed the story
+**Gate 2 (concept):**
+- Revised, founder-approved variant (in-place edits to the real component/story) when UI
+- Founder-approved `.pipeline/work/<id>/architecture.md`
+- Refreshed `.pipeline/work/<id>/design/approved.md` (when UI) + `approvals.concept` set in `progress.json`
+- Refreshed guide draft in `requirements.md` if the concept changed the story
+
+**Gate 3 (final):**
+- `approvals.final` set in `.pipeline/work/<id>/progress.json` — the built result matches intent, cleared to ship
 
 **Autonomous path:**
 - `awaiting-human-concept-review` park status (written by the pipeline orchestrator)
 
 ## Related skills
 
-- `/refine` — writes `requirements.md`; Pass 1 reviews it.
-- `/refine-critique` — agent scores the requirement before Pass 1.
-- `/design` — produces variants Pass 2 reviews.
-- `/architecture` — runs only after Pass 1 (and Pass 2 when UI) are approved; produces feasibility probes.
+- `/refine` — writes `requirements.md`; Gate 1 reviews it.
+- `/refine-critique` — agent scores the requirement before Gate 1.
+- `/design` + `/architecture` — produce the design + technical plan Gate 2 reviews.
+- `/review` — agent verdict on the built code before Gate 3.
 - `/pipeline` — owns the mandatory gates and park behavior.
 
 ## Target

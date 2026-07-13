@@ -120,7 +120,7 @@ Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this orde
 - **Refinement:** `Required — run /refine first (goal unclear, or introduces/reshapes: <noun>)` | `Not required — goal is clear and reuses requirements already locked in {{paths.docs}}`.
 - **Design:** `Required — novel surface; /design multi-variant + human review` | `Light — extends <existing component/page>; single-variant /design` | `Not required — backend/infra; skip /design` (also implied when `pipeline.config designSystem: null`).
 
-**Human concept review.** Yes — `<one-line reason>`. **Mandatory for every work package** — Pass 1 (requirements) always runs after `/refine-critique`; Pass 2 (design) runs when the WP has a UI surface. Autonomous `/pipeline` runs park until the founder approves. This forecast is for scheduling expectations only; the gate is never skipped.
+**Human review gates.** Yes — `<one-line reason>`. **Mandatory for every work package** — the requirement gate (Phase 3) after `/refine-critique`, the concept gate (Phase 6, design + architecture) after the critiques, and the final review (Phase 10) before ship. Autonomous `/pipeline` runs park until the founder approves. This forecast is for scheduling expectations only; the gates are never skipped.
 
 **Plan calls.** One short paragraph telling `/architecture` what kind of planning this work package needs. Most work packages: "Standard architecture pass — types, contracts, ordered tasks." Foundational primitives: "Multi-version exploration; design-it-twice on the data shape." Pure-backend infra: "Skip /design step; plan + write-tests + write-code." If the work package needs refinement (goal unclear or introduces/reshapes a noun), say so and name the noun so the pipeline runs `/refine` first.
 

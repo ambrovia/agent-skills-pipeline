@@ -1,7 +1,7 @@
 ---
 name: architecture
-description: "Produce the technical plan for a work package — feasibility probes (web research + mini POCs), types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements and AFTER /design (when the work package has UI)."
-phase: 6
+description: "Produce the technical plan for a work package — feasibility probes (web research + mini POCs), types, schemas, APIs, file paths, ordered tasks. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements, alongside /design (when the work package has UI); design + architecture are approved together at the concept gate."
+phase: 4
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -9,7 +9,7 @@ user-invocable: true
 
 # Architecture — the technical plan for a work package
 
-**Writes `architecture.md` (+ `feasibility.md` when a feasibility check was warranted).** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target) and, only when something load-bearing/new/unknown needed proving, `.pipeline/work/<id>/feasibility.md` (findings + verdicts for the reviewer). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the approved `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
+**Writes `architecture.md` (+ `feasibility.md` when a feasibility check was warranted).** Architecture writes `.pipeline/work/<id>/architecture.md` (the technical plan — the builder's executable target) and, only when something load-bearing/new/unknown needed proving, `.pipeline/work/<id>/feasibility.md` (findings + verdicts for the reviewer). It READS `.pipeline/work/<id>/plan.md` (the WP spec + ACs) and the approved `.pipeline/work/<id>/requirements.md` (plus `.pipeline/work/<id>/design/approved.md` — a same-phase peer input — when the work package has UI) as fixed input, and UPDATES `plan.md` only if the overall plan changes (scope, acceptance criteria, intent). It does not add sections to `plan.md`.
 
 **Why:** A clear plan prevents wasted implementation time. Without architectural planning, the pipeline-builder builds the wrong thing, misses edge cases, or invents abstractions the system doesn't need. The pipeline-reviewer catches errors before they become expensive rework.
 
@@ -17,8 +17,8 @@ user-invocable: true
 
 **Fixed inputs (do NOT re-litigate):**
 - **Engineering tier** (`prototype | mvp | production | critical`) from `plan.md` — calibrate the plan's rigor (hardening, error handling, security, observability, feasibility-probe depth) to it: lean on a `prototype`, exhaustive on a `critical`. Planning above or below the tier is a defect. Trust it as set; do not re-question it.
-- **Founder-approved** requirement from `/human-concept-review` Pass 1 — read `.pipeline/work/<id>/requirements.md` and confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`. If it is not approved, stop — architecture does not run before human requirement approval.
-- Approved design from `/design` + `/human-concept-review` Pass 2 (UI work packages), at `.pipeline/work/<id>/design/approved.md` with `approvals.design` set. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
+- **Founder-approved** requirement from the human requirement review (Phase 3) — read `.pipeline/work/<id>/requirements.md` and confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`. If it is not approved, stop — architecture does not run before human requirement approval.
+- Design from `/design` (UI work packages), at `.pipeline/work/<id>/design/approved.md` — produced in the **same phase**, just before architecture. It is a **peer input, not yet human-approved**: design + architecture are approved together at the Phase 6 concept gate. If no design system is configured (pipeline.config `designSystem: null`), there is no design input and this clause does not apply.
 
 **Doc discovery:** Read the "Required reading" from `/refine` output if available. Otherwise list `{{paths.docs}}` to identify relevant topic folders. **Output a "Required reading" section in the plan** listing the specific doc files the engineer must read before implementing. This is the natural filter — downstream skills read only what the plan prescribes.
 

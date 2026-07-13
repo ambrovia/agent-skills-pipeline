@@ -1,7 +1,7 @@
 ---
 name: architecture-critique
-description: "Score a technical plan against the 11-dimension architectural rubric BEFORE any code is written. Use in Phase 7 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
-phase: 7
+description: "Score a technical plan against the 11-dimension architectural rubric BEFORE any code is written. Use in Phase 5 after the pipeline-planner produces a plan, or on demand to audit a plan for a work package. Evaluation act — pipeline-reviewer persona scores the pipeline-planner's plan; distinct from reviewing implemented code."
+phase: 5
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -11,7 +11,7 @@ user-invocable: true
 
 **Why:** The agent that wrote the plan cannot objectively evaluate it. Evaluation must be a different agent — the pipeline-reviewer — reading the plan cold. True producer/evaluator separation: different personas, not just different cognitive modes.
 
-This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The technical plan lands in `.pipeline/work/<id>/architecture.md`, so the Phase 9 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
+This is the **evaluation** counterpart to plan production (the `architecture` act). The pipeline-reviewer persona scores what the pipeline-planner produced. Architecture drafts the plan; this skill scores it. The technical plan lands in `.pipeline/work/<id>/architecture.md`, so the Phase 8 code review reads it there — reusing this critique's warm session if the host supports it, reconstituting from the artifact if not.
 
 This is **not** the code-review act. Code review audits the *implemented code* against the spec, after the fact. This skill audits the *plan* against the spec, before any code is written. They run at different phases and surface different classes of issues — but the same pipeline-reviewer persona runs both, against the technical plan in `.pipeline/work/<id>/architecture.md` (warm context if the host kept the session, read from the artifact if not).
 
@@ -25,7 +25,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## When this runs
 
-- **In the pipeline:** Phase 7, after the pipeline-planner completes the `architecture` act. Reviewer session.
+- **In the pipeline:** Phase 5, after the pipeline-planner completes the `architecture` act. Reviewer session.
 - **On explicit invocation for a work package:** full audit of `.pipeline/work/<id>/architecture.md` (+ its `feasibility.md`).
 - **Skip condition:** this skill always applies to a work package that has a technical plan. The design-system-specific checks inside it are skipped automatically when no design system is configured (`pipeline.config` `designSystem: null`).
 
