@@ -4,7 +4,7 @@
 # Runtime pipeline state (created in consuming repos, never committed here)
 /.pipeline/
 
-# Runtime annotation output from the human-concept-review viewer
+# Runtime annotation output from the design viewer
 .annotations/
 
 # Deps / build

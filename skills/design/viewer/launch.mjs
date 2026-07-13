@@ -3,7 +3,7 @@
  * launch.mjs — one-command launcher for the component viewer.
  *
  * Turns the manual "copy → npm install → npm run dev → find the URL" dance into
- * a single idempotent command the human-concept-review skill (or a human) runs.
+ * a single idempotent command the design skill (or a human) runs.
  * Zero runtime dependencies — Node built-ins only — so it works straight from a
  * plugin install with nothing pre-installed.
  *
@@ -19,8 +19,8 @@
  *   node launch.mjs --help
  *
  * Resolving the launcher path from an installed plugin:
- *   Claude Code : node "${CLAUDE_PLUGIN_ROOT}/skills/human-concept-review/viewer/launch.mjs" <project>
- *   Codex CLI   : node "${PLUGIN_ROOT}/skills/human-concept-review/viewer/launch.mjs" <project>
+ *   Claude Code : node "${CLAUDE_PLUGIN_ROOT}/skills/design/viewer/launch.mjs" <project>
+ *   Codex CLI   : node "${PLUGIN_ROOT}/skills/design/viewer/launch.mjs" <project>
  *   opencode    : resolve via the plugin module's import.meta.url (no plugin-root env var)
  *
  * Exit codes: 0 = viewer reachable (freshly started or already running); 1 = failed.

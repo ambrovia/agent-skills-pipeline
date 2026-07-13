@@ -52,7 +52,7 @@ State the goal as the user/dev guide that would explain the feature once it ship
 
 ## Phase 2 — Write requirements.md and emit DOC-CLASS
 
-Write (or revise) **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement `/human-concept-review` reviews before any design or architecture. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan (scope, ACs, intent):
+Write (or revise) **`.pipeline/work/<id>/requirements.md`** — the per-work-package requirement the human requirement review (Phase 3) approves before any design or architecture. Leave the seeded `plan.md` (`## Work package`, `## Acceptance criteria`) intact; update `plan.md` only if this refine changes the overall plan (scope, ACs, intent):
 
 1. **Sharpened goal** — value, success, scope (with real non-goals).
 2. **Guide draft** from Phase 1.
