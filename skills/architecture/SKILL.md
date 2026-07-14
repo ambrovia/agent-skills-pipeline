@@ -53,6 +53,8 @@ Prove the plan is feasible **only where it's genuinely uncertain** — the techn
 
 For the parts that warrant it: do a quick **web search for reference implementations and patterns** (pinned versions, primary sources) and/or a **tiny, manual mini-POC** — a throwaway sketch that answers the one open question, never a full implementation — kept under `.pipeline/work/<id>/probes/<slug>/` (your scratch, for you). Record what you found and a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict, **with the details the reviewer needs**, in `.pipeline/work/<id>/feasibility.md`. If nothing was load-bearing or unknown, skip this — a one-line `feasibility.md` (or none) is fine.
 
+**Check assumptions against reality, not only the repo.** When a load-bearing claim depends on live state (bucket contents, deployed config, running jobs/crons, live DB rows, real API quotas, infra outside this repo), run a **cheap empirical probe** against that state (`aws s3 ls`, a read-only query, a status check) — reading source is not verifying reality. Record the probe and outcome in `feasibility.md`; if it falsifies the premise, revise the plan before proceeding.
+
 ## Phase 2 — Plan reconciliation (spec ⇆ reality)
 
 Before locking the plan, reconcile the spec against the actual codebase. Spec/codebase drift discovered at write-tests time is too late — catch it here.
@@ -62,7 +64,9 @@ For every named symbol the spec references — table, route, component, file, co
 2. For UI-touching ACs, read the current rendered output (or the existing component) to verify columns / labels / states.
 3. For API-touching ACs, read the existing route handler / interface / schema to verify the contract.
 
-Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
+**Derive the blast radius — don't only verify what the spec named.** Specs undercount real call sites. After checking named symbols, search for *unnamed* consumers: callers of symbols you'll change, packages importing the same surface, fixtures/seed paths, adjacent tools/CLIs, eval/integration harnesses. **Record surfaces and obligations, not an exhaustive file list** — contracts, packages, call-site families, migrations, consumers that must keep working; write-tests / write-code discover the concrete paths. If the search turns up a package or call-site family the spec omitted, the plan must absorb that obligation (or defer it with a tracked reason) — never ship a plan that quietly ignores surface the codebase still uses.
+
+Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality, every newly discovered blast-radius *surface/obligation*, and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
 
 ## Phase 3 — Acceptance criteria + tasks
 
@@ -72,7 +76,7 @@ If the work package has a UI surface and `/design` produced an approved spec, re
 
 Produce:
 1. **Acceptance criteria** — each with a specific verification method (see the criterion→verification table below).
-2. **Ordered task list** — what to do, which files, which test proves it, dependencies between tasks.
+2. **Ordered task list** — what to do, which surfaces/contracts each task touches, which test proves it, dependencies between tasks. Name concrete files when already known and load-bearing — the list is not a complete file inventory; the builder enumerates every path while implementing.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
 5. **Route checklist** (if applicable) — when the spec enumerates a route list (e.g., "guard mounts on /sessions, /tasks, /admin"), the plan MUST include a `route-checklist:` block listing every route + every file the guard/middleware must cover. Step `/architecture-review` then greps the implementation against that checklist before signing off. Lesson: a plan that enumerated all routes but whose implementation applied the guard to only one route shipped a hole — the checklist makes the gap visible at review.
@@ -106,7 +110,7 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 ## Done when
 
-- **Implementability holds:** the architecture is defined — contracts (types/signatures/schemas), data flow, states, file/repo structure, and tech stack specified, with concrete files named where known and no real decision (data shape, contract, library, intent) deferred to the builder.
-- Feasibility probes ran (or were explicitly skipped with file:line precedent); `feasibility.md` exists with its table and evidence under `.pipeline/work/<id>/probes/`.
-- `architecture.md` has been written with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
-- `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on a warm planner session.
+- **Implementability holds:** contracts, data flow, states, structure, and tech stack are specified; load-bearing files named where already known. No decision about *what must change* is deferred — concrete path discovery is the builder's job.
+- Feasibility probes ran (or were explicitly skipped with file:line precedent), including any live-state probes; `feasibility.md` exists under `.pipeline/work/<id>/` (with evidence in `probes/` when used).
+- `architecture.md` has: Required reading, Plan reconciliation (named symbols + blast-radius surfaces/obligations — not a file inventory), ACs with verification methods, ordered tasks, contracts, risks, feasibility reference, and required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- `architecture.md` is the durable producer→consumer handoff; downstream personas must not depend on a warm planner session.

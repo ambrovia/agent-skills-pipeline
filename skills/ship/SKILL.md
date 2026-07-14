@@ -89,6 +89,11 @@ Run the project's verify command:
 {{verify}}
 ```
 
+**Await the result — never background it and end your turn.** Use your host's
+monitor / await / block-until-complete mechanism and stay until you have the
+exit code and output; an interrupted verify (failed status, zero tests run, lost
+shell) is not a green gate.
+
 This is non-negotiable. Do not ship with failures. Do not bypass commit hooks
 (no `--no-verify`). Do not rationalize "pre-existing failures" — if it's red, fix
 it or document why it's blocked and stop.
@@ -143,6 +148,7 @@ human decision — leave the PR open and re-runnable for the maintainer.
 ## Rules
 
 - **Never ship failing verify** — fix first.
+- **Never background `{{verify}}` and end the turn** — await it to completion.
 - **Never skip the merge-main step** — stale branches are a common CI failure cause.
 - **Never declare ship complete before CI is green** — local green is not enough.
 - **Never `git add -A`** — stage specific files.

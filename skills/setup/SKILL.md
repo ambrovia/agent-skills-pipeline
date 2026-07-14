@@ -35,7 +35,7 @@ generic craft — that's fine; configure the ones where this repo holds a real, 
 | `designSystem.path` / `.tokens` | design, design-critique, write-code, review | component inventory, token set, aesthetic bar |
 | `rules.design-system` | design, design-critique, write-code, review | component budget, reuse-before-build, promotion rules |
 | `rules.code` | write-code, architecture, review | language, type discipline, style, forbidden patterns |
-| `rules.testing` | write-tests, review | what counts as a test, layout, lanes/fixtures, coverage bar |
+| `rules.testing` | write-tests, review | what counts as a test, layout, lanes/fixtures, coverage bar; which lane proves the **combined/integration seam** (unit alone is not enough) |
 | `rules.architecture` | architecture, architecture-critique, review | layering, contracts, invariants, verification conventions |
 | `rules.frontend` | design, write-code, review | client / UI conventions |
 | `rules.visual` | design-critique, review | visual fidelity / regression policy |
@@ -55,6 +55,9 @@ For each slot the repo cares about:
 2. **Propose a best-practice starting point.** From what you found plus the pipeline's craft
    defaults, draft a **concrete** proposal for this rule — real component names, real token paths,
    real test lanes — not a template. A first draft grounded in this repo's reality.
+   For **`rules.testing`**, name (a) which kinds/layers count, (b) fixture/mock policy, and
+   (c) which lane proves the **combined/integrated seam** — so write-tests and review share
+   one answer for "green ≠ wired correctly."
 3. **Survey the maintainer — heavily.** Present the proposal and interrogate it. Confirm every
    load-bearing choice: is this the real component budget? is this the test that counts? is this the
    security boundary? What did the research miss? Where the maintainer disagrees, their answer wins.
