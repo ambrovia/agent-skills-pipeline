@@ -40,10 +40,9 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    — the executable target — plus the spec ACs in `.pipeline/work/<id>/plan.md`, the
    per-track `.pipeline/<track>.md` if it needs coordination context, and
    `.pipeline/work/<id>/progress.json`. Read the existing failing tests — they are the spec.
-   The plan defines *what must change* (surfaces, contracts, obligations); **you** identify
-   every concrete file path while implementing — grep callers, follow imports, cover the
-   blast-radius surfaces the plan named. Do not treat the plan's example paths as the
-   complete inventory.
+   The plan names *what must change* (surfaces, contracts, obligations); **you** find every
+   concrete file path while implementing — grep callers, follow imports, cover the
+   blast-radius surfaces named. Its example paths are not the complete inventory.
 
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
@@ -56,14 +55,12 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 4. **Verify before you ship.** Once all targeted tests are green, run the
    project's verify command, `{{verify}}`, to confirm the full gate passes
-   (types, lint, tests). **Await the result — do not background `{{verify}}` and
-   end your turn.** Start it with a monitor / await / block-until-complete
-   mechanism (whatever your host exposes for long-running shell) and stay until
-   you have the exit code and output; an interrupted run is not a green gate.
-   **Verify must pass before pushing.** No broken code reaches reviewers —
-   verification is the pipeline-builder's responsibility, not the pipeline-reviewer's.
-   (A fast typecheck mid-flight is fine if the project defines one, but it does
-   not replace the full gate.)
+   (types, lint, tests). **Await the result — never background it and end your
+   turn**; use your host's monitor / await / block-until-complete mechanism and
+   stay until you have the exit code, since an interrupted run is not a green
+   gate. Verify must pass before pushing — that's the pipeline-builder's
+   responsibility, not the pipeline-reviewer's. (A fast typecheck mid-flight is
+   fine if the project defines one, but it does not replace the full gate.)
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.
@@ -87,13 +84,10 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 **Never weaken a test to make it pass.** If a test reveals a design flaw, fix the
 implementation, not the test.
 
-**STOP — do not fake green.** If something outside your control blocks a real
-gate (missing credentials, exhausted API credits, unavailable external service,
-native runtime crash, env the worktree can't provide), **HALT**: mark the work
-package `blocked` with the concrete reason and stop. Do **not** add lint/knip/type
-`ignore` entries, `skipIf` / `.skip` / mute flags, or other suppressions to force
-a green verify. Environmental blockers are `blocked`, never skipped. A muted gate
-is a false green — that is a process violation, not a workaround.
+**STOP — never fake green.** If something outside your control blocks a real gate
+(missing credentials, exhausted credits, unavailable service, env the worktree
+can't provide), **HALT** — mark the WP `blocked` with the reason. Do **not** add
+`ignore` / `skipIf` / mute flags to force green.
 
 **Regression ownership.** If pre-existing tests break because of your changes, you
 own the fix. "Outside scope" is not a valid excuse for tests you broke.

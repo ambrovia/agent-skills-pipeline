@@ -30,10 +30,9 @@ acceptance criteria. Read the technical plan (`.pipeline/work/<id>/architecture.
 for the tasks and ACs, and the spec (`.pipeline/work/<id>/plan.md`) for the concrete
 acceptance criteria (they live in its `## Acceptance criteria` section) plus its
 `## Work package` section as context; track progress in
-`.pipeline/work/<id>/progress.json`. The plan names *what* must be proven and which
-surfaces/obligations are in scope; **you** choose the concrete test files and discover
-any additional call sites that the combined-seam proofs require — the architecture is
-not an exhaustive path list.
+`.pipeline/work/<id>/progress.json`. The plan names *what* must be proven; **you**
+choose the concrete test files and discover any call sites the combined-seam
+proofs require — the architecture is not an exhaustive path list.
 
 ## When this does NOT apply
 
@@ -57,13 +56,10 @@ then **fail** at runtime (red phase). No implementation code.
    test coupled to implementation detail re-breaks on every refactor and proves
    nothing about the requirement.
 
-3. **Test units *and* the combined whole.** Isolated unit tests are necessary but
-   not sufficient. Also write at least one test that exercises the **integrated
-   consuming seam** — the real path where the new code is wired to its callers /
-   next stage / round-trip — so green cannot mean "each piece works alone while
-   the connected flow is broken." Prefer the project's established integration /
-   E2E / harness lanes from `{{rules.testing}}` when present; do not invent a
-   parallel harness.
+3. **Test units *and* the combined whole.** Also write at least one test on the
+   **integrated consuming seam** (wire to callers / next stage) so green can't
+   mean "pieces work alone, flow is broken." Prefer existing integration / E2E
+   lanes from `{{rules.testing}}`; don't invent a parallel harness.
 
 4. **Follow the project's testing rule for the *how*.** Which kinds/layers to
    write, the fixture/setup pattern, and what may be mocked come from
