@@ -54,17 +54,26 @@ then **fail** at runtime (red phase). No implementation code.
    test coupled to implementation detail re-breaks on every refactor and proves
    nothing about the requirement.
 
-3. **Follow the project's testing rule for the *how*.** Which kinds/layers to
+3. **Test units *and* the combined whole.** Isolated unit tests are necessary but
+   not sufficient. Also write at least one test that exercises the **integrated
+   consuming seam** — the real path where the new code is wired to its callers /
+   next stage / round-trip — so green cannot mean "each piece works alone while
+   the connected flow is broken." Prefer the project's established integration /
+   E2E / harness lanes from `{{rules.testing}}` when present; do not invent a
+   parallel harness.
+
+4. **Follow the project's testing rule for the *how*.** Which kinds/layers to
    write, the fixture/setup pattern, and what may be mocked come from
    `{{rules.testing}}` and the existing tests under `{{paths.tests}}` (read them;
-   don't invent setup). This skill prescribes no test taxonomy.
+   don't invent setup). This skill prescribes no test taxonomy — but the
+   isolation-plus-combined bar above always applies.
 
-4. **Run `{{verify}}`** to confirm the tests compile and lint cleanly. If the
+5. **Run `{{verify}}`** to confirm the tests compile and lint cleanly. If the
    project enforces structural coverage (a check that fails when a surface has no
    test), satisfy it — the linter enforces that tests *exist*; you make them
    *meaningful*.
 
-5. **Confirm the new tests fail** (red phase), each for the right reason. A test
+6. **Confirm the new tests fail** (red phase), each for the right reason. A test
    that passes before implementation is asserting nothing — fix it. Do NOT write
    implementation code in this step.
 
@@ -76,10 +85,12 @@ then **fail** at runtime (red phase). No implementation code.
 | "I'll add tests after" | Tests after code confirm the implementation, not the requirement. They encode whatever was built, bugs included. |
 | "The plan already describes what to build" | The plan describes intent; tests encode it as executable proof. Prose can't go red. |
 | "I'll just write the obvious passing test" | A test that's green before any code exists is asserting nothing. Watch it fail first. |
+| "Unit tests for each piece are enough" | Green-in-isolation with a broken wired path is the classic false green. Prove the combined seam too. |
 
 ## Done when
 
 - Every acceptance criterion has at least one test that proves it.
+- At least one test exercises the integrated / combined path (not units alone).
 - The tests follow the project's `testing` rule (kinds, layout, fixtures, mock policy).
 - `{{verify}}` passes for compile + lint; any structural-coverage check is green.
 - The new tests **fail** at runtime, and no implementation code has been written.

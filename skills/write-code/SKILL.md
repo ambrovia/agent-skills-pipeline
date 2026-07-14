@@ -52,10 +52,14 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 4. **Verify before you ship.** Once all targeted tests are green, run the
    project's verify command, `{{verify}}`, to confirm the full gate passes
-   (types, lint, tests). **Verify must pass before pushing.** No broken code
-   reaches reviewers — verification is the pipeline-builder's responsibility, not the
-   pipeline-reviewer's. (A fast typecheck mid-flight is fine if the project defines one,
-   but it does not replace the full gate.)
+   (types, lint, tests). **Await the result — do not background `{{verify}}` and
+   end your turn.** Start it with a monitor / await / block-until-complete
+   mechanism (whatever your host exposes for long-running shell) and stay until
+   you have the exit code and output; an interrupted run is not a green gate.
+   **Verify must pass before pushing.** No broken code reaches reviewers —
+   verification is the pipeline-builder's responsibility, not the pipeline-reviewer's.
+   (A fast typecheck mid-flight is fine if the project defines one, but it does
+   not replace the full gate.)
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.
@@ -79,6 +83,14 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 **Never weaken a test to make it pass.** If a test reveals a design flaw, fix the
 implementation, not the test.
 
+**STOP — do not fake green.** If something outside your control blocks a real
+gate (missing credentials, exhausted API credits, unavailable external service,
+native runtime crash, env the worktree can't provide), **HALT**: mark the work
+package `blocked` with the concrete reason and stop. Do **not** add lint/knip/type
+`ignore` entries, `skipIf` / `.skip` / mute flags, or other suppressions to force
+a green verify. Environmental blockers are `blocked`, never skipped. A muted gate
+is a false green — that is a process violation, not a workaround.
+
 **Regression ownership.** If pre-existing tests break because of your changes, you
 own the fix. "Outside scope" is not a valid excuse for tests you broke.
 
@@ -89,6 +101,7 @@ own the fix. "Outside scope" is not a valid excuse for tests you broke.
 | "The test is wrong." | Prove it's wrong before changing it. Most of the time, the implementation is wrong. |
 | "I'll add this extra feature while I'm here." | Scope creep is the #1 cause of work-package failure. Build exactly what was asked. |
 | "I can skip this task, it's covered by the next one." | Each task exists because it was independently testable. Skipping creates gaps. |
+| "I'll skip/ignore this so verify is green." | HALT and mark `blocked`. Skip-to-green is forbidden. |
 
 ## Done when
 

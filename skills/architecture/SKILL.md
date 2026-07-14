@@ -53,6 +53,8 @@ Prove the plan is feasible **only where it's genuinely uncertain** — the techn
 
 For the parts that warrant it: do a quick **web search for reference implementations and patterns** (pinned versions, primary sources) and/or a **tiny, manual mini-POC** — a throwaway sketch that answers the one open question, never a full implementation — kept under `.pipeline/work/<id>/probes/<slug>/` (your scratch, for you). Record what you found and a `GO` / `GO-WITH-CHANGE` / `NO-GO` verdict, **with the details the reviewer needs**, in `.pipeline/work/<id>/feasibility.md`. If nothing was load-bearing or unknown, skip this — a one-line `feasibility.md` (or none) is fine.
 
+**Check assumptions against reality, not only the repo.** Architecture must be executable — a plan that rests on an unverified premise about the running/deployed world is not done. When a load-bearing claim depends on live state (bucket contents, deployed config, running jobs/crons, live DB rows, real API quotas/shapes, infra that only exists outside this repo), run a **cheap empirical probe** against that state (`aws s3 ls`, a read-only query, a cluster/status check, the infra docs + deployed values). Reading source is not the same as verifying reality. Record the probe and what it changed in `feasibility.md`. If the probe falsifies the premise, revise the plan before proceeding — do not lock an executable architecture on a guess.
+
 ## Phase 2 — Plan reconciliation (spec ⇆ reality)
 
 Before locking the plan, reconcile the spec against the actual codebase. Spec/codebase drift discovered at write-tests time is too late — catch it here.
@@ -62,7 +64,9 @@ For every named symbol the spec references — table, route, component, file, co
 2. For UI-touching ACs, read the current rendered output (or the existing component) to verify columns / labels / states.
 3. For API-touching ACs, read the existing route handler / interface / schema to verify the contract.
 
-Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
+**Derive the blast radius — don't only verify what the spec named.** Specs and first-round plans systematically undercount real call sites, packages, and consumers. After checking named symbols, mechanically search for *unnamed* consumers: callers of the symbols you'll change, packages that import the same surface, fixtures/seed paths, adjacent tools/CLIs, and eval/integration harnesses. List every package/file the change must touch. If the search finds an entire package or call-site family the spec omitted, the plan must absorb it (or explicitly defer it with a tracked reason) — do not ship a plan that quietly ignores surface the codebase still uses.
+
+Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality, every newly discovered blast-radius surface, and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
 
 ## Phase 3 — Acceptance criteria + tasks
 
@@ -107,6 +111,6 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 ## Done when
 
 - **Implementability holds:** the architecture is defined — contracts (types/signatures/schemas), data flow, states, file/repo structure, and tech stack specified, with concrete files named where known and no real decision (data shape, contract, library, intent) deferred to the builder.
-- Feasibility probes ran (or were explicitly skipped with file:line precedent); `feasibility.md` exists with its table and evidence under `.pipeline/work/<id>/probes/`.
-- `architecture.md` has been written with: Required reading, Plan reconciliation block, acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- Feasibility probes ran (or were explicitly skipped with file:line precedent), including any live/runtime assumption probes; `feasibility.md` exists with its table and evidence under `.pipeline/work/<id>/probes/`.
+- `architecture.md` has been written with: Required reading, Plan reconciliation block (named symbols **and** discovered blast-radius surfaces), acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
 - `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on a warm planner session.

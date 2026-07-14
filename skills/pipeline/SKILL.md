@@ -38,6 +38,8 @@ git worktree list | grep -q "pipeline-<target>" \
        && cd ../<repo>.worktrees/pipeline-<target>; }
 ```
 
+**Bootstrap the worktree before any build or verify.** A fresh (or long-idle) worktree does not inherit installed deps, virtualenvs, or build artifacts from the main checkout. After `cd` into the worktree, run the project's usual install / env / build bootstrap so `{{verify}}` and the app/tooling can actually run — e.g. package-manager install, restore/create the language virtualenv if the project uses one, and any required local build step. Serving or verifying from an unbootstrapped worktree is a false failure (or worse, a stale bundle from the wrong tree). If the bootstrap itself cannot run (missing secrets/toolchain), mark the WP `blocked` with that reason — do not proceed as if the tree were ready.
+
 ## State contract — non-negotiable
 
 **Everything for a work package lives in one folder: `.pipeline/work/<id>/`.** One folder per work
