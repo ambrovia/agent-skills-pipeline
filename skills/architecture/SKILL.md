@@ -64,9 +64,9 @@ For every named symbol the spec references — table, route, component, file, co
 2. For UI-touching ACs, read the current rendered output (or the existing component) to verify columns / labels / states.
 3. For API-touching ACs, read the existing route handler / interface / schema to verify the contract.
 
-**Derive the blast radius — don't only verify what the spec named.** Specs and first-round plans systematically undercount real call sites, packages, and consumers. After checking named symbols, mechanically search for *unnamed* consumers: callers of the symbols you'll change, packages that import the same surface, fixtures/seed paths, adjacent tools/CLIs, and eval/integration harnesses. List every package/file the change must touch. If the search finds an entire package or call-site family the spec omitted, the plan must absorb it (or explicitly defer it with a tracked reason) — do not ship a plan that quietly ignores surface the codebase still uses.
+**Derive the blast radius — don't only verify what the spec named.** Specs and first-round plans systematically undercount real call sites, packages, and consumers. After checking named symbols, mechanically search for *unnamed* consumers: callers of the symbols you'll change, packages that import the same surface, fixtures/seed paths, adjacent tools/CLIs, and eval/integration harnesses. **Architecture owns what must change, not every file path.** Record the *surfaces and obligations* the build must satisfy (contracts, packages, call-site families, migrations, consumers that must keep working) — enough that a builder can execute without inventing scope. **Do not attempt an exhaustive file inventory** — that is impossible to get complete here and belongs to write-tests / write-code, which discover concrete paths while implementing those obligations. If the search finds an entire package or call-site family the spec omitted, the plan must absorb that *obligation* (or explicitly defer it with a tracked reason) — do not ship a plan that quietly ignores surface the codebase still uses.
 
-Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality, every newly discovered blast-radius surface, and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
+Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality, every newly discovered blast-radius *surface/obligation*, and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
 
 ## Phase 3 — Acceptance criteria + tasks
 
@@ -76,7 +76,7 @@ If the work package has a UI surface and `/design` produced an approved spec, re
 
 Produce:
 1. **Acceptance criteria** — each with a specific verification method (see the criterion→verification table below).
-2. **Ordered task list** — what to do, which files, which test proves it, dependencies between tasks.
+2. **Ordered task list** — what to do, which surfaces/contracts each task touches, which test proves it, dependencies between tasks. Name concrete files when they are already known and load-bearing; do **not** pretend the task list is a complete file inventory — the builder enumerates every path while implementing.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
 5. **Route checklist** (if applicable) — when the spec enumerates a route list (e.g., "guard mounts on /sessions, /tasks, /admin"), the plan MUST include a `route-checklist:` block listing every route + every file the guard/middleware must cover. Step `/architecture-review` then greps the implementation against that checklist before signing off. Lesson: a plan that enumerated all routes but whose implementation applied the guard to only one route shipped a hole — the checklist makes the gap visible at review.
@@ -110,7 +110,7 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 ## Done when
 
-- **Implementability holds:** the architecture is defined — contracts (types/signatures/schemas), data flow, states, file/repo structure, and tech stack specified, with concrete files named where known and no real decision (data shape, contract, library, intent) deferred to the builder.
+- **Implementability holds:** the architecture is defined — contracts (types/signatures/schemas), data flow, states, file/repo structure, and tech stack specified, with concrete files named where already known. No real decision (data shape, contract, library, intent, or *what must change*) is deferred to the builder — but discovering every concrete path to touch is the builder's job.
 - Feasibility probes ran (or were explicitly skipped with file:line precedent), including any live/runtime assumption probes; `feasibility.md` exists with its table and evidence under `.pipeline/work/<id>/probes/`.
-- `architecture.md` has been written with: Required reading, Plan reconciliation block (named symbols **and** discovered blast-radius surfaces), acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- `architecture.md` has been written with: Required reading, Plan reconciliation block (named symbols **and** discovered blast-radius surfaces/obligations — not an exhaustive file list), acceptance criteria (each with a concrete verification method), ordered task list, contracts, risks, a reference to `feasibility.md`, and the required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
 - `architecture.md` is the durable producer→consumer handoff that the pipeline-builder and pipeline-reviewer read; downstream personas must not depend on a warm planner session.

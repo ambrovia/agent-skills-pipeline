@@ -30,7 +30,10 @@ acceptance criteria. Read the technical plan (`.pipeline/work/<id>/architecture.
 for the tasks and ACs, and the spec (`.pipeline/work/<id>/plan.md`) for the concrete
 acceptance criteria (they live in its `## Acceptance criteria` section) plus its
 `## Work package` section as context; track progress in
-`.pipeline/work/<id>/progress.json`.
+`.pipeline/work/<id>/progress.json`. The plan names *what* must be proven and which
+surfaces/obligations are in scope; **you** choose the concrete test files and discover
+any additional call sites that the combined-seam proofs require — the architecture is
+not an exhaustive path list.
 
 ## When this does NOT apply
 

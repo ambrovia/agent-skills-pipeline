@@ -40,6 +40,10 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    — the executable target — plus the spec ACs in `.pipeline/work/<id>/plan.md`, the
    per-track `.pipeline/<track>.md` if it needs coordination context, and
    `.pipeline/work/<id>/progress.json`. Read the existing failing tests — they are the spec.
+   The plan defines *what must change* (surfaces, contracts, obligations); **you** identify
+   every concrete file path while implementing — grep callers, follow imports, cover the
+   blast-radius surfaces the plan named. Do not treat the plan's example paths as the
+   complete inventory.
 
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
