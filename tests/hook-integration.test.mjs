@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, mkdtempSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, readdirSync, statSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -11,16 +11,37 @@ import * as detector from "../hooks/thrash-detector.mjs";
 
 const root = resolve(new URL("..", import.meta.url).pathname);
 const wrapper = join(root, "hooks/edit-streak.sh");
-const payload = JSON.stringify({
-  session_id: "session-fixture",
-  tool_name: "Edit",
-  tool_input: { file_path: "src/a.ts", old_string: "x", new_string: "y" },
-  tool_response: "error: old_string not found",
-});
+const fixtures = {
+  claude: (session = "session-fixture") => JSON.stringify({
+    session_id: session,
+    tool_name: "Edit",
+    tool_input: { file_path: "src/a.ts", old_string: "x", new_string: "y" },
+    tool_response: "error: old_string not found",
+  }),
+  cursor: (session = "session-fixture") => JSON.stringify({
+    conversation_id: session,
+    toolName: "Write",
+    toolInput: { path: "src/a.ts", contents: "replacement" },
+    toolResponse: { status: "error", message: "write failed" },
+  }),
+  gemini: (session = "session-fixture") => JSON.stringify({
+    sessionId: session,
+    tool_name: "replace",
+    parameters: { file_path: "src/a.ts", old: "x", replacement: "y" },
+    result: { error: "no match found" },
+  }),
+  copilot: (session = "session-fixture") => JSON.stringify({
+    conversation_id: session,
+    toolName: "create",
+    input: { path: "src/a.ts", content: "replacement" },
+    output: "failed: file already exists",
+  }),
+};
+const payload = fixtures.claude();
 
-function invoke(format, state, input = payload, session = "session-fixture") {
-  const body = input === payload ? payload.replace("session-fixture", session) : input;
-  return spawnSync("bash", [wrapper, format], {
+function invoke(format, state, input, session = "session-fixture", wrapperPath = wrapper) {
+  const body = input ?? fixtures[format]?.(session) ?? fixtures.claude(session);
+  return spawnSync("bash", [wrapperPath, format], {
     cwd: root,
     input: body,
     encoding: "utf8",
@@ -88,7 +109,7 @@ test("different sessions can update concurrently without lost shared state", asy
     });
     child.on("error", reject);
     child.on("exit", (code) => code === 0 ? resolveChild() : reject(new Error(`exit ${code}`)));
-    child.stdin.end(payload.replace("session-fixture", `parallel-${index}`));
+    child.stdin.end(fixtures.cursor(`parallel-${index}`));
   })));
   assert.equal(readdirSync(state).filter((name) => name.endsWith(".json")).length, 12);
 });
@@ -103,11 +124,12 @@ test("concurrent calls for one session never corrupt its private state", async (
     });
     child.on("error", reject);
     child.on("exit", (code) => code === 0 ? resolveChild() : reject(new Error(`exit ${code}`)));
-    child.stdin.end(payload);
+    child.stdin.end(fixtures.cursor());
   })));
   const files = readdirSync(state).filter((name) => name.endsWith(".json"));
   assert.equal(files.length, 1);
-  assert.doesNotThrow(() => JSON.parse(readFileSync(join(state, files[0]), "utf8")));
+  const persisted = JSON.parse(readFileSync(join(state, files[0]), "utf8"));
+  assert.equal(persisted.records.length, 8);
 });
 
 test("a stale per-session lock is recovered", () => {
@@ -148,11 +170,34 @@ test("project installers package the detector beside their wrappers/plugins", ()
   const cursor = spawnSync("bash", [join(root, "scripts/install-cursor.sh"), cursorTarget], { cwd: root, encoding: "utf8" });
   assert.equal(cursor.status, 0, cursor.stderr);
   assert.equal(statSync(join(cursorTarget, ".cursor/hooks/thrash-detector.mjs")).isFile(), true);
+  const installedWrapper = join(cursorTarget, ".cursor/hooks/edit-streak.sh");
+  const installedState = mkdtempSync(join(tmpdir(), "pipeline-cursor-runtime-state-"));
+  assert.equal(invoke("cursor", installedState, undefined, "installed-cursor", installedWrapper).stdout, "");
+  assert.equal(invoke("cursor", installedState, undefined, "installed-cursor", installedWrapper).stdout, "");
+  assert.match(invoke("cursor", installedState, undefined, "installed-cursor", installedWrapper).stdout, /repeating without progress/);
 
   const openTarget = mkdtempSync(join(tmpdir(), "pipeline-open-install-"));
   const open = spawnSync("bash", [join(root, "scripts/install-opencode.sh"), openTarget], { cwd: root, encoding: "utf8" });
   assert.equal(open.status, 0, open.stderr);
   assert.equal(statSync(join(openTarget, ".opencode/plugins/thrash-detector.mjs")).isFile(), true);
+});
+
+test("detector executes when Node enters through a symlink", () => {
+  const target = mkdtempSync(join(tmpdir(), "pipeline-symlink-"));
+  const link = join(target, "detector.mjs");
+  symlinkSync(join(root, "hooks/thrash-detector.mjs"), link);
+  const state = join(target, "state");
+  let final = "";
+  for (let index = 0; index < 3; index += 1) {
+    const result = spawnSync(process.execPath, [link, "cursor"], {
+      input: fixtures.cursor("symlink-session"),
+      encoding: "utf8",
+      env: { ...process.env, PIPELINE_THRASH_STATE: state },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    final = result.stdout;
+  }
+  assert.match(final, /repeating without progress/);
 });
 
 test("installed opencode plugin resolves its packaged detector", async () => {

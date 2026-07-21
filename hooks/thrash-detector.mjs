@@ -3,16 +3,17 @@
 import { createHash } from "node:crypto";
 import {
   chmodSync, closeSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync,
-  statSync, unlinkSync, writeFileSync,
+  realpathSync, statSync, unlinkSync, writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const MAX_RECORDS = 12;
 const MAX_SESSIONS = 100;
 const SESSION_TTL_MS = 6 * 60 * 60 * 1000;
 const STALE_LOCK_MS = 30 * 1000;
 
-const EDIT_TOOL = /edit|write|patch|replace|notebook/i;
+const EDIT_TOOL = /edit|write|patch|replace|create|notebook/i;
 const FAILURE_TEXT = /\b(error|failed|failure|non[- ]?zero|timed? out|exception|rejected|cannot|unable)\b/i;
 const NO_PROGRESS_TEXT = /\b(no changes?|unchanged|not found|no match|already (?:applied|exists))\b/i;
 
@@ -128,17 +129,22 @@ function evictSessions(directory, now) {
 }
 
 function acquireLock(path, now) {
-  try {
-    return openSync(path, "wx", 0o600);
-  } catch {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
     try {
-      if (now - statSync(path).mtimeMs < STALE_LOCK_MS) return null;
-      unlinkSync(path);
       return openSync(path, "wx", 0o600);
     } catch {
-      return null;
+      try {
+        if (now - statSync(path).mtimeMs >= STALE_LOCK_MS) {
+          unlinkSync(path);
+          continue;
+        }
+      } catch { /* the owner may have released it between checks */ }
+      // Hooks are tiny. A bounded 5 ms wait serializes same-session events while
+      // capping added latency at 45 ms; after that the detector still fails open.
+      if (attempt < 9) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
     }
   }
+  return null;
 }
 
 export function processPayload(payload, state, now = Date.now()) {
@@ -203,6 +209,15 @@ async function main() {
   }
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+function isMainModule() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   main().catch(() => process.exit(0));
 }
