@@ -179,7 +179,9 @@ handoff/chat context (no new state file):
 A retry is one complete diagnose/change/verify cycle for the same scoped failure, not each tool
 call. Before retrying, state the evidence and why the next strategy is materially different.
 `exact-repeat` and `oscillation` must change strategy; never replay the same action. Environment
-failures get one safe repair attempt, otherwise block. A `plan-conflict` emits the existing builder
+failures get one safe repair attempt, otherwise block. A newly observed `transient` failure may
+repeat the same operation once before strategy change is required; this exception never bypasses
+the three-attempt cap. A `plan-conflict` emits the existing builder
 `BLOCKER` with the false assumption and evidence; this pipeline does not redesign it in flight.
 Every scoped failure cycle retains a hard cap of **3 attempts**, regardless of cause, including
 transient failures.
@@ -211,15 +213,16 @@ transient failures.
 
 Do not make the model poll a long command. Choose exactly one execution branch:
 
-1. **Managed command:** start it with the host's recoverable process/session handle, freeze its
-   command, cwd, and input files, do only independent work, then await that handle once at the
-   dependency boundary.
+1. **Managed command:** use only for read-only commands. Start it with the host's recoverable
+   process/session handle, freeze its command, cwd, environment, and the full relevant input tree;
+   do only reasoning or work outside that tree, then await that handle once at the dependency boundary.
 2. **Managed subagent:** delegate the command plus frozen inputs to a worker when the host reliably
-   reports completion; continue independent work and join the worker once.
+   reports completion. Its work must be read-only unless it has an isolated worktree; continue only
+   reasoning or work outside its input tree, and join the worker once.
 3. **Foreground:** when neither managed mechanism exists, wait normally.
 
-Never use bare shell detachment (`nohup`, trailing `&`) or repeated status polling. Do not mutate a
-background job's inputs while it runs. A result that gates the next step, review, verify, or ship
+Never use bare shell detachment (`nohup`, trailing `&`) or repeated status polling. Do not mutate any
+part of a background job's relevant input tree while it runs. A result that gates the next step, review, verify, or ship
 must be joined and its exit status read before proceeding. Host support is an optimization: Codex
 and some Claude surfaces expose managed sessions/subagents; other hosts may correctly fall back to
 foreground execution.

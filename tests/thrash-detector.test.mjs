@@ -26,6 +26,17 @@ test("three distinct edits do not warn", () => {
   }
 });
 
+test("a successful result resets an earlier failure recurrence", () => {
+  const failed = normalizeEvent(edit({ file: "a" }, "error: no match"));
+  const success = normalizeEvent(edit({ file: "a" }, "updated successfully"));
+  let records = detectThrash([], failed).records;
+  records = detectThrash(records, failed).records;
+  const reset = detectThrash(records, success);
+  assert.equal(reset.kind, null);
+  assert.deepEqual(reset.records, []);
+  assert.equal(detectThrash(reset.records, failed).kind, null);
+});
+
 test("three identical actions and results report exact repeat", () => {
   let records = [];
   let kind = null;

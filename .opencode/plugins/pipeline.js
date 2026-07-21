@@ -21,7 +21,6 @@
  */
 
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
-let detectorState = { sessions: {} };
 
 async function loadDetector() {
   try {
@@ -31,16 +30,35 @@ async function loadDetector() {
   }
 }
 
-export const AgentPipeline = async () => {
+export async function createPipelinePlugin(detectorLoader = loadDetector) {
+  let detectorState = { sessions: {} };
+  const pending = new Map();
+  const keyFor = (input) => `${input?.sessionID ?? "default"}:${input?.callID ?? input?.toolCallID ?? "unknown"}`;
+
   return {
+    "tool.execute.before": async (input, output) => {
+      try {
+        if (!input || !EDIT_TOOLS.test(input.tool || "") || !output?.args) return;
+        pending.set(keyFor(input), output.args);
+        if (pending.size > 100) pending.delete(pending.keys().next().value);
+      } catch {
+        // Argument capture is an optimization and must never break a tool call.
+      }
+    },
     "tool.execute.after": async (input, output) => {
       try {
         if (!input || !EDIT_TOOLS.test(input.tool || "")) return;
+        const key = keyFor(input);
+        const args = pending.get(key);
+        pending.delete(key);
+        // Use the before-hook snapshot so the signature is stable across opencode
+        // versions and cannot reflect later mutation. Without it, disable detection.
+        if (!args) return;
 
-        const detector = await loadDetector();
+        const detector = await detectorLoader();
         const processed = detector.processPayload({
           tool_name: input.tool,
-          tool_input: input.args ?? input.input ?? {},
+          tool_input: args,
           tool_response: output?.output,
           session_id: input.sessionID || "default",
         }, detectorState);
@@ -55,4 +73,6 @@ export const AgentPipeline = async () => {
       }
     },
   };
-};
+}
+
+export const AgentPipeline = async () => createPipelinePlugin();

@@ -89,8 +89,9 @@ Run the project's verify command:
 {{verify}}
 ```
 
-**Join the result — never background it and end your turn.** A host-managed command or managed
-subagent may run while you do work that cannot change its frozen inputs; otherwise run it in the
+**Join the result — never background it and end your turn.** A read-only host-managed command or a
+managed subagent in an isolated worktree may run while you do only reasoning or work outside its
+frozen command, environment, and relevant input tree; otherwise run it in the
 foreground. Await it once at the gate and read its exit code/output. Never use bare detachment or
 model-driven polling. An interrupted verify (failed status, zero tests run, lost shell) is not a
 green gate.
@@ -138,7 +139,8 @@ green.**
    passes locally but not in CI (environment difference), or code committed after
    verify ran (re-run verify on the final tree).
 3. Fix with a materially different strategy, then re-run from step 3 (merge main, verify, push).
-   An exact repeat or oscillation may not replay the same action.
+   An exact repeat or oscillation may not replay the same action. A new `transient` failure alone
+   may repeat the same operation once.
 4. Max 3 complete fix/check attempts for the same scoped failure, including transient failures.
    After 3, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.

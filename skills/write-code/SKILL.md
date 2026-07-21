@@ -48,10 +48,11 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
 
-   For a long mechanical command, use **start → overlap → join** only when its inputs can be frozen
-   and useful independent work exists. Prefer a host-managed command handle; otherwise use a
-   managed subagent whose completion is reported automatically; otherwise run it in the foreground.
-   Do not detach with `&`/`nohup`, poll from model turns, mutate its inputs while it runs, or consume
+   For a long mechanical command, use **start → overlap → join** only when its command, environment,
+   and full relevant input tree can be frozen. A managed command must be read-only. A managed
+   subagent may write only in an isolated worktree. While it runs, do only reasoning or work outside
+   that tree; otherwise run it in the foreground. Do not detach with `&`/`nohup`, poll from model
+   turns, mutate its inputs while it runs, or consume
    its result before the mandatory join.
 
 3. **Render UI states (if a design system is configured).** For UI components,
@@ -72,7 +73,8 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    plan-conflict | semantic-tool-failure` and the recurrence as `new | exact-repeat |
    oscillation`. A retry must use a materially different strategy and one complete
    diagnose/change/verify cycle counts as an attempt. Stop after 3 attempts for the same scoped
-   failure. For `plan-conflict`, emit the existing `BLOCKER` with evidence; do not amend the plan.
+   failure. A new `transient` failure alone may repeat the same operation once. For `plan-conflict`,
+   emit the existing `BLOCKER` with evidence; do not amend the plan.
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.
