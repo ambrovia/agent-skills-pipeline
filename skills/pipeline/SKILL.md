@@ -55,6 +55,7 @@ package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
         ├── feasibility.md     # /architecture — feasibility findings + verdicts for the reviewer (only when something was load-bearing/new/unknown)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
+        ├── integration.json   # clean integration base + attempt identity for replay/recovery
         ├── receipts/          # accepted technical-task outcomes, one compact JSON file per leaf
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
@@ -180,7 +181,10 @@ Each leaf returns a compact receipt; the integration builder records it durably 
 ```json
 {
   "taskId": "build-change",
-  "commits": ["<red-test-sha>", "<implementation-sha>"],
+  "attempt": 1,
+  "baseCommit": "<leaf-start-sha>",
+  "sourceCommits": ["<red-test-sha>", "<implementation-sha>"],
+  "integratedCommits": ["<cherry-picked-red-sha>", "<cherry-picked-implementation-sha>"],
   "changedFiles": ["src/example.ts"],
   "changedSurfaces": ["contract:Example"],
   "verification": {"command": "<focused command>", "result": "pass"},
@@ -192,23 +196,34 @@ Receipts contain outcomes, not reasoning transcripts. A downstream leaf reads on
 
 #### Isolated leaf execution and integration
 
-The current WP branch/worktree is the **integration worktree**, owned by one pipeline-builder. For a ready parallel wave:
+The current WP branch/worktree is the **integration worktree**, owned by one pipeline-builder. Before the first leaf, require it to be clean, write `{"baseCommit":"<current-head>","attempt":1}` to `.pipeline/work/<id>/integration.json`, and commit that manifest alone. Resolve the manifest commit later with the commit that introduced this exact file; do not try to store its own SHA inside itself. The source base plus manifest commit are the recoverable start of every integration attempt. For a ready parallel wave:
 
-1. Record the integration `HEAD`. Create one branch `pipeline/<id>/leaf/<leaf-id>` and one sibling worktree from that exact commit per leaf. Never run parallel writers in the same worktree. Resolve explicit paths first, then use the equivalent of `git worktree add <leaf-worktree> -b pipeline/<id>/leaf/<leaf-id> <integration-head>`; do not use globs or a dirty integration worktree.
-2. Spawn one builder per leaf in its worktree with the pointer context above. It changes only owned surfaces, commits the red tests before implementation as required by `/write-tests`, commits the green implementation, and runs the focused `verify`. It does not merge, rebase, or edit WP progress/receipts.
-3. Join every leaf. Failed or uncommitted leaves are not integrated. In dependency order, the integration builder cherry-picks the leaf's ordered commit list into the integration worktree, verifies the claimed files/surfaces against the DAG, writes the receipt, and commits the receipt before starting any dependant leaf.
-4. After each wave, run the relevant combined-seam tests. When the DAG has a final integration leaf, the integration builder executes it directly in the integration worktree after its dependencies land. After all leaves, that builder runs full `{{verify}}`, confirms planned docs are synced, and hands the single assembled change to the single Phase 8 reviewer. It does not invent unplanned code, wiring, tests, or docs outside a DAG leaf.
-5. Remove a completed leaf worktree with `git worktree remove <leaf-worktree>` only after its commit and receipt are present on the integration branch. Keep a failed worktree for diagnosis; delete no branch needed for recovery.
+1. Record the integration `HEAD` for the wave as the leaf base. Allocate `attempt=1` (then 2, 3...) and create branch `pipeline/<id>/leaf/<leaf-id>/attempt-<n>` plus the matching sibling worktree from that exact commit. Never blindly reuse or overwrite an existing branch/worktree: reuse it only to join an already completed receipt whose task, attempt, and base SHA match; otherwise allocate the next attempt. Never run parallel writers in one worktree.
+2. Bootstrap every new leaf worktree with the project's normal dependency/toolchain setup before spawning its builder. A bootstrap failure follows the environment-failure policy; the leaf must not begin against an incomplete environment.
+3. Spawn one builder per leaf in its worktree with the pointer context above. It changes only owned surfaces, commits the red tests before implementation as required by `/write-tests`, commits the green implementation, and runs the focused `verify`. It does not merge, rebase, or edit WP progress/receipts.
+4. **Preflight before cherry-pick.** Join the leaf, require a clean leaf worktree and no merge commits, and enumerate its commits plus `git diff --name-only <baseCommit>..<leafTip>`. Every changed path must match an exact `file:<repo-relative-path>` owner or sit below a `path:<repo-relative-directory>/` owner in that leaf; `.pipeline/` remains forbidden. Confirm its claimed changed surfaces are a subset of `owns`. A mismatch is a BLOCKER and nothing from that leaf is cherry-picked.
+5. In dependency order, the integration builder cherry-picks the preflighted source commits, records both source and resulting integrated SHAs in the receipt, and commits the receipt before starting any dependant leaf. Failed, dirty, uncommitted, or preflight-rejected leaves are never partially integrated.
+6. After each wave, run the relevant combined-seam tests. When the DAG has a final integration leaf, the integration builder executes it directly in the integration worktree after its dependencies land. After all leaves, that builder runs full `{{verify}}`, confirms planned docs are synced, and hands the single assembled change to the single Phase 8 reviewer. It does not invent unplanned code, wiring, tests, or docs outside a DAG leaf.
+7. Remove a completed leaf worktree with `git worktree remove <leaf-worktree>` only after its commits and receipt are present on the integration branch. Keep failed worktrees and all attempt branches for diagnosis/recovery until the WP ships.
 
-If the host cannot manage concurrent subagents, or worktrees/branches are unavailable, use the same DAG **sequentially in the integration worktree** with the same context and receipt contract. If a leaf unexpectedly touches another owner's surface or integration exposes a semantic conflict, do not improvise a merge: raise the existing builder BLOCKER.
+If the host cannot manage concurrent subagents, execute the same attempt branches/worktrees sequentially. Only when worktrees/branches themselves are unavailable may a leaf run directly in the clean integration worktree: record its starting SHA, commit its work, apply the same commit-range ownership/path preflight before accepting its receipt, and keep a recovery branch at the starting SHA until full verification. If a leaf unexpectedly touches another owner's surface or integration exposes a semantic conflict, do not improvise a merge: raise the existing builder BLOCKER.
 
-`kind: mechanical` may request `{{models.mechanical}}` only when that optional role is configured and the host can choose a model for the spawned task. It still uses the pipeline-builder instructions and the same tests, ownership, and receipt bar. Otherwise route it to the normal builder; correctness never depends on cheaper-model support.
+`kind: mechanical` documents that a leaf is fully specified and repetitive; it still uses the existing pipeline-builder and the same tests, ownership, and receipt bar. This pipeline does not promise a smaller model until its generated host agents can map that role consistently.
 
 #### Plan re-entry and invalidation
 
 Use the pipeline's failure-aware retry/BLOCKER policy when present; this section does not define a competing retry taxonomy. A builder or reviewer raises the existing BLOCKER when repository reality contradicts the approved plan, a declared contract cannot be satisfied, or the applicable retry policy requires replanning. Include the leaf ID, evidence, attempted strategies, and affected surfaces.
 
-Pause that leaf and all transitive dependants. The planner amends `architecture.md` and its DAG; the reviewer re-critiques the amendment and affected dependency/ownership boundary. Invalidate a completed receipt when its leaf changed or it consumes an amended surface; delete that receipt and rebuild the invalidated leaf plus its transitive dependants. Unaffected receipts remain valid. Resume only after the amendment clears the existing Phase 5 critique bar. Planner re-entry shares the pipeline's existing bounded attempt budget; it does not reset retries.
+Pause that leaf and all transitive dependants. The planner commits an artifact-only amendment to `architecture.md` and its DAG; the reviewer re-critiques the amendment and affected dependency/ownership boundary. A receipt is invalid when its leaf changed or it consumes an amended surface; invalidate that leaf and all transitive dependants.
+
+Do not merely delete receipts while leaving their code integrated. Rebuild the integration branch precisely:
+
+1. From `integration.json.baseCommit`, create `pipeline/<id>/integration/attempt-<n>` in a new worktree and cherry-pick the original manifest commit plus approved artifact-only amendment commits. Update `integration.json.attempt` to `<n>` and commit that attempt marker before replaying leaves.
+2. In dependency order, replay the `sourceCommits` of still-valid receipts after repeating the ownership/path preflight, and recreate their receipts with the new integrated SHAs. Do not replay invalid receipts or their code.
+3. Execute invalidated leaves on new attempt-specific branches based on the rebuilt dependency state, then run combined and full verification.
+4. Only after the rebuilt worktree is green and clean, preserve the old integration tip as `pipeline/<id>/integration/attempt-<n>-old`, then move the checked-out integration branch to the rebuilt tip with an explicit `git reset --hard <rebuilt-tip>`. This destructive-looking step is permitted only here because every old commit is retained by the backup and leaf attempt branches and the exact target was verified. Remove the rebuilt worktree after the integration branch points at the same commit.
+
+Unaffected source commits are reused, but integrated commits and receipts are regenerated. Resume only after the amendment clears the existing Phase 5 critique bar. Planner re-entry shares the pipeline's existing bounded attempt budget; it does not reset retries.
 
 ### Loop rules
 

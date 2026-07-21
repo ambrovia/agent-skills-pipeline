@@ -116,14 +116,14 @@ Write exactly one fenced JSON object in `architecture.md`:
 ```
 
 - `kind` is `implementation` or `mechanical`. Use `mechanical` only for a fully specified repetitive transformation requiring no design or architecture judgment.
-- `owns` is the single source for changed files and public surfaces: prefix entries with `file:`, `contract:`, `schema:`, `route:`, or another honest surface kind. One surface has one leaf owner.
+- `owns` is non-empty and is the single source for changed files and public surfaces. Every entry is namespaced (`file:src/exact.ts`, `path:src/owned-directory/`, `contract:Example`, `schema:records`, `route:GET /records`). `file:` is exact; `path:` covers descendants and ends in `/`. One surface has one leaf owner, and every file the leaf may write must be covered by `file:` or `path:` ownership.
 - `consumes` names contracts owned elsewhere or held stable by the plan. Add the owning leaf to `dependsOn` when it changes that contract.
-- `context` contains **pointers only**, never copied source, transcripts, or broad directory dumps. Include the smallest complete set of files and plan sections.
+- `context` contains **pointers only**, never copied source, transcripts, or broad directory dumps. File pointers and the path portion of section pointers are repository-relative, contain no `..` segment or control character, and are never absolute/home paths. Include the smallest complete set of files and plan sections.
 - `parallel: true` is an opportunity, not a command. Give a concrete `independence` reason explaining why the leaf does not share mutable state or an unsettled contract with another ready leaf. Structural validation cannot prove that claim; the architecture critique must.
 - Every AC maps to at least one leaf. Each leaf maps to an AC or a forced integration/migration obligation.
 - When behavior or wiring crosses multiple leaves, add a final non-parallel integration leaf that depends on them and owns the combined-seam test/wiring. Do not leave new implementation decisions to the integration builder outside the DAG.
 
-Run `node <pipeline-plugin-root>/scripts/validate-task-dag.mjs .pipeline/work/<id>/architecture.md` when the script is available. The validator checks shape, references, cycles, and unique ownership; the planner and reviewer remain responsible for whether the decomposition is sensible.
+Resolve `validate-task-dag.mjs` next to this `SKILL.md` and run `node <architecture-skill-dir>/validate-task-dag.mjs .pipeline/work/<id>/architecture.md`. Keeping it inside the skill makes the command available in plugin and copied Cursor/opencode installations. The validator checks shape, safe repository-relative context/ownership paths, references, cycles, and unique non-empty ownership; the planner and reviewer remain responsible for whether the decomposition is sensible.
 
 **Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough — say exactly what the test does and what it asserts. Map each criterion type to a concrete verification:
 

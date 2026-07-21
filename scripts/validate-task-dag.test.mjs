@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { extractTaskDag, validateTaskDag } from './validate-task-dag.mjs';
+import { extractTaskDag, validateTaskDag } from '../skills/architecture/validate-task-dag.mjs';
 
 const leaf = (overrides = {}) => ({
   id: 'build',
@@ -54,4 +54,34 @@ test('requires a dependency on the owner of a consumed surface', () => {
     leaf({ id: 'api', owns: ['route:GET /records'], consumes: ['contract:Record'] }),
   ] });
   assert(errors.some((error) => error.includes('without depending')));
+});
+
+test('rejects empty or unnamespaced ownership', () => {
+  assert(validateTaskDag({ version: 1, leaves: [leaf({ owns: [] })] }).some((error) => error.includes('at least one')));
+  assert(validateTaskDag({ version: 1, leaves: [leaf({ owns: ['src/file.ts'] })] }).some((error) => error.includes('namespaced')));
+});
+
+test('rejects absolute, traversal, and control-character context paths', () => {
+  for (const path of ['/tmp/file', '../secret', 'src/../secret', 'src/bad\nname']) {
+    const errors = validateTaskDag({ version: 1, leaves: [leaf({ context: { files: [path], sections: [] } })] });
+    assert(errors.some((error) => error.includes('unsafe path')), path);
+  }
+});
+
+test('rejects traversal in a section pointer path', () => {
+  const errors = validateTaskDag({
+    version: 1,
+    leaves: [leaf({ context: { files: [], sections: ['../architecture.md#Contracts'] } })],
+  });
+  assert(errors.some((error) => error.includes('context.sections contains unsafe path')));
+});
+
+test('rejects unsafe file ownership paths', () => {
+  const errors = validateTaskDag({ version: 1, leaves: [leaf({ owns: ['file:../../outside'] })] });
+  assert(errors.some((error) => error.includes('unsafe repository path')));
+});
+
+test('requires path ownership to end in a directory slash', () => {
+  const errors = validateTaskDag({ version: 1, leaves: [leaf({ owns: ['path:src/generated'] })] });
+  assert(errors.some((error) => error.includes('must end in /')));
 });

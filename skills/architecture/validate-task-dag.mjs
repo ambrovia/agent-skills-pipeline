@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export function extractTaskDag(source) {
   for (const match of source.matchAll(/```json\s*\n([\s\S]*?)```/g)) {
@@ -19,6 +20,20 @@ function stringArray(value, field, errors) {
   if (!Array.isArray(value) || value.some((item) => typeof item !== 'string' || !item.trim())) {
     errors.push(`${field} must be an array of non-empty strings`);
   }
+}
+
+function hasControl(value) {
+  return /[\u0000-\u001f\u007f]/.test(value);
+}
+
+function repoRelativePath(value) {
+  return typeof value === 'string'
+    && value.length > 0
+    && !hasControl(value)
+    && !value.startsWith('/')
+    && !value.startsWith('~')
+    && !/^[A-Za-z]:[\\/]/.test(value)
+    && !value.split(/[\\/]/).includes('..');
 }
 
 export function validateTaskDag(dag) {
@@ -58,9 +73,34 @@ export function validateTaskDag(dag) {
     } else {
       stringArray(leaf.context.files, `${at}.context.files`, errors);
       stringArray(leaf.context.sections, `${at}.context.sections`, errors);
+      if (Array.isArray(leaf.context.files)) {
+        for (const path of leaf.context.files) {
+          if (!repoRelativePath(path)) errors.push(`${at}.context.files contains unsafe path: ${JSON.stringify(path)}`);
+        }
+      }
+      if (Array.isArray(leaf.context.sections)) {
+        for (const section of leaf.context.sections) {
+          if (hasControl(section)) errors.push(`${at}.context.sections contains control characters`);
+          const [sectionPath] = section.split('#', 1);
+          if (!repoRelativePath(sectionPath)) errors.push(`${at}.context.sections contains unsafe path: ${JSON.stringify(section)}`);
+        }
+      }
     }
     if (Array.isArray(leaf.owns)) {
+      if (leaf.owns.length === 0) errors.push(`${at}.owns must contain at least one namespaced surface`);
       for (const surface of leaf.owns) {
+        if (hasControl(surface) || !/^[a-z][a-z0-9-]*:[^\s\u0000-\u001f\u007f].*$/.test(surface)) {
+          errors.push(`${at}.owns contains invalid namespaced surface: ${JSON.stringify(surface)}`);
+          continue;
+        }
+        if ((surface.startsWith('file:') || surface.startsWith('path:')) && !repoRelativePath(surface.slice(surface.indexOf(':') + 1))) {
+          errors.push(`${at}.owns contains unsafe repository path: ${JSON.stringify(surface)}`);
+          continue;
+        }
+        if (surface.startsWith('path:') && !surface.endsWith('/')) {
+          errors.push(`${at}.owns path namespace must end in /: ${JSON.stringify(surface)}`);
+          continue;
+        }
         if (owners.has(surface)) errors.push(`surface ${surface} is owned by both ${owners.get(surface)} and ${leaf.id}`);
         else owners.set(surface, leaf.id);
       }
@@ -101,7 +141,7 @@ export function validateTaskDag(dag) {
   return [...new Set(errors)];
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+if (process.argv[1] && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1])) {
   const path = process.argv[2];
   if (!path) {
     console.error('usage: validate-task-dag.mjs <architecture.md|dag.json>');
