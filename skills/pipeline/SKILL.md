@@ -55,6 +55,7 @@ package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
         ├── feasibility.md     # /architecture — feasibility findings + verdicts for the reviewer (only when something was load-bearing/new/unknown)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
+        ├── receipts/          # accepted technical-task outcomes, one compact JSON file per leaf
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
         └── progress.json      # run state: status, currentStep, critique scores
@@ -161,6 +162,53 @@ ship — to save context/cache-creation cost. Where it doesn't (no durable sessi
 that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
 just not free. Never gate the pipeline on session reuse being available. The retro agent is always
 ephemeral.
+
+### Adaptive inner execution — fixed lifecycle, task-shaped work
+
+The outer phase loop never changes. Adaptation is local to concept production and build:
+
+- **Concept:** `/design` may fan out its approved-brief variants, and the planner may fan out independent read-only discovery or feasibility probes. The pipeline-planner alone synthesizes those results into one design and one architecture. Without concurrent subagents, run the same work sequentially.
+- **Build:** read the validated `technicalTaskDag` in `architecture.md`. One leaf is the default and follows the existing single-builder path. For multiple leaves, dispatch only leaves whose `dependsOn` receipts are complete. `parallel: true` permits concurrency only after the orchestrator confirms the written independence reason against current state; it never requires concurrency.
+- **Review:** regardless of leaf count, one integrated pipeline-reviewer reviews the assembled WP once against all ACs. Leaf agents do not approve their own work and leaf-by-leaf reviews do not replace Phase 8.
+
+#### Leaf context and receipt
+
+Construct each leaf prompt from pointers in its DAG node: leaf objective, AC IDs, `context.files`, `context.sections`, owned/consumed surfaces, dependency receipts, focused verify command, and the explicit instruction not to change another leaf's owned surface. Do not paste full files, the full conversation, broad repository dumps, or another leaf's transcript.
+
+Each leaf returns a compact receipt; the integration builder records it durably at `.pipeline/work/<id>/receipts/<leaf-id>.json` after accepting the commit:
+
+```json
+{
+  "taskId": "build-change",
+  "commits": ["<red-test-sha>", "<implementation-sha>"],
+  "changedFiles": ["src/example.ts"],
+  "changedSurfaces": ["contract:Example"],
+  "verification": {"command": "<focused command>", "result": "pass"},
+  "status": "integrated"
+}
+```
+
+Receipts contain outcomes, not reasoning transcripts. A downstream leaf reads only receipts for its declared dependencies.
+
+#### Isolated leaf execution and integration
+
+The current WP branch/worktree is the **integration worktree**, owned by one pipeline-builder. For a ready parallel wave:
+
+1. Record the integration `HEAD`. Create one branch `pipeline/<id>/leaf/<leaf-id>` and one sibling worktree from that exact commit per leaf. Never run parallel writers in the same worktree. Resolve explicit paths first, then use the equivalent of `git worktree add <leaf-worktree> -b pipeline/<id>/leaf/<leaf-id> <integration-head>`; do not use globs or a dirty integration worktree.
+2. Spawn one builder per leaf in its worktree with the pointer context above. It changes only owned surfaces, commits the red tests before implementation as required by `/write-tests`, commits the green implementation, and runs the focused `verify`. It does not merge, rebase, or edit WP progress/receipts.
+3. Join every leaf. Failed or uncommitted leaves are not integrated. In dependency order, the integration builder cherry-picks the leaf's ordered commit list into the integration worktree, verifies the claimed files/surfaces against the DAG, writes the receipt, and commits the receipt before starting any dependant leaf.
+4. After each wave, run the relevant combined-seam tests. When the DAG has a final integration leaf, the integration builder executes it directly in the integration worktree after its dependencies land. After all leaves, that builder runs full `{{verify}}`, confirms planned docs are synced, and hands the single assembled change to the single Phase 8 reviewer. It does not invent unplanned code, wiring, tests, or docs outside a DAG leaf.
+5. Remove a completed leaf worktree with `git worktree remove <leaf-worktree>` only after its commit and receipt are present on the integration branch. Keep a failed worktree for diagnosis; delete no branch needed for recovery.
+
+If the host cannot manage concurrent subagents, or worktrees/branches are unavailable, use the same DAG **sequentially in the integration worktree** with the same context and receipt contract. If a leaf unexpectedly touches another owner's surface or integration exposes a semantic conflict, do not improvise a merge: raise the existing builder BLOCKER.
+
+`kind: mechanical` may request `{{models.mechanical}}` only when that optional role is configured and the host can choose a model for the spawned task. It still uses the pipeline-builder instructions and the same tests, ownership, and receipt bar. Otherwise route it to the normal builder; correctness never depends on cheaper-model support.
+
+#### Plan re-entry and invalidation
+
+Use the pipeline's failure-aware retry/BLOCKER policy when present; this section does not define a competing retry taxonomy. A builder or reviewer raises the existing BLOCKER when repository reality contradicts the approved plan, a declared contract cannot be satisfied, or the applicable retry policy requires replanning. Include the leaf ID, evidence, attempted strategies, and affected surfaces.
+
+Pause that leaf and all transitive dependants. The planner amends `architecture.md` and its DAG; the reviewer re-critiques the amendment and affected dependency/ownership boundary. Invalidate a completed receipt when its leaf changed or it consumes an amended surface; delete that receipt and rebuild the invalidated leaf plus its transitive dependants. Unaffected receipts remain valid. Resume only after the amendment clears the existing Phase 5 critique bar. Planner re-entry shares the pipeline's existing bounded attempt budget; it does not reset retries.
 
 ### Loop rules
 

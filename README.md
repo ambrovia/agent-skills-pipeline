@@ -21,6 +21,8 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 - **Gates are mechanical.** Your `verify` command must pass and the review verdict must be `DONE` before ship.
 - Phases that don't apply are skipped — a backend work package skips the design phases automatically.
 
+Inside the fixed concept and build phases, the pipeline adapts to the job. Architecture emits one compact technical-task DAG, defaulting to a single leaf. Independently verifiable leaves can run in isolated worktrees and are then assembled by one integration builder; hosts without safe concurrent workers execute the same DAG sequentially. Every leaf receives pointer-only context and produces a compact receipt, while one integrated reviewer still checks the complete result.
+
 ## What's in here
 
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).

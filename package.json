@@ -18,6 +18,7 @@
     "!skills/**/.annotations/**",
     "!skills/**/.vite/**",
     "hooks/",
+    "scripts/validate-task-dag.mjs",
     "scripts/install-codex.sh",
     "scripts/install-opencode.sh",
     "pipeline.config.example.yml",
@@ -29,7 +30,9 @@
     "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
     "check:codex-installer": "bash -n scripts/install-codex.sh",
     "check:installers": "bash -n scripts/install-codex.sh scripts/install-cursor.sh scripts/install-opencode.sh",
-    "verify": "npm run check:opencode-plugin && npm run check:installers && npm test"
+    "check:agents": "node scripts/generate-agents.mjs --check",
+    "test:task-dag": "node --test scripts/validate-task-dag.test.mjs",
+    "verify": "npm run check:opencode-plugin && npm run check:installers && npm run check:agents && npm test && npm run test:task-dag"
   },
   "keywords": [
     "opencode",

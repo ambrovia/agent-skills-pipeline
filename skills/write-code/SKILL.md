@@ -44,6 +44,8 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    concrete file path while implementing — grep callers, follow imports, cover the
    blast-radius surfaces named. Its example paths are not the complete inventory.
 
+   If assigned a `technicalTaskDag` leaf, read only its pointer context and dependency receipts plus the plan sections needed to understand its contracts. Treat `owns` as a write boundary: if implementation requires another leaf's surface, stop with a BLOCKER rather than quietly expanding scope. Return the compact commit/change/verification receipt required by `/pipeline`; the integration builder records it durably.
+
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
@@ -85,6 +87,8 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 8. **Open the change.** With the gate green, push and open a PR (or draft PR) via
    `{{vcs}}` and wait for CI to pass.
+   **Leaf exception:** a technical-task leaf stops after its focused verification and commits;
+   it never pushes or opens a PR. The integration builder owns full verify, PR, and CI.
 
 ## Core rules
 
@@ -114,4 +118,5 @@ own the fix. "Outside scope" is not a valid excuse for tests you broke.
 - `{{verify}}` passes the full gate (types, lint, tests).
 - The rename sweep returns zero stale matches.
 - Docs touched by changed behavior are updated in the same commit.
-- The change is opened for review via `{{vcs}}` and CI is green.
+- The change is opened for review via `{{vcs}}` and CI is green, or a technical-task leaf has
+  returned its committed, focused-verification receipt to the integration builder.

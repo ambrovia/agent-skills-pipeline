@@ -34,6 +34,8 @@ acceptance criteria (they live in its `## Acceptance criteria` section) plus its
 choose the concrete test files and discover any call sites the combined-seam
 proofs require — the architecture is not an exhaustive path list.
 
+When the orchestrator assigns one `technicalTaskDag` leaf, scope this act to that leaf's acceptance criteria, pointer context, owned surfaces, and focused verify command. Do not read unrelated leaf context or change another leaf's owned surface. When behavior crosses leaves, the DAG's final integration leaf owns the combined-seam test; isolated leaf tests do not replace it.
+
 ## When this does NOT apply
 
 - A work package with no behavioral surface (pure docs/config). State that

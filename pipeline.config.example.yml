@@ -39,6 +39,7 @@ models:
   design: high
   review: high
   build: fast
+  mechanical: low       # optional; repetitive, fully specified DAG leaves only
 
 # Project rules — OPTIONAL files that let THIS repo steer specific skills without
 # forking them. Each key below is a fixed rule "slot" the skills know to look for;

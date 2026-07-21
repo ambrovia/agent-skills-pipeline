@@ -37,7 +37,9 @@ For genuinely novel UI, generate 1-3 variants and let the pipeline-reviewer scor
 
 ### About architecture
 
-Produce the **how** — file paths, type signatures, schemas, ordered tasks, scoped to {{paths.source}} and {{paths.tests}}. Quantify trade-offs with concrete costs (complexity, performance, coupling surface), not "more flexible."
+Produce the **how** — file paths, type signatures, schemas, and dependency-shaped technical tasks, scoped to {{paths.source}} and {{paths.tests}}. Quantify trade-offs with concrete costs (complexity, performance, coupling surface), not "more flexible."
+
+Express implementation as the architecture skill's compact technical task DAG. Default to one leaf; split only at independently verifiable dependency boundaries. Give each leaf pointer-only context and single-owner surfaces, and mark parallelism only with a concrete independence reason.
 
 ### About self-critique
 

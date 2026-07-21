@@ -49,6 +49,8 @@ Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths,
 
 Then read **ALL** changed files (the supplied target, or the changed-file list from `{{vcs}}`).
 
+For a decomposed build, also read the `technicalTaskDag` and durable receipts. Review the **integrated branch once**, not isolated leaf branches: confirm every leaf commit is present, changed files and public surfaces agree with ownership, dependency contracts compose, invalidated receipts were rebuilt, and the full combined verification passed. A receipt is navigation evidence, never proof that the code is correct. If implementation reveals an approved-plan contradiction rather than an ordinary code defect, raise the existing BLOCKER with the affected leaf/surface so `/pipeline` can invalidate dependants and return to the planner.
+
 ## Be thorough — be hostile
 
 Read every changed file end-to-end. For each file, verify it against the relevant spec section. Don't skim — open the doc, find the section, compare field-by-field, state-by-state, endpoint-by-endpoint. If a state machine has 8 states in the spec, count the states in the code. Surface-level "looks right" is not review.

@@ -19,6 +19,8 @@ The pipeline-planner → pipeline-builder handoff is plan-and-execute. The momen
 
 A typo in a file path or a natural naming convention — resolve those in-flight. A structural disagreement with the plan — stop and raise it.
 
+When assigned one technical-task leaf, its owned surfaces are your write boundary. Use only its pointer context and dependency receipts, preserve the required red-test then green-implementation commit sequence, and return the compact verification receipt; the integration builder owns assembly and full verification.
+
 ## How you work
 
 1. **Read before writing.** Understand existing code patterns before adding new code. Check for similar implementations you can follow under {{paths.source}}. When you need multiple files, call the Reads in one parallel batch.
