@@ -85,3 +85,40 @@ test('requires path ownership to end in a directory slash', () => {
   const errors = validateTaskDag({ version: 1, leaves: [leaf({ owns: ['path:src/generated'] })] });
   assert(errors.some((error) => error.includes('must end in /')));
 });
+
+test('rejects normalized file/file overlap across leaves', () => {
+  const errors = validateTaskDag({ version: 1, leaves: [
+    leaf({ id: 'a', owns: ['file:src/./same.ts'] }),
+    leaf({ id: 'b', owns: ['file:src/same.ts'] }),
+  ] });
+  assert(errors.some((error) => error.includes('ownership overlaps')));
+});
+
+for (const [name, first, second] of [
+  ['parent path before child path', 'path:src/', 'path:src/generated/'],
+  ['child path before parent path', 'path:src/generated/', 'path:src/'],
+  ['path before contained file', 'path:src/generated/', 'file:src/generated/out.ts'],
+  ['contained file before path', 'file:src/generated/out.ts', 'path:src/generated/'],
+]) {
+  test(`rejects ${name} across leaves`, () => {
+    const errors = validateTaskDag({ version: 1, leaves: [
+      leaf({ id: 'a', owns: [first] }),
+      leaf({ id: 'b', owns: [second] }),
+    ] });
+    assert(errors.some((error) => error.includes('ownership overlaps')));
+  });
+}
+
+test('rejects backslash-rooted and UNC context paths', () => {
+  for (const path of ['\\rooted\\file.ts', '\\\\server\\share\\file.ts']) {
+    const errors = validateTaskDag({ version: 1, leaves: [leaf({ context: { files: [path], sections: [] } })] });
+    assert(errors.some((error) => error.includes('unsafe path')), path);
+  }
+});
+
+test('rejects backslash-rooted and UNC ownership paths', () => {
+  for (const surface of ['file:\\rooted\\file.ts', 'path:\\\\server\\share\\']) {
+    const errors = validateTaskDag({ version: 1, leaves: [leaf({ owns: [surface] })] });
+    assert(errors.some((error) => error.includes('unsafe repository path')), surface);
+  }
+});

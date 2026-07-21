@@ -31,9 +31,30 @@ function repoRelativePath(value) {
     && value.length > 0
     && !hasControl(value)
     && !value.startsWith('/')
+    && !value.startsWith('\\')
     && !value.startsWith('~')
     && !/^[A-Za-z]:[\\/]/.test(value)
     && !value.split(/[\\/]/).includes('..');
+}
+
+function normalizeRepoPath(value) {
+  return value
+    .replace(/\\/g, '/')
+    .split('/')
+    .filter((segment) => segment && segment !== '.')
+    .join('/');
+}
+
+function pathOwnershipOverlaps(left, right) {
+  if (left.kind === 'file' && right.kind === 'file') return left.path === right.path;
+  if (left.kind === 'path' && right.kind === 'path') {
+    return left.path === right.path
+      || left.path.startsWith(`${right.path}/`)
+      || right.path.startsWith(`${left.path}/`);
+  }
+  const file = left.kind === 'file' ? left : right;
+  const directory = left.kind === 'path' ? left : right;
+  return file.path === directory.path || file.path.startsWith(`${directory.path}/`);
 }
 
 export function validateTaskDag(dag) {
@@ -44,6 +65,7 @@ export function validateTaskDag(dag) {
 
   const ids = new Set();
   const owners = new Map();
+  const pathOwners = [];
   for (const [index, leaf] of dag.leaves.entries()) {
     const at = `leaves[${index}]`;
     if (!leaf || typeof leaf !== 'object' || Array.isArray(leaf)) {
@@ -100,6 +122,25 @@ export function validateTaskDag(dag) {
         if (surface.startsWith('path:') && !surface.endsWith('/')) {
           errors.push(`${at}.owns path namespace must end in /: ${JSON.stringify(surface)}`);
           continue;
+        }
+        if (surface.startsWith('file:') && surface.endsWith('/')) {
+          errors.push(`${at}.owns file namespace cannot end in /: ${JSON.stringify(surface)}`);
+          continue;
+        }
+        if (surface.startsWith('file:') || surface.startsWith('path:')) {
+          const kind = surface.startsWith('file:') ? 'file' : 'path';
+          const candidate = {
+            kind,
+            path: normalizeRepoPath(surface.slice(surface.indexOf(':') + 1)),
+            leaf: leaf.id,
+            surface,
+          };
+          for (const prior of pathOwners) {
+            if (prior.leaf !== candidate.leaf && pathOwnershipOverlaps(prior, candidate)) {
+              errors.push(`repository ownership overlaps between ${prior.leaf} (${prior.surface}) and ${candidate.leaf} (${candidate.surface})`);
+            }
+          }
+          pathOwners.push(candidate);
         }
         if (owners.has(surface)) errors.push(`surface ${surface} is owned by both ${owners.get(surface)} and ${leaf.id}`);
         else owners.set(surface, leaf.id);
