@@ -1,10 +1,9 @@
 /**
  * agent-pipeline — opencode plugin.
  *
- * Ports the "edit-streak" hook: after THRESHOLD code edits the orchestrator is
- * nudged to delegate to its pipeline-builder/pipeline-planner/pipeline-reviewer team instead of doing the
- * heavy lifting itself. The nudge is appended to the edit tool's result, which
- * opencode surfaces to the model on its next turn (verified against the
+ * Ports the post-edit thrash detector. A cautious nudge is appended only when
+ * equivalent actions/results repeat without progress. opencode surfaces the
+ * nudge to the model on its next turn (verified against the
  * `@opencode-ai/plugin` `tool.execute.after` signature: `output.output` is the
  * mutable result string the model reads).
  *
@@ -14,19 +13,23 @@
  * session; opencode's documented mechanism for that is the AGENTS.md rules file.
  * `scripts/install-opencode.sh` writes that guidance into AGENTS.md.
  *
- * Caveat (matches the Cursor/Gemini/Codex/Copilot ports): opencode does not
- * expose an orchestrator/subagent distinction at the tool layer, so — unlike
+ * Caveat: opencode does not expose an orchestrator/subagent distinction at the
+ * tool layer, so — unlike
  * Claude, which skips edits made inside a subagent — this can't tell whether an
  * edit came from the orchestrator or from the pipeline-builder. The nudge is best-effort
  * and may also fire inside a subagent.
  */
 
-const THRESHOLD = 5;
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
+let detectorState = { sessions: {} };
 
-// sessionID -> count of edits since the last nudge. Module scope persists for
-// the lifetime of the opencode process.
-const streak = new Map();
+async function loadDetector() {
+  try {
+    return await import("./thrash-detector.mjs"); // installed opencode plugin
+  } catch {
+    return import("../../hooks/thrash-detector.mjs"); // repository checkout
+  }
+}
 
 export const AgentPipeline = async () => {
   return {
@@ -34,21 +37,18 @@ export const AgentPipeline = async () => {
       try {
         if (!input || !EDIT_TOOLS.test(input.tool || "")) return;
 
-        const sid = input.sessionID || "default";
-        const n = (streak.get(sid) || 0) + 1;
+        const detector = await loadDetector();
+        const processed = detector.processPayload({
+          tool_name: input.tool,
+          tool_input: input.args ?? input.input ?? {},
+          tool_response: output?.output,
+          session_id: input.sessionID || "default",
+        }, detectorState);
+        detectorState = processed.state;
 
-        if (n < THRESHOLD) {
-          streak.set(sid, n);
-          return;
-        }
-        streak.set(sid, 0);
-
-        if (output && typeof output.output === "string") {
+        if (processed.kind && output && typeof output.output === "string") {
           output.output +=
-            `\n\n---\n[agent-pipeline] You've made ${THRESHOLD} code edits since the last ` +
-            `reminder. You're the orchestrator — delegate to your team instead of doing the ` +
-            `heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & ` +
-            `structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent.`;
+            `\n\n---\n[agent-pipeline] ${detector.messageFor(processed.kind)}`;
         }
       } catch {
         // A nudge must never break a tool call.

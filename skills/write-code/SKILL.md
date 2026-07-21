@@ -48,6 +48,12 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
 
+   For a long mechanical command, use **start → overlap → join** only when its inputs can be frozen
+   and useful independent work exists. Prefer a host-managed command handle; otherwise use a
+   managed subagent whose completion is reported automatically; otherwise run it in the foreground.
+   Do not detach with `&`/`nohup`, poll from model turns, mutate its inputs while it runs, or consume
+   its result before the mandatory join.
+
 3. **Render UI states (if a design system is configured).** For UI components,
    create the component's story/example fixture rendering its key states, per the
    conventions of `{{designSystem.path}}`. If no design system is configured
@@ -55,12 +61,18 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 4. **Verify before you ship.** Once all targeted tests are green, run the
    project's verify command, `{{verify}}`, to confirm the full gate passes
-   (types, lint, tests). **Await the result — never background it and end your
-   turn**; use your host's monitor / await / block-until-complete mechanism and
-   stay until you have the exit code, since an interrupted run is not a green
+   (types, lint, tests). **Join the result — never start it and end your turn
+   without the result**; use your host's managed wait mechanism and obtain the exit code,
+   since an interrupted run is not a green
    gate. Verify must pass before pushing — that's the pipeline-builder's
    responsibility, not the pipeline-reviewer's. (A fast typecheck mid-flight is
    fine if the project defines one, but it does not replace the full gate.)
+
+   If verify fails, classify the cause as `transient | environment | implementation |
+   plan-conflict | semantic-tool-failure` and the recurrence as `new | exact-repeat |
+   oscillation`. A retry must use a materially different strategy and one complete
+   diagnose/change/verify cycle counts as an attempt. Stop after 3 attempts for the same scoped
+   failure. For `plan-conflict`, emit the existing `BLOCKER` with evidence; do not amend the plan.
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.

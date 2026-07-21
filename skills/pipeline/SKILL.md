@@ -164,6 +164,26 @@ ephemeral.
 
 ### Loop rules
 
+#### Failure-aware retry contract
+
+Do not spend a retry until the failed cycle has been classified. Record the classification in the
+handoff/chat context (no new state file):
+
+- **Cause:** `transient` (provider/process interruption), `environment` (dependency, credential,
+  service, or toolchain), `implementation` (code is wrong but the plan is sound), `plan-conflict`
+  (a plan assumption is false), or `semantic-tool-failure` (the tool completed but its result is
+  unusable).
+- **Recurrence:** `new`, `exact-repeat` (same scoped failure and strategy), or `oscillation`
+  (the run is alternating between already-failed states).
+
+A retry is one complete diagnose/change/verify cycle for the same scoped failure, not each tool
+call. Before retrying, state the evidence and why the next strategy is materially different.
+`exact-repeat` and `oscillation` must change strategy; never replay the same action. Environment
+failures get one safe repair attempt, otherwise block. A `plan-conflict` emits the existing builder
+`BLOCKER` with the false assumption and evidence; this pipeline does not redesign it in flight.
+Every scoped failure cycle retains a hard cap of **3 attempts**, regardless of cause, including
+transient failures.
+
 - **Refine critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises `requirements.md` and the pipeline-reviewer re-critiques. Repeat until the score clears the
   bar or **3 rounds** are reached. If it never clears: mark `blocked` with reason
@@ -178,12 +198,31 @@ ephemeral.
   who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
   are reached. If it never clears after the cap: mark `blocked` with reason `concept-or-spec-misalignment`.
 - **Review loop (Phase 8):** if the verdict is NOT DONE, send findings to the pipeline-builder, who
-  fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
-- **Builder BLOCKER:** if the pipeline-builder hits a plan-vs-reality conflict, it raises a BLOCKER rather
-  than redesigning in flight. Surface to the pipeline-planner for a plan amendment, then re-enter Phase 7.
-  **Max 3 attempts per WP.**
-- **CI red after ship push:** pipeline-builder fixes locally and re-ships. **Max 3 attempts.**
-- After **3 attempts**, mark the WP `blocked` with the relevant reason and move on.
+  classifies the failure, fixes with a materially different strategy, and re-runs `{{verify}}`;
+  then re-review. **Max 3 attempts for the same scoped failure.**
+- **Builder BLOCKER:** if the pipeline-builder hits a plan-vs-reality conflict, it raises a BLOCKER
+  with the false assumption and evidence rather than redesigning in flight. Stop the affected build;
+  planner re-entry is outside this retry contract. **Max 3 blocked cycles per WP.**
+- **CI red after ship push:** pipeline-builder classifies the failure, fixes locally, and re-ships.
+  **Max 3 attempts for the same scoped failure.**
+- At the hard cap, mark the WP `blocked` with the relevant reason and move on.
+
+### Long-running mechanical commands — start, overlap, join
+
+Do not make the model poll a long command. Choose exactly one execution branch:
+
+1. **Managed command:** start it with the host's recoverable process/session handle, freeze its
+   command, cwd, and input files, do only independent work, then await that handle once at the
+   dependency boundary.
+2. **Managed subagent:** delegate the command plus frozen inputs to a worker when the host reliably
+   reports completion; continue independent work and join the worker once.
+3. **Foreground:** when neither managed mechanism exists, wait normally.
+
+Never use bare shell detachment (`nohup`, trailing `&`) or repeated status polling. Do not mutate a
+background job's inputs while it runs. A result that gates the next step, review, verify, or ship
+must be joined and its exit status read before proceeding. Host support is an optimization: Codex
+and some Claude surfaces expose managed sessions/subagents; other hosts may correctly fall back to
+foreground execution.
 
 ### Ship runs AFTER retro and the final review
 

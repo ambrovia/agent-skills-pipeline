@@ -25,6 +25,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
     "check:codex-installer": "bash -n scripts/install-codex.sh"
   },

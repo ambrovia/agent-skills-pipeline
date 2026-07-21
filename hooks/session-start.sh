@@ -3,6 +3,7 @@
 # Usage: session-start.sh [claude|cursor|gemini|codex|copilot]   (default: claude)
 # Each tool wants the injected context in a different output shape. Keep this
 # script dependency-free because session-start hooks must always emit valid JSON.
+# @lore-id: codex-session-hook-output
 # @lore: Codex 0.142.5 command hooks mark SessionStart stdout as failed, even for
 # JSON shapes accepted by other harnesses. Keep Codex silent until its hook output
 # contract supports context injection.
