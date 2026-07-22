@@ -174,7 +174,7 @@ The outer phase loop never changes. Adaptation is local to concept production an
 
 #### Leaf context and receipt
 
-Construct each leaf prompt from pointers in its DAG node: leaf objective, AC IDs, `context.files`, `context.sections`, owned/consumed surfaces, dependency receipts, focused verify command, and the explicit instruction not to change another leaf's owned surface. Do not paste full files, the full conversation, broad repository dumps, or another leaf's transcript.
+Construct each leaf prompt from pointers in its DAG node: leaf objective, AC IDs, `context.files`, `context.sections`, owned/consumed surfaces, dependency receipts, focused verify command, and the explicit instruction not to change another leaf's owned surface. Present context pointers as the relevant starting set, not a prohibition: the builder may expand its reading when it can name the concrete missing dependency or precedent. Do not paste full files, the full conversation, broad repository dumps, or another leaf's transcript.
 
 Each leaf returns a compact receipt; the integration builder records it durably at `.pipeline/work/<id>/receipts/<leaf-id>.json` after accepting the commit:
 
@@ -187,12 +187,13 @@ Each leaf returns a compact receipt; the integration builder records it durably 
   "integratedCommits": ["<cherry-picked-red-sha>", "<cherry-picked-implementation-sha>"],
   "changedFiles": ["src/example.ts"],
   "changedSurfaces": ["contract:Example"],
+  "carryForward": ["at most three terse facts that prevent repeated discovery"],
   "verification": {"command": "<focused command>", "result": "pass"},
   "status": "integrated"
 }
 ```
 
-Receipts contain outcomes, not reasoning transcripts. A downstream leaf reads only receipts for its declared dependencies.
+Receipts contain outcomes, not reasoning transcripts. `carryForward` is optional and capped at three terse, reusable facts: a ruled-out dead end, surprising dependency, required fixture/command, or non-obvious contract detail. A downstream leaf reads only receipts for its declared dependencies.
 
 #### Isolated leaf execution and integration
 

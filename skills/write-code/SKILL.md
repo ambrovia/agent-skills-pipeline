@@ -44,7 +44,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    concrete file path while implementing — grep callers, follow imports, cover the
    blast-radius surfaces named. Its example paths are not the complete inventory.
 
-   If assigned a `technicalTaskDag` leaf, read only its pointer context and dependency receipts plus the plan sections needed to understand its contracts. Treat `owns` as a write boundary: if implementation requires another leaf's surface, stop with a BLOCKER rather than quietly expanding scope. Return the compact commit/change/verification receipt required by `/pipeline`; the integration builder records it durably.
+   If assigned a `technicalTaskDag` leaf, start with its pointer context and dependency receipts plus the plan sections needed to understand its contracts. Expand reading when implementation exposes a concrete missing dependency or adjacent precedent; do not broaden into an unfocused repository scan. Treat `owns` as a write boundary: if implementation requires another leaf's surface, stop with a BLOCKER rather than quietly expanding scope. Return the compact commit/change/verification receipt required by `/pipeline`; include at most three terse carry-forward facts when they will prevent a dependant from repeating discovery. The integration builder records it durably.
 
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
