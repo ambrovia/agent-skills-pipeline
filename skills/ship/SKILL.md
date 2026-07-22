@@ -125,15 +125,15 @@ Main is protected — commits only land via pull request.
 
 ### 7. Wait for CI green (MANDATORY — do not skip)
 
-Poll the PR's checks until CI reports a result. **Ship is not complete until CI
-is green.**
+Use the VCS's native check watch instead of repeated agent-driven status checks. **Ship is not
+complete until CI is green.**
 
 **If CI is red:**
 1. Pull the failure log for the failing check.
-2. Read the error message and identify the cause. Common causes: a check that
+2. Read the error and identify the cause. Common causes: a check that
    passes locally but not in CI (environment difference), or code committed after
    verify ran (re-run verify on the final tree).
-3. Fix the issue, then re-run from step 3 (merge main, verify, push).
+3. State the evidence and change strategy, then re-run from step 3 (merge main, verify, push).
 4. Max 3 push attempts. After 3, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 

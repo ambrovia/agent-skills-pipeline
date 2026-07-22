@@ -10,7 +10,7 @@
 #   skills  → .opencode/skills/    (opencode's own skill dir — self-contained,
 #                                    no dependency on .claude/ or shared .agents/)
 #   agents  → .opencode/agents/    (opencode-format pipeline-planner / pipeline-reviewer / pipeline-builder)
-#   plugin  → .opencode/plugins/   (the edit-streak nudge)
+#   plugin  → .opencode/plugins/   (post-edit guards)
 #   rules   → AGENTS.md            (session-start "pipeline is active" guidance)
 #
 # Usage:
@@ -59,7 +59,7 @@ mkdir -p "$AGENTS_DIR"
 cp "$SRC/.opencode/agents/"*.md "$AGENTS_DIR/"
 echo "  ✓ agents   → $AGENTS_DIR"
 
-# 3. Plugin — the edit-streak nudge.
+# 3. Plugin — post-edit guards.
 mkdir -p "$PLUGINS_DIR"
 cp "$SRC/.opencode/plugins/pipeline.js" "$PLUGINS_DIR/"
 echo "  ✓ plugin   → $PLUGINS_DIR/pipeline.js"
@@ -100,7 +100,7 @@ cat <<EOF
 Done. Open the target project in opencode and restart it.
   • skills surface via the skill tool
   • personas are available as @pipeline-planner, @pipeline-reviewer, @pipeline-builder
-  • the edit-streak nudge loads from the plugin automatically
+  • post-edit guards load from the plugin automatically
 
 To pin models, set 'model: <provider>/<id>' in the agent files under $AGENTS_DIR.
 EOF

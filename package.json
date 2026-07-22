@@ -25,8 +25,11 @@
     "LICENSE"
   ],
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
-    "check:codex-installer": "bash -n scripts/install-codex.sh"
+    "check:codex-installer": "bash -n scripts/install-codex.sh",
+    "check:installers": "bash -n scripts/install-codex.sh scripts/install-cursor.sh scripts/install-opencode.sh",
+    "verify": "npm run check:opencode-plugin && npm run check:installers && npm test"
   },
   "keywords": [
     "opencode",

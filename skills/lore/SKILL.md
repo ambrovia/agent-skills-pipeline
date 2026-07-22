@@ -51,6 +51,7 @@ Read the specified files and identify decisions worth documenting:
 - Include `@tags` for searchability.
 - Keep it under 6 lines. Link to architecture docs for details.
 - Never add lore for obvious things. If the code is clear, silence is better.
+- When lore in the target files changes, replace the old annotation in place. Do not keep superseded prose; Git retains history.
 
 ---
 

@@ -67,8 +67,8 @@ echo "Installing agent-pipeline for Cursor (project copy) → $TARGET"
 mkdir -p "$SKILLS_DIR" "$AGENTS_DIR" "$HOOKS_DIR"
 cp -R "$SRC/skills/." "$SKILLS_DIR/"
 cp "$SRC/agents-cursor/"*.md "$AGENTS_DIR/"
-cp "$SRC/hooks/session-start.sh" "$SRC/hooks/edit-streak.sh" "$HOOKS_DIR/"
-chmod +x "$HOOKS_DIR/session-start.sh" "$HOOKS_DIR/edit-streak.sh"
+cp "$SRC/hooks/session-start.sh" "$SRC/hooks/edit-streak.sh" "$SRC/hooks/thrash-detector.mjs" "$HOOKS_DIR/"
+chmod +x "$HOOKS_DIR/session-start.sh" "$HOOKS_DIR/edit-streak.sh" "$HOOKS_DIR/thrash-detector.mjs"
 
 cat > "$HOOKS_FILE" <<'EOF'
 {
@@ -81,6 +81,10 @@ cat > "$HOOKS_FILE" <<'EOF'
       {
         "matcher": "Write|Edit|MultiEdit",
         "command": "bash .cursor/hooks/edit-streak.sh cursor"
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "command": "node .cursor/hooks/thrash-detector.mjs cursor"
       }
     ]
   }

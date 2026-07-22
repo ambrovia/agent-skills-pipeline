@@ -23,10 +23,12 @@
 
 const THRESHOLD = 5;
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
+const NO_PROGRESS = /\b(error|failed|failure|timed? out|exception|rejected|cannot|unable|no changes?|unchanged|not found|no match)\b/i;
 
 // sessionID -> count of edits since the last nudge. Module scope persists for
 // the lifetime of the opencode process.
 const streak = new Map();
+const failures = new Map();
 
 export const AgentPipeline = async () => {
   return {
@@ -36,19 +38,29 @@ export const AgentPipeline = async () => {
 
         const sid = input.sessionID || "default";
         const n = (streak.get(sid) || 0) + 1;
+        const toolResult = output?.output;
 
         if (n < THRESHOLD) {
           streak.set(sid, n);
+        } else {
+          streak.set(sid, 0);
+          if (output && typeof output.output === "string") {
+            output.output +=
+              `\n\n---\n[agent-pipeline] You've made ${THRESHOLD} code edits since the last ` +
+              `reminder. You're the orchestrator — delegate to your team instead of doing the ` +
+              `heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & ` +
+              `structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent.`;
+          }
+        }
+
+        if (typeof toolResult !== "string" || !NO_PROGRESS.test(toolResult)) {
+          failures.delete(sid);
           return;
         }
-        streak.set(sid, 0);
-
-        if (output && typeof output.output === "string") {
-          output.output +=
-            `\n\n---\n[agent-pipeline] You've made ${THRESHOLD} code edits since the last ` +
-            `reminder. You're the orchestrator — delegate to your team instead of doing the ` +
-            `heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & ` +
-            `structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent.`;
+        const recent = [...(failures.get(sid) || []), `${input.tool}\0${toolResult}`].slice(-3);
+        failures.set(sid, recent);
+        if (recent.length === 3 && recent.every((item) => item === recent[0])) {
+          output.output += "\n\n---\n[agent-pipeline] This edit is repeating without progress. Inspect the failure and change strategy.";
         }
       } catch {
         // A nudge must never break a tool call.

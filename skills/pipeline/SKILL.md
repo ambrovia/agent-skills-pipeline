@@ -164,6 +164,11 @@ ephemeral.
 
 ### Loop rules
 
+Before retrying, state what failed, the evidence, and what will change. Do not repeat a failed
+strategy; an obvious transient interruption may be repeated once. If the plan is wrong, raise the
+existing builder `BLOCKER`. One diagnose/change/verify cycle is one attempt; the existing
+three-attempt caps still apply.
+
 - **Refine critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises `requirements.md` and the pipeline-reviewer re-critiques. Repeat until the score clears the
   bar or **3 rounds** are reached. If it never clears: mark `blocked` with reason
@@ -177,12 +182,9 @@ ephemeral.
 - **Critique loop (Phase 5):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
   are reached. If it never clears after the cap: mark `blocked` with reason `concept-or-spec-misalignment`.
-- **Review loop (Phase 8):** if the verdict is NOT DONE, send findings to the pipeline-builder, who
-  fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
-- **Builder BLOCKER:** if the pipeline-builder hits a plan-vs-reality conflict, it raises a BLOCKER rather
-  than redesigning in flight. Surface to the pipeline-planner for a plan amendment, then re-enter Phase 7.
-  **Max 3 attempts per WP.**
-- **CI red after ship push:** pipeline-builder fixes locally and re-ships. **Max 3 attempts.**
+- **Review loop (Phase 8):** if NOT DONE, send findings to the pipeline-builder, who fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
+- **Builder BLOCKER:** if the plan conflicts with repository reality, stop and return the false assumption and evidence to the planner. **Max 3 attempts per WP.**
+- **CI red after ship push:** diagnose, fix locally, and re-ship. **Max 3 attempts.**
 - After **3 attempts**, mark the WP `blocked` with the relevant reason and move on.
 
 ### Ship runs AFTER retro and the final review

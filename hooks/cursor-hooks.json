@@ -10,6 +10,10 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "command": "bash ${CURSOR_PLUGIN_ROOT}/hooks/edit-streak.sh cursor"
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "command": "node ${CURSOR_PLUGIN_ROOT}/hooks/thrash-detector.mjs cursor"
       }
     ]
   }

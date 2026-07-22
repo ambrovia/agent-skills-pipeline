@@ -48,6 +48,10 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
 
+   For long mechanical work, prefer one repository script that owns its subprocesses, timeouts,
+   retries, logs, and final exit status. Invoke it once; do not reproduce its inner loop with agent
+   tool calls.
+
 3. **Render UI states (if a design system is configured).** For UI components,
    create the component's story/example fixture rendering its key states, per the
    conventions of `{{designSystem.path}}`. If no design system is configured
@@ -61,6 +65,9 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    gate. Verify must pass before pushing — that's the pipeline-builder's
    responsibility, not the pipeline-reviewer's. (A fast typecheck mid-flight is
    fine if the project defines one, but it does not replace the full gate.)
+
+   If verify fails, state the evidence and change strategy before retrying. Raise a plan conflict
+   as the existing `BLOCKER`.
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.
