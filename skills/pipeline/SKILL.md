@@ -169,7 +169,7 @@ ephemeral.
 Keep the outer phase loop fixed. Adapt inside concept and build:
 
 - **Concept:** fan out independent variants, discovery, or probes; the planner alone synthesizes.
-- **Build:** run ready task leaves concurrently only when their parallel rationale still holds. Otherwise run sequentially.
+- **Build:** each leaf is one entry in architecture's technical task tree. Run ready leaves concurrently only when their parallel rationale still holds. Otherwise run sequentially.
 - **Review:** one reviewer checks the assembled WP once.
 
 #### Leaf context and receipt
@@ -207,7 +207,7 @@ One pipeline-builder owns the integration worktree. Require it clean; commit `{"
 6. Run seam tests after each wave and the final integration leaf in the integration worktree. Then run `{{verify}}`, sync docs, and hand the assembled WP to Phase 8.
 7. Remove successful leaf worktrees only after integration. Keep failed worktrees and attempt branches until ship.
 
-Without concurrency, use the same worktrees sequentially. If worktrees are unavailable, run in the clean integration worktree, record the starting SHA, keep a recovery branch, and apply the same preflight. Raise a BLOCKER for ownership or semantic conflicts.
+Without guaranteed per-writer worktree isolation, use the same worktrees sequentially. If worktrees are unavailable, run in the clean integration worktree, record the starting SHA, keep a recovery branch, and apply the same preflight. Raise a BLOCKER for ownership or semantic conflicts.
 
 `kind: mechanical` still uses the pipeline-builder and the same quality bar.
 
