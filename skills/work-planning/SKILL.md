@@ -118,7 +118,7 @@ Seed `.pipeline/work/<id>/plan.md` with **exactly** these sections, in this orde
 
 **Pre-build gates.** Two explicit declarations so the maintainer (and `/pipeline`) know what runs *before* this WP is built, each with a one-line reason:
 - **Refinement:** `Required — run /refine first (goal unclear, or introduces/reshapes: <noun>)` | `Not required — goal is clear and reuses requirements already locked in {{paths.docs}}`.
-- **Design:** `Required — /design (designer picks 1–3 from maturity + breadth; 3 if new base primitive)` | `Light — extends <existing component/page>; expect single-variant /design` | `Not required — backend/infra; skip /design` (also implied when `pipeline.config designSystem: null`).
+- **Design:** `Required — novel surface; /design multi-variant + human review` | `Light — extends <existing component/page>; single-variant /design` | `Not required — backend/infra; skip /design` (also implied when `pipeline.config designSystem: null`).
 
 **Human review gates.** Yes — `<one-line reason>`. **Mandatory for every work package** — the requirement gate (Phase 3) after `/refine-critique`, the concept gate (Phase 6, design + architecture) after the critiques, and the final review (Phase 10) before ship. Autonomous `/pipeline` runs park until the founder approves. This forecast is for scheduling expectations only; the gates are never skipped.
 

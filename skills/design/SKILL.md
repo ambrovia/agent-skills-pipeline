@@ -1,6 +1,6 @@
 ---
 name: design
-description: "Explore 1-3 UX/UI variants (count chosen from app maturity + change breadth; 3 reserved for new base design-system primitives), score them in-session against the 9-dimension rubric, settle on one. Runs BEFORE architecture when a work package has any UI surface — a new page, primitive, component shape, interaction flow, or redesign of an existing surface."
+description: "Explore 1-3 UX/UI variants (gated by routine vs novel), score them in-session against the 9-dimension rubric, settle on one. Runs BEFORE architecture when a work package has any UI surface — a new page, primitive, component shape, interaction flow, or redesign of an existing surface."
 phase: 4
 persona: pipeline-planner
 applies-to: [frontend, application]
@@ -9,14 +9,14 @@ user-invocable: true
 
 # Design — decide what the user sees and does, before deciding how it's built
 
-UX/UI counterpart to `/architecture`. Architecture decides *how* (file paths, schemas, types, endpoints); design decides *what the user sees and does* (shape, hierarchy, density, interaction grammar, motion, copy, states). Variant count is a deliberate choice — not a default shotgun — so mature products aren't forced through three directions for every screen.
+UX/UI counterpart to `/architecture`. Architecture decides *how* (file paths, schemas, types, endpoints); design decides *what the user sees and does* (shape, hierarchy, density, interaction grammar, motion, copy, states). Forces a multi-variant pass so the chosen design isn't the first thing that came to mind.
 
 **Skip when:**
 - The work package has no UI surface, OR
 - An approved design already exists and this is a pure layout tweak (go straight to `/design-critique`), OR
 - **No design system is configured** (`pipeline.config` `designSystem: null`). On backend / infra / library projects this skill does not apply.
 
-Inspired by the "design shotgun" (three variants when the shape itself is open) and *Design It Twice* (from "A Philosophy of Software Design") — explore only as wide as the decision warrants, then broad → variants → spec → embodied artifacts.
+Inspired by the "design shotgun" (three variants on a comparison board) and *Design It Twice* (from "A Philosophy of Software Design") — parallel sub-agents under different constraints, then broad → variants → spec → embodied artifacts.
 
 ## Project rules
 
@@ -30,7 +30,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 ## When this runs
 
 - **In the pipeline:** pipeline-planner persona, after `/refine` and before `/architecture`.
-- **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new base design-system primitives** where the shape itself is open.
+- **On explicit `/design <work-package-id>`:** any work package with a UI surface — especially **new load-bearing primitives** where multiple plausible shapes exist.
 - **Skip** per the condition above. If an approved design exists and the change is a pure layout tweak, run only the in-session Phase 3 critique on the existing `approved.md`.
 
 **Fixed input from `/refine`:** the founder-approved `.pipeline/work/<id>/requirements.md` (confirm `approvals.requirements` is set in `.pipeline/work/<id>/progress.json`). Variants explore the *visual / interaction shape* of a primitive — they do not redefine what that primitive IS. If a variant only works by changing the requirement, that's a `/refine` issue — return to the requirement gate, not a design issue.
@@ -47,48 +47,31 @@ Read all of the following in one parallel batch of Read calls — these files ar
 
 For the design dimensions scored in Phase 3 — visual hierarchy, spacing/density, typography, color, and finishing — read the design system's aesthetics documentation under `{{designSystem.path}}` (with token values in `{{designSystem.tokens}}`). Without a concrete reference the Phase 3 critique becomes vibes-grading — read it before assigning a score on its dimension.
 
-## Phase 0 — Decide variant count
+## Phase 0 — Classify: routine vs novel
 
-Before interrogation, the designer **chooses** how many variants Phase 2 produces. Infer from the work package + the design system — do **not** look for a maturity flag in `pipeline.config`.
+Before interrogation, classify the work package along these axes (infer from the work package and the design system — no config flag):
 
-### Axes (infer, then decide)
+1. **Existing component reference** — does the spec name an existing component family (e.g. "extend `<RowComponent>`", "another tab in `<DrawerComponent>`")?
+2. **Pattern match** — does `{{designSystem.path}}` contain a similar embodied pattern (same primitive, same shape)?
+3. **Maturity + breadth** — mature app (many screens, settled product language) + narrow change → prefer `routine`. Early product, or a broad new surface → allow `novel`.
 
-1. **Product maturity** — does this app already have a settled visual language?
-   - **Mature:** many screens / flows already shipped; design system has embodied patterns and composition rules the new UI should fit into.
-   - **Early:** few screens; product language still forming; inventing the grammar is part of the work.
-2. **Change breadth** — how new or wide is *this* work package?
-   - **Narrow:** extends an existing screen, page, or component family; fits the established UI language.
-   - **Broad:** new surface, new interaction grammar, or redesign of a load-bearing flow — but still composed from existing base primitives.
-3. **Base design-system primitive?** — is this WP introducing a new **base** element (foundation primitive others compose from — e.g. Button, Input, Modal, Table, Toast), not an application composite built on top of those?
+Both (1) and (2) yes → `routine`. Both no → `novel`, unless axis 3 still says fit-the-existing-language → `routine`. Mixed → `routine` with low-confidence flag (see below).
 
-Use component-reference and pattern-match as *evidence* for maturity and breadth, not as a hard classifier by themselves:
-- Spec names an existing family ("extend `<Row>`", "another tab in `<Drawer>`") → leans narrow.
-- `{{designSystem.path}}` already embodies a similar pattern → leans mature + narrow.
-- Neither → leans early and/or broad — still not automatic 3 unless it's a new base primitive.
-
-### Variant count
-
-| Situation | Variants in Phase 2 | Phase 3 critique |
+| Class | Variants in Phase 2 | Phase 3 critique |
 |---|---|---|
-| **New base design-system primitive** (foundation element only) | **3**, full constraint-and-thesis spread | per-variant + on `approved.md` |
-| Mature + narrow | **1**, plus a "did we consider X / Y / Z?" rejected-directions check | only on `approved.md` |
-| Mature + broad | **1** preferred; **2** (A vs B) only if the shape is genuinely open | 1 → approved only; 2 → per-variant + approved |
-| Early + narrow | **1** or **2** (designer picks; 2 when two plausible fits exist) | as above |
-| Early + broad (not a base primitive) | **3**, full shotgun | per-variant + on `approved.md` |
+| `novel` | 3, full constraint-and-thesis spread | per-variant + on `approved.md` |
+| `routine` | 1, with a "did we consider X / Y / Z?" check on the rejected directions | only on `approved.md` |
+| `routine` (low-confidence) | 2, A vs. B | per-variant + on `approved.md` |
 
-**Default bias:** in a mature product with many screens, prefer **1**. Three variants are expensive; spend them when inventing the visual language or locking a new base primitive — not on every new page in an established app.
+**Low-confidence trigger.** If only one of axes 1–2 matched (e.g. spec references an existing component but the design system has nothing analogous, or vice versa), or the in-session critique on the single variant flags Anti-slop / Hierarchy / States below 5, fall back to 2 variants. Better to spend one extra variant than to ship unexplored UI.
 
-**Hard rule — base primitives only.** A new **base** design-system element is **always 3 variants**. The shape itself is what's being decided. Application composites, feature screens, and layouts built from existing bases are **not** forced to 3 — classify them on maturity + breadth above.
-
-**Low-confidence bump.** If maturity or breadth is ambiguous, or the in-session critique on a single variant flags Anti-slop / Hierarchy / States below 5, bump one step (1→2, or 2→3 for early+broad ambiguity). Better one extra variant than shipping unexplored UI when the decision was actually open.
+**Hard rule for new base design-system primitives.** A new **base** element (a foundation primitive others compose from) is **always `novel`** regardless of axis match. The shape itself is what's being decided. Application composites and feature screens are not forced to `novel`.
 
 Output one machine-greppable line at the top of `brief.md`:
 
 ```
-DESIGN-CLASS: <fit|explore-2|shotgun|base-primitive>  variants=<1|2|3>  maturity=<mature|early>  breadth=<narrow|broad>  ref=<existing-component-or-none>  pattern=<design-system-file-or-none>
+DESIGN-CLASS: <routine|routine-low-conf|novel>  ref=<existing-component-or-none>  pattern=<design-system-file-or-none>
 ```
-
-Where `fit` = 1 variant, `explore-2` = 2, `shotgun` = 3 for early+broad product UI, `base-primitive` = 3 for a new foundation element.
 
 ## Phase 1 — Interrogate the task
 
@@ -100,10 +83,9 @@ Sample probes (adapt):
 - "Who is doing this and what decision are they making? My read: X. Confirm?"
 - "What's the smallest UI surface that delivers the outcome? My read: just A, not B."
 - "Primary state — populated / empty / loading / error — which is most common in real use?"
-- "New base design-system primitive (3-variant shape exploration) or application surface (fit the existing language)?"
+- "New primitive (variants explore shape) or extension (variants explore application)?"
 - "What gets overflowed/truncated when dense? My read: …"
 - "Which existing component does this compose from? My read: …"
-- "Mature product language vs early — my read from the WP + design system: …; variant count → N. Confirm?"
 
 Stop when the brief is clear. 3-7 branches typical.
 
@@ -111,11 +93,11 @@ Stop when the brief is clear. 3-7 branches typical.
 
 Produce independent variants concurrently when the host supports it; otherwise run them sequentially. Each producer owns one variant directory and the pipeline-planner alone synthesizes. Fan out only independent, read-only discovery or probes.
 
-For `fit` (1): produce **one** variant that fits the established product language / named pattern, plus an explicit `rejected.md` block listing the X / Y / Z directions you considered and rejected (one line each). Do NOT regenerate the rejected directions.
+For `routine`: produce **one** variant honoring the named existing component / pattern, plus an explicit `rejected.md` block listing the X / Y / Z directions you considered and rejected (one line each). Do NOT regenerate the rejected directions.
 
-For `explore-2` (2): produce **two** variants — A "stay close to existing pattern" and B "challenge the existing pattern" (or two distinct theses when no pattern exists yet).
+For `routine-low-conf`: produce **two** variants — A "stay close to existing pattern" and B "challenge the existing pattern".
 
-For `shotgun` or `base-primitive` (3): produce **three radically different** variants. Anti-convergence is a hard rule: variants that all feel like minor tweaks of one idea = fail. Use the base-primitive constraint set below when `DESIGN-CLASS` is `base-primitive`; otherwise use the product-UI set.
+For `novel` (and new base design-system primitives): produce **three radically different** variants. Anti-convergence is a hard rule: variants that all feel like minor tweaks of one idea = fail.
 
 Each variant uses the work-package brief + design-system pointers + a different **constraint-and-thesis pairing** so the spread is intentional, not accidental:
 
@@ -139,7 +121,7 @@ Variant C — "Reference-borrowed"
   Thesis: a proven interaction grammar shortens the user's learning curve.
 ```
 
-If `DESIGN-CLASS` is `base-primitive`, substitute the constraints to explore the **shape itself**:
+If the work package is for a *new design-system primitive*, substitute the constraints to explore the **shape itself**:
 
 ```
 Variant A — "Container with payload" (the shape is a thin container; the payload
@@ -150,7 +132,7 @@ Variant C — "Layered" (a base layer that always renders + extension slots that
             consumers fill — the slot/children composition pattern).
 ```
 
-Anti-convergence requirement (2+ variants) — verify before Phase 3:
+Anti-convergence requirement — verify before Phase 3:
 - Variants must differ on **at least 3 of these axes per pair**: hierarchy (where the eye lands first), density (how much fits per row/screen), state strategy (one canonical layout vs distinct shapes per state), motion (where it moves), action surface (where verbs live), composition (one component vs three), copy register (terse vs guided).
 
 If two variants converge, regenerate. Do not proceed with three flavours of one thing.
@@ -175,7 +157,7 @@ If HTML mockups are too heavy for the work package (small primitive, well-unders
 
 ## Phase 3 — Build the comparison
 
-Produce `.pipeline/work/<id>/design/comparison.md`. Columns match the Phase 0 variant count (omit B/C when absent). For a single `fit` variant, the table still records signature / trade-offs / critique score against the rejected-directions list.
+Produce `.pipeline/work/<id>/design/comparison.md`:
 
 | Dimension | Variant A | Variant B | Variant C |
 |---|---|---|---|
@@ -189,7 +171,7 @@ Produce `.pipeline/work/<id>/design/comparison.md`. Columns match the Phase 0 va
 | Worst at | … | … | … |
 | Phase-2 critique score | … /10 | … /10 | … /10 |
 
-Plus the screenshots side by side when multiple variants exist.
+Plus the screenshots side by side.
 
 ## Phase 4 — Synthesize
 
@@ -285,15 +267,19 @@ The annotation overlay is the **inspector rail** docked to the right edge of the
 ```
 .pipeline/work/<id>/design/
 ├── brief.md                    # the interrogated brief (DESIGN-CLASS line at top)
-├── <variant-a-slug>/           # always present
+├── <variant-a-slug>/
 │   ├── spec.md
 │   ├── mockup.html
 │   └── screenshot.png
-├── <variant-b-slug>/           # only when variants ≥ 2
-│   ├── …
-├── <variant-c-slug>/           # only when variants = 3
-│   ├── …
-├── comparison.md               # columns match variant count
+├── <variant-b-slug>/
+│   ├── spec.md
+│   ├── mockup.html
+│   └── screenshot.png
+├── <variant-c-slug>/
+│   ├── spec.md
+│   ├── mockup.html
+│   └── screenshot.png
+├── comparison.md               # side-by-side table + screenshots
 ├── synthesis.md                # which variant wins, what gets pulled in, rejection list
 └── approved.md                 # the locked design — input to /architecture
 ```

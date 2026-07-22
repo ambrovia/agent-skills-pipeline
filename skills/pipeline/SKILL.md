@@ -305,7 +305,7 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
   concept-only), **or** `pipeline.config designSystem` is `null` — then design does not apply and the
   Phase 6 concept gate reviews architecture alone. Verify by reading the AC
   list: if no AC mentions a page, component, layout, route, or visible state, skip them. When in
-  doubt and a design system exists, run `design` with `fit` classification — one variant is
+  doubt and a design system exists, run `design` with `routine` classification — one variant is
   cheap and the brief doubles as documentation.
 
 Watch the anti-rationalizations ("the plan is done, I can stop" / "this story is simple, skip the
