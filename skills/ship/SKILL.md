@@ -89,12 +89,9 @@ Run the project's verify command:
 {{verify}}
 ```
 
-**Join the result — never background it and end your turn.** A read-only host-managed command or a
-managed subagent in an isolated worktree may run while you do only reasoning or work outside its
-frozen command, environment, and relevant input tree; otherwise run it in the
-foreground. Await it once at the gate and read its exit code/output. Never use bare detachment or
-model-driven polling. An interrupted verify (failed status, zero tests run, lost shell) is not a
-green gate.
+**Join the result — never background it and end your turn.** Managed commands must be read-only;
+subagent writes require an isolated worktree. Work outside frozen inputs, join once, and read the
+exit code/output. Never detach or model-poll. An interrupted verify is not green.
 
 This is non-negotiable. Do not ship with failures. Do not bypass commit hooks
 (no `--no-verify`). Do not rationalize "pre-existing failures" — if it's red, fix
@@ -127,22 +124,16 @@ Main is protected — commits only land via pull request.
 
 ### 7. Wait for CI green (MANDATORY — do not skip)
 
-Use the VCS's native check watch or the host's managed wait and join it once. Do not spend model
-turns polling. If neither is available, wait in the foreground. **Ship is not complete until CI is
-green.**
+Use the VCS check watch or a managed wait and join once; otherwise wait in the foreground. Do not
+model-poll. **Ship is not complete until CI is green.**
 
 **If CI is red:**
 1. Pull the failure log for the failing check.
-2. Classify the cause as `transient | environment | implementation | plan-conflict |
-   semantic-tool-failure` and recurrence as `new | exact-repeat | oscillation`. Read the error and
-   identify the cause. Common causes: a check that
+2. Apply `/pipeline`'s failure classification. Common causes: a check that
    passes locally but not in CI (environment difference), or code committed after
    verify ran (re-run verify on the final tree).
-3. Fix with a materially different strategy, then re-run from step 3 (merge main, verify, push).
-   An exact repeat or oscillation may not replay the same action. A new `transient` failure alone
-   may repeat the same operation once.
-4. Max 3 complete fix/check attempts for the same scoped failure, including transient failures.
-   After 3, mark the work package `blocked` with reason
+3. Fix with a different strategy, then re-run from step 3 (merge main, verify, push).
+4. Apply the three-attempt cap. At the cap, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 
 **Ship is only complete when the PR checks return green.** Do not declare success

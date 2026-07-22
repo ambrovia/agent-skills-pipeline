@@ -15,9 +15,8 @@ developers, or require context that isn't obvious from the code alone.
 
 **Why:** Codebases accumulate implicit knowledge — why a dependency is pinned, why a simpler
 approach was rejected, why two modules can't be merged. This knowledge lives in people's heads
-or gets lost in old PRs. `@lore` annotations keep this knowledge at the code site where it
-matters. They are the **current materialized state**, not an append-only history: replace or move
-an active annotation when the knowledge changes. Git retains the history.
+or gets lost in old PRs. `@lore` annotations keep the current knowledge at the relevant code site;
+Git retains its history.
 
 ---
 
@@ -32,10 +31,8 @@ Read the specified files and identify decisions worth documenting:
    - Performance tradeoffs (chose speed over readability, or vice versa)
    - Architecture boundary enforcement (why this import/dependency exists or is forbidden)
 
-2. **Search the entire repository for existing `@lore-id` values.** Update or remove automatically
-   only when the user supplied an exact ID with exactly one match. Topic/tag similarity is not
-   identity: when capture appears related to legacy or existing lore but no exact ID was supplied,
-   show the candidate and ask whether to update it or create a new ID.
+2. **Search the repository for `@lore-id`.** Update or remove only an exact ID with one match.
+   Similar topics/tags are not identity; ask whether to update or create.
 
 3. **Add `@lore` comments** at the relevant code location with these fields:
    - `@lore-id` — stable descriptive kebab-case identity, unique across the repository
@@ -63,16 +60,11 @@ Read the specified files and identify decisions worth documenting:
 ### Create, update, move, remove
 
 - **Create:** confirm the proposed ID has zero repository matches, then add one annotation.
-- **Update (`/lore update <id> <paths>`):** require the explicit exact ID and exactly one match, then replace its fields and
-  explanation in place. Do not retain superseded prose beside it.
-- **Move:** add the updated annotation at the new authoritative code location and remove the old
-  annotation in the same change. Keep the ID unchanged.
-- **Remove (`/lore remove <id>`):** require the explicit exact ID; when the knowledge is no longer true, require exactly one match
-  and delete the complete annotation. Do not leave an obsolete history comment.
-- **Duplicate:** if an ID has multiple matches, stop normal capture/update for it, report every
-  `file:line`, and reconcile to one current annotation before continuing.
-- **Legacy annotation without an ID:** assign an ID on update only when its identity is
-  unambiguous. If multiple annotations might represent the same knowledge, ask rather than guess.
+- **Update:** `/lore update <id> <paths>` requires one exact match. Replace it; keep no superseded prose.
+- **Move:** add at the new authoritative location and remove the old annotation in the same change. Keep the ID.
+- **Remove:** `/lore remove <id>` requires one exact match. Delete the complete annotation.
+- **Duplicate:** report every `file:line` and reconcile to one annotation before continuing.
+- **Legacy:** assign an ID only when identity is unambiguous; otherwise ask.
 
 ---
 
@@ -97,8 +89,7 @@ Scan the codebase for decisions that should have lore but don't:
 Find all existing `@lore` comments across the codebase. Produce a table with file, line, kind,
 tags, and summary. Group by tags for a knowledge map of the codebase.
 
-First check repository-global `@lore-id` uniqueness. Duplicate IDs are errors. The index describes
-only current active state, never reconstructed historical versions.
+Check repository-global `@lore-id` uniqueness. Index only current annotations.
 
 ---
 
@@ -113,8 +104,7 @@ only current active state, never reconstructed historical versions.
 
 ## Done when
 
-- **Capture/update/remove:** the affected repository-global ID has exactly one current annotation
-  (create/update/move) or zero annotations (remove); superseded source prose is gone.
+- **Capture/update/remove:** the ID has one current annotation, or none after removal.
 - **Scan:** all findings reported with file:line and suggested kind; user-approved annotations
   added.
 - **Index:** a complete table of all `@lore` comments in the codebase, grouped by tags.
