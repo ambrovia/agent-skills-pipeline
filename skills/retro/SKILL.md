@@ -47,7 +47,7 @@ Collect insights about `<target>` from every available source:
    to happen vs. what did.
 2. **VCS history** — use {{vcs}} / `git log` for commits, reverts, fixups. How many
    commits? Any rework? Did CI fail and force a redo?
-3. **Inline annotations** — search the changed files for current, repository-unique `@lore-id` annotations and for
+3. **Inline annotations** — search the changed files for `@lore` annotations and for
    `TODO`/`FIXME`/`HACK` markers added during implementation. Lore captured during the
    work package is evidence of decisions and workarounds worth recording.
 4. **Verification** — did `{{verify}}` reveal anything painful? Tests that were hard to
