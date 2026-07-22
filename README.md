@@ -21,8 +21,6 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 - **Gates are mechanical.** Your `verify` command must pass and the review verdict must be `DONE` before ship.
 - Phases that don't apply are skipped — a backend work package skips the design phases automatically.
 
-Architecture can split implementation into independently verifiable leaves. They run concurrently or sequentially in isolated worktrees, then one builder assembles and verifies the result and one reviewer checks it.
-
 ## What's in here
 
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).

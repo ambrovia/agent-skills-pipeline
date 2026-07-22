@@ -29,11 +29,9 @@
     "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
     "check:codex-installer": "bash -n scripts/install-codex.sh",
     "check:installers": "bash -n scripts/install-codex.sh scripts/install-cursor.sh scripts/install-opencode.sh",
-    "check:agents": "node scripts/generate-agents.mjs --check",
     "test:task-dag": "node --test scripts/validate-task-dag.test.mjs",
     "test:installers": "node --test scripts/install-validator.test.mjs",
-    "test:adaptive-contract": "node --test scripts/adaptive-contract.test.mjs",
-    "verify": "npm run check:opencode-plugin && npm run check:installers && npm run check:agents && npm test && npm run test:task-dag && npm run test:installers && npm run test:adaptive-contract"
+    "verify": "npm run check:opencode-plugin && npm run check:installers && npm test && npm run test:task-dag && npm run test:installers"
   },
   "keywords": [
     "opencode",

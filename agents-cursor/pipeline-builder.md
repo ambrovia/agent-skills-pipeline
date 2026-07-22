@@ -20,8 +20,6 @@ The pipeline-planner → pipeline-builder handoff is plan-and-execute. The momen
 
 A typo in a file path or a natural naming convention — resolve those in-flight. A structural disagreement with the plan — stop and raise it.
 
-For a technical-task leaf, start from its context pointers and dependency receipts, write only to `owns`, preserve red/green commits, and return its receipt. The integration builder assembles and verifies the WP.
-
 ## How you work
 
 1. **Read before writing.** Understand existing code patterns before adding new code. Check for similar implementations you can follow under {{paths.source}}. When you need multiple files, call the Reads in one parallel batch.

@@ -76,13 +76,14 @@ If the work package has a UI surface and `/design` produced an approved spec, re
 
 Produce:
 1. **Acceptance criteria** — each with a specific verification method (see the criterion→verification table below).
-2. **Technical task DAG** — the complete implementation order, ownership, dependencies, scoped context, and verification contract in the compact format below. It replaces both an ordered task list and `sharedFiles`.
+2. **Technical task DAG** — the complete implementation order, ownership, dependencies, scoped context, and verification contract in the compact format below. It replaces the ordered task list.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
 5. **Route checklist** (if applicable) — when the spec enumerates a route list (e.g., "guard mounts on /sessions, /tasks, /admin"), the plan MUST include a `route-checklist:` block listing every route + every file the guard/middleware must cover. Step `/architecture-review` then greps the implementation against that checklist before signing off. Lesson: a plan that enumerated all routes but whose implementation applied the guard to only one route shipped a hole — the checklist makes the gap visible at review.
 6. **Security & abuse cases** — required block. Default checklist: rate-limit on every state-changing endpoint, input-trust boundary for any agent-authored field, secret-handling for any new credential surface, path-traversal for any path input, SSRF for any outbound URL. Plan is not green until each is either marked applicable+addressed or explicitly N/A with reason.
 7. **Protected tests** — `protectedTests: string[]` listing test files (under `{{paths.tests}}`) whose assertions must not change. The definition-of-done audit checks the protected set with `{{vcs}}`-tracked diffs (e.g. `git diff --name-only`).
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
+9. **Shared files** — `sharedFiles: string[]` listing infrastructure files this work package modifies that other concurrent work packages may also touch (schema definitions, shared types, the router, app entrypoint, seed files). Used by the pipeline to detect overlap and schedule merge order when work packages run in parallel.
 ### Technical task DAG contract
 
 Default to **one leaf**. Split at independently verifiable units or real dependency boundaries, usually into 2–6 leaves. Broad, unrelated reading is a sign to split further, but only into coherent units with smaller context.
@@ -152,5 +153,5 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 - **Implementability holds:** contracts, data flow, states, structure, and tech stack are specified; load-bearing files named where already known. No decision about *what must change* is deferred — concrete path discovery is the builder's job.
 - Feasibility probes ran (or were explicitly skipped with file:line precedent), including any live-state probes; `feasibility.md` exists under `.pipeline/work/<id>/` (with evidence in `probes/` when used).
-- `architecture.md` has: Required reading, Plan reconciliation (named symbols + blast-radius surfaces/obligations — not a file inventory), ACs with verification methods, the validated technical task DAG, contracts, risks, feasibility reference, and required blocks (route checklist where applicable, security & abuse, protected tests, migrations).
+- `architecture.md` has: Required reading, Plan reconciliation (named symbols + blast-radius surfaces/obligations — not a file inventory), ACs with verification methods, the validated technical task DAG, contracts, risks, feasibility reference, and required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
 - `architecture.md` is the durable producer→consumer handoff; downstream personas must not depend on a warm planner session.
