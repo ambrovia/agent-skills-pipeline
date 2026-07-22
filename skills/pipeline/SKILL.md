@@ -169,7 +169,7 @@ ephemeral.
 Keep the outer phase loop fixed. Adapt inside concept and build:
 
 - **Concept:** fan out independent variants, discovery, or probes; the planner alone synthesizes.
-- **Build:** run ready DAG leaves concurrently only when `parallel` and `independence` still hold. Otherwise run sequentially.
+- **Build:** run ready task leaves concurrently only when their parallel rationale still holds. Otherwise run sequentially.
 - **Review:** one reviewer checks the assembled WP once.
 
 #### Leaf context and receipt
@@ -215,7 +215,7 @@ Without concurrency, use the same worktrees sequentially. If worktrees are unava
 
 Raise a BLOCKER when reality contradicts the plan or a contract cannot be met. Include the leaf, evidence, attempts, and affected surfaces.
 
-Pause the leaf and its transitive dependants. Amend and re-critique the DAG. Invalidate changed leaves, consumers of amended surfaces, and their dependants.
+Pause the leaf and its transitive dependants. Amend and re-critique the task tree. Invalidate changed leaves, consumers of amended surfaces, and their dependants.
 
 Rebuild the branch; do not delete receipts while leaving their code integrated:
 

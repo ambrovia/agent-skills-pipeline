@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: "Produce the technical plan for a work package — feasibility probes, types, schemas, APIs, file paths, and a technical task DAG. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements, alongside /design when the work package has UI."
+description: "Produce the technical plan for a work package — feasibility probes, types, schemas, APIs, file paths, and a technical task tree. Interrogate the spec, reconcile it against the codebase, then draft. Run AFTER founder-approved requirements, alongside /design when the work package has UI."
 phase: 4
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -68,7 +68,7 @@ For every named symbol the spec references — table, route, component, file, co
 
 Produce a `Plan reconciliation:` block in the plan listing every spec assumption that disagreed with reality, every newly discovered blast-radius *surface/obligation*, and how the plan handles each. If the spec assumes a table, route, or column that doesn't exist, the plan must include the migration / scaffolding step.
 
-## Phase 3 — Acceptance criteria + technical task DAG
+## Phase 3 — Acceptance criteria + technical task tree
 
 Read the `## Work package` + `## Acceptance criteria` sections of `.pipeline/work/<id>/plan.md`. Read existing code in the affected areas of `{{paths.source}}` and the relevant doc sections identified in doc discovery above.
 
@@ -76,7 +76,7 @@ If the work package has a UI surface and `/design` produced an approved spec, re
 
 Produce:
 1. **Acceptance criteria** — each with a specific verification method (see the criterion→verification table below).
-2. **Technical task DAG** — the complete implementation order, ownership, dependencies, scoped context, and verification contract in the compact format below. It replaces the ordered task list.
+2. **Technical task tree** — implementation order, ownership, dependencies, starting context, and verification in the compact format below. It replaces the ordered task list.
 3. **Type signatures / schemas / endpoints** — the contracts the implementation must match.
 4. **Risks or ambiguities.**
 5. **Route checklist** (if applicable) — when the spec enumerates a route list (e.g., "guard mounts on /sessions, /tasks, /admin"), the plan MUST include a `route-checklist:` block listing every route + every file the guard/middleware must cover. Step `/architecture-review` then greps the implementation against that checklist before signing off. Lesson: a plan that enumerated all routes but whose implementation applied the guard to only one route shipped a hole — the checklist makes the gap visible at review.
@@ -84,47 +84,31 @@ Produce:
 7. **Protected tests** — `protectedTests: string[]` listing test files (under `{{paths.tests}}`) whose assertions must not change. The definition-of-done audit checks the protected set with `{{vcs}}`-tracked diffs (e.g. `git diff --name-only`).
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
 9. **Shared files** — `sharedFiles: string[]` listing infrastructure files this work package modifies that other concurrent work packages may also touch (schema definitions, shared types, the router, app entrypoint, seed files). Used by the pipeline to detect overlap and schedule merge order when work packages run in parallel.
-### Technical task DAG contract
+### Technical task tree
 
 Default to **one leaf**. Split at independently verifiable units or real dependency boundaries, usually into 2–6 leaves. Broad, unrelated reading is a sign to split further, but only into coherent units with smaller context.
 
-Write exactly one fenced JSON object in `architecture.md`:
+Use this Markdown shape for each leaf:
 
-```json
-{
-  "technicalTaskDag": {
-    "version": 1,
-    "leaves": [
-      {
-        "id": "build-change",
-        "title": "Build the change",
-        "kind": "implementation",
-        "dependsOn": [],
-        "owns": ["contract:Example", "file:src/example.ts"],
-        "consumes": [],
-        "acceptanceCriteria": ["AC-1"],
-        "context": {
-          "files": ["src/example.ts"],
-          "sections": ["architecture.md#Contracts"]
-        },
-        "verify": "the exact focused command that proves this leaf",
-        "parallel": false,
-        "independence": ""
-      }
-    ]
-  }
-}
+```markdown
+#### `build-change` — Build the change
+- **Kind:** implementation
+- **Depends on:** none
+- **Owns:** `contract:Example`, `file:src/example.ts`
+- **Consumes:** none
+- **ACs:** AC-1
+- **Start here:** `src/example.ts`, `architecture.md#Contracts`
+- **Verify:** `the focused command that proves this leaf`
+- **Parallel:** no
 ```
 
 - Use `mechanical` only for a fully specified repetitive change; otherwise use `implementation`.
-- Put every changed file and public surface in one leaf's namespaced `owns`: `file:`, `path:`, `contract:`, `schema:`, or `route:`. End directory ownership with `/`.
-- Put externally owned contracts in `consumes`; depend on their owner when that leaf changes them.
-- Keep `context` to repository-relative file and plan-section pointers. Make it a useful starting set, not a hard reading boundary.
-- Use `parallel: true` only when `independence` states why ready leaves share no mutable state or unsettled contract.
+- Put every changed file and public surface in one leaf's `Owns`: `file:`, `path:`, `contract:`, `schema:`, or `route:`. End directory ownership with `/`.
+- Put externally owned contracts in `Consumes`; depend on their owner when that leaf changes them.
+- Keep `Start here` to repository-relative file and plan-section pointers. Make it useful, not a hard reading boundary.
+- For a parallel leaf, replace `no` with a short reason why it shares no mutable state or unsettled contract.
 - Map every AC to a leaf and every leaf to an AC or required integration/migration.
-- Add a final non-parallel integration leaf when behavior or wiring crosses leaves. Keep all implementation decisions in the DAG.
-
-Run `node <architecture-skill-dir>/validate-task-dag.mjs .pipeline/work/<id>/architecture.md`. Fix all structural errors; decomposition quality remains a planning and critique responsibility.
+- Add a final non-parallel integration leaf when behavior or wiring crosses leaves. Keep all implementation decisions in the tree.
 
 **Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough — say exactly what the test does and what it asserts. Map each criterion type to a concrete verification:
 
@@ -153,5 +137,5 @@ Skip when the decision is forced (existing pattern, single sane shape, low blast
 
 - **Implementability holds:** contracts, data flow, states, structure, and tech stack are specified; load-bearing files named where already known. No decision about *what must change* is deferred — concrete path discovery is the builder's job.
 - Feasibility probes ran (or were explicitly skipped with file:line precedent), including any live-state probes; `feasibility.md` exists under `.pipeline/work/<id>/` (with evidence in `probes/` when used).
-- `architecture.md` has: Required reading, Plan reconciliation (named symbols + blast-radius surfaces/obligations — not a file inventory), ACs with verification methods, the validated technical task DAG, contracts, risks, feasibility reference, and required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
+- `architecture.md` has: Required reading, Plan reconciliation (named symbols + blast-radius surfaces/obligations — not a file inventory), ACs with verification methods, the technical task tree, contracts, risks, feasibility reference, and required blocks (route checklist where applicable, security & abuse, protected tests, migrations, shared files).
 - `architecture.md` is the durable producer→consumer handoff; downstream personas must not depend on a warm planner session.

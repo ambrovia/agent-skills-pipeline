@@ -29,9 +29,7 @@
     "check:opencode-plugin": "node --check .opencode/plugins/pipeline.js",
     "check:codex-installer": "bash -n scripts/install-codex.sh",
     "check:installers": "bash -n scripts/install-codex.sh scripts/install-cursor.sh scripts/install-opencode.sh",
-    "test:task-dag": "node --test scripts/validate-task-dag.test.mjs",
-    "test:installers": "node --test scripts/install-validator.test.mjs",
-    "verify": "npm run check:opencode-plugin && npm run check:installers && npm test && npm run test:task-dag && npm run test:installers"
+    "verify": "npm run check:opencode-plugin && npm run check:installers && npm test"
   },
   "keywords": [
     "opencode",

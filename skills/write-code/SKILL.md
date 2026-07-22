@@ -44,7 +44,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    concrete file path while implementing — grep callers, follow imports, cover the
    blast-radius surfaces named. Its example paths are not the complete inventory.
 
-   For a DAG leaf, start from its context pointers and dependency receipts. Read further only for a concrete dependency or precedent. Write only to `owns`; otherwise raise a BLOCKER. Return the receipt, with up to three useful carry-forward facts.
+   For a task leaf, start from its context pointers and dependency receipts. Read further only for a concrete dependency or precedent. Write only to `Owns`; otherwise raise a BLOCKER. Return the receipt, with up to three useful carry-forward facts.
 
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
