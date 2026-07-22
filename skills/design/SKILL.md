@@ -49,12 +49,13 @@ For the design dimensions scored in Phase 3 — visual hierarchy, spacing/densit
 
 ## Phase 0 — Classify: routine vs novel
 
-Before interrogation, classify the work package along two axes:
+Before interrogation, classify the work package along these axes (infer from the work package and the design system — no config flag):
 
 1. **Existing component reference** — does the spec name an existing component family (e.g. "extend `<RowComponent>`", "another tab in `<DrawerComponent>`")?
 2. **Pattern match** — does `{{designSystem.path}}` contain a similar embodied pattern (same primitive, same shape)?
+3. **Maturity + breadth** — mature app (many screens, settled product language) + narrow change → prefer `routine`. Early product, or a broad new surface → allow `novel`.
 
-Both yes → `routine`. Both no → `novel`. Mixed → `routine` with low-confidence flag (see below).
+Both (1) and (2) yes → `routine`. Both no → `novel`, unless axis 3 still says fit-the-existing-language → `routine`. Mixed → `routine` with low-confidence flag (see below).
 
 | Class | Variants in Phase 2 | Phase 3 critique |
 |---|---|---|
@@ -62,9 +63,9 @@ Both yes → `routine`. Both no → `novel`. Mixed → `routine` with low-confid
 | `routine` | 1, with a "did we consider X / Y / Z?" check on the rejected directions | only on `approved.md` |
 | `routine` (low-confidence) | 2, A vs. B | per-variant + on `approved.md` |
 
-**Low-confidence trigger.** If only one of the two axes matched (e.g. spec references an existing component but the design system has nothing analogous, or vice versa), or the in-session critique on the single variant flags Anti-slop / Hierarchy / States below 5, fall back to 2 variants. Better to spend one extra variant than to ship unexplored UI.
+**Low-confidence trigger.** If only one of axes 1–2 matched (e.g. spec references an existing component but the design system has nothing analogous, or vice versa), or the in-session critique on the single variant flags Anti-slop / Hierarchy / States below 5, fall back to 2 variants. Better to spend one extra variant than to ship unexplored UI.
 
-**Hard rule for new design-system primitives.** Any new load-bearing primitive — a named shape that other components compose from — is **always `novel`** regardless of axis match. The shape itself is what's being decided.
+**Hard rule for new base design-system primitives.** A new **base** element (a foundation primitive others compose from) is **always `novel`** regardless of axis match. The shape itself is what's being decided. Application composites and feature screens are not forced to `novel`.
 
 Output one machine-greppable line at the top of `brief.md`:
 
@@ -96,7 +97,7 @@ For `routine`: produce **one** variant honoring the named existing component / p
 
 For `routine-low-conf`: produce **two** variants — A "stay close to existing pattern" and B "challenge the existing pattern".
 
-For `novel` (and all new load-bearing primitives): produce **three radically different** variants. Anti-convergence is a hard rule: variants that all feel like minor tweaks of one idea = fail.
+For `novel` (and new base design-system primitives): produce **three radically different** variants. Anti-convergence is a hard rule: variants that all feel like minor tweaks of one idea = fail.
 
 Each variant uses the work-package brief + design-system pointers + a different **constraint-and-thesis pairing** so the spread is intentional, not accidental:
 

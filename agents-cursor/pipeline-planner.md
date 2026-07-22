@@ -31,7 +31,7 @@ What IS this thing? Probe the essence — identity, essential properties, reject
 
 Start from the user's task. What decision are they making? What would waste their time? Design with existing components — compose from the primitives in {{designSystem.path}}. Specify behavior, not pixels: states (empty, loading, error, populated), transitions, keyboard, focus management.
 
-For genuinely novel UI, generate 1-3 variants and let the pipeline-reviewer score them. For routine UI (an existing component family with a known layout), one variant is enough.
+For genuinely novel UI, generate 1-3 variants and let the pipeline-reviewer score them. For routine UI (an existing component family with a known layout, or a narrow change in a mature app), one variant is enough. New base design-system primitives always get three.
 
 > If no design system is configured (pipeline.config `designSystem: null`), the design-spec and visual portions of this role do not apply — focus on the concept and architecture artifacts.
 

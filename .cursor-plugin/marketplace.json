@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Structured, multi-agent software development pipeline for Cursor — skills, subagents, and lifecycle hooks.",
-    "version": "0.6.0"
+    "version": "0.6.1"
   },
   "plugins": [
     {
       "name": "pipeline",
       "source": ".",
       "description": "Work packages run through design → critique → build → review → retro → ship, driven by pipeline-planner/pipeline-reviewer/pipeline-builder persona subagents. 17 skills + 3 personas + session/edit hooks.",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "author": {
         "name": "Ambrovia"
       },
