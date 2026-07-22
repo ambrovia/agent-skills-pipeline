@@ -89,9 +89,10 @@ Run the project's verify command:
 {{verify}}
 ```
 
-**Join the result — never background it and end your turn.** Managed commands must be read-only;
-subagent writes require an isolated worktree. Work outside frozen inputs, join once, and read the
-exit code/output. Never detach or model-poll. An interrupted verify is not green.
+**Await the result — never background it and end your turn.** Use your host's
+monitor / await / block-until-complete mechanism and stay until you have the
+exit code and output; an interrupted verify (failed status, zero tests run, lost
+shell) is not a green gate.
 
 This is non-negotiable. Do not ship with failures. Do not bypass commit hooks
 (no `--no-verify`). Do not rationalize "pre-existing failures" — if it's red, fix
@@ -124,16 +125,16 @@ Main is protected — commits only land via pull request.
 
 ### 7. Wait for CI green (MANDATORY — do not skip)
 
-Use the VCS check watch or a managed wait and join once; otherwise wait in the foreground. Do not
-model-poll. **Ship is not complete until CI is green.**
+Use the VCS's native check watch instead of repeated agent-driven status checks. **Ship is not
+complete until CI is green.**
 
 **If CI is red:**
 1. Pull the failure log for the failing check.
-2. Apply `/pipeline`'s failure classification. Common causes: a check that
+2. Read the error and identify the cause. Common causes: a check that
    passes locally but not in CI (environment difference), or code committed after
    verify ran (re-run verify on the final tree).
-3. Fix with a different strategy, then re-run from step 3 (merge main, verify, push).
-4. Apply the three-attempt cap. At the cap, mark the work package `blocked` with reason
+3. State the evidence and change strategy, then re-run from step 3 (merge main, verify, push).
+4. Max 3 push attempts. After 3, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 
 **Ship is only complete when the PR checks return green.** Do not declare success
@@ -147,7 +148,7 @@ human decision — leave the PR open and re-runnable for the maintainer.
 ## Rules
 
 - **Never ship failing verify** — fix first.
-- **Never background `{{verify}}` and end the turn** — a managed start must have a mandatory join.
+- **Never background `{{verify}}` and end the turn** — await it to completion.
 - **Never skip the merge-main step** — stale branches are a common CI failure cause.
 - **Never declare ship complete before CI is green** — local green is not enough.
 - **Never `git add -A`** — stage specific files.

@@ -81,6 +81,10 @@ cat > "$HOOKS_FILE" <<'EOF'
       {
         "matcher": "Write|Edit|MultiEdit",
         "command": "bash .cursor/hooks/edit-streak.sh cursor"
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "command": "node .cursor/hooks/thrash-detector.mjs cursor"
       }
     ]
   }

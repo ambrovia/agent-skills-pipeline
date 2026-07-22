@@ -14,6 +14,12 @@
         "type": "command",
         "bash": "bash hooks/edit-streak.sh copilot",
         "command": "bash hooks/edit-streak.sh copilot"
+      },
+      {
+        "matcher": "edit|write|patch|replace|create",
+        "type": "command",
+        "bash": "node hooks/thrash-detector.mjs copilot",
+        "command": "node hooks/thrash-detector.mjs copilot"
       }
     ]
   }

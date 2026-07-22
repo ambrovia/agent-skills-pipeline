@@ -11,7 +11,8 @@
       {
         "matcher": "write_file|replace|edit",
         "hooks": [
-          { "type": "command", "command": "bash hooks/edit-streak.sh gemini" }
+          { "type": "command", "command": "bash hooks/edit-streak.sh gemini" },
+          { "type": "command", "command": "node hooks/thrash-detector.mjs gemini" }
         ]
       }
     ]

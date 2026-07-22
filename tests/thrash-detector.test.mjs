@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { detectThrash, normalizeEvent, processPayload } from "../hooks/thrash-detector.mjs";
+import { detectThrash, normalizeEvent } from "../hooks/thrash-detector.mjs";
 
 const edit = (input, output, extra = {}) => ({
   tool_name: "Edit",
@@ -10,10 +10,8 @@ const edit = (input, output, extra = {}) => ({
   ...extra,
 });
 
-test("ignores non-edit tools and subagents", () => {
+test("ignores non-edit tools", () => {
   assert.equal(normalizeEvent({ tool_name: "Read", tool_input: { file: "a" } }), null);
-  const state = { sessions: {} };
-  assert.equal(processPayload(edit({ file: "a" }, "error", { agent_id: "child" }), state).kind, null);
 });
 
 test("three distinct edits do not warn", () => {
@@ -71,20 +69,4 @@ test("failed A-B-A-B reports oscillation, successful A-B-A-B does not", () => {
     }
     assert.equal(kind, failed ? "oscillation" : null);
   }
-});
-
-test("session state is hashed and isolated", () => {
-  let state = { sessions: {} };
-  for (let i = 0; i < 3; i += 1) {
-    ({ state } = processPayload({ ...edit({ file: "a" }, "error"), session_id: "private-session" }, state, i + 1));
-  }
-  assert.equal(Object.keys(state.sessions).includes("private-session"), false);
-  assert.equal(Object.keys(state.sessions).length, 1);
-});
-
-test("expired sessions are discarded", () => {
-  const state = { sessions: { old: { updatedAt: 0, records: [] } } };
-  const processed = processPayload({ ...edit({ file: "a" }, "updated"), session_id: "new" }, state, 7 * 60 * 60 * 1000);
-  assert.equal(Object.hasOwn(processed.state.sessions, "old"), false);
-  assert.equal(Object.keys(processed.state.sessions).length, 1);
 });

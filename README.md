@@ -27,7 +27,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 - **[`agents/`](agents/)** — Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents.
 - **[`agents-cursor/`](agents-cursor/)** — Cursor-format subagents (`model: inherit`, no Claude-specific `tools` field), registered via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json).
 - **[`.cursor-plugin/`](.cursor-plugin/)** — Cursor plugin manifest + Team Marketplace config for GitHub import.
-- **[`hooks/`](hooks/)** — session-start guidance and a post-edit thrash detector that warns on repeated actions without progress. Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent wrappers because Codex 0.142.5 rejects output from these lifecycle hooks. Cursor hooks use `${CURSOR_PLUGIN_ROOT}`.
+- **[`hooks/`](hooks/)** — session-start guidance, the existing edit-streak delegation reminder, and a separate guard for repeated edits without progress. Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent wrappers because Codex 0.142.5 rejects output from these lifecycle hooks. Cursor hooks use `${CURSOR_PLUGIN_ROOT}`.
 - **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
 ## Install
@@ -102,7 +102,7 @@ These tools also read `SKILL.md` from their own directory. You can still copy `s
 
 ### opencode — plugin
 
-opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes the thrash nudge as a proper opencode plugin through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js).
+opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes both post-edit nudges through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js).
 
 **This package is not published to npm** — install it from a clone using the one-command bootstrap below (or copy `.opencode/plugins/pipeline.js` into your own `.opencode/plugins/`). [`package.json`](package.json) exports that module, so *if you fork and publish it yourself*, you could then list your package in `opencode.json` (`"plugin": ["<your-package>"]`) — but the published-npm path is not provided here.
 
@@ -122,10 +122,10 @@ It installs:
 |---|---|---|
 | Skills | `.opencode/skills/` | opencode reads project-level skills from its config directory |
 | Agents | `.opencode/agents/` | opencode-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` — available as `@pipeline-planner`, etc. |
-| Thrash detector | `.opencode/plugins/pipeline.js` | warns when equivalent edit/failure patterns repeat without progress, via `tool.execute.after` |
+| Post-edit guards | `.opencode/plugins/pipeline.js` | preserves the edit-streak reminder and warns on repeated edits without progress |
 | Session-start guidance | `AGENTS.md` (managed block) | opencode's rules file — the equivalent of the session-start hook |
 
-The agents inherit your session model by default; pin one with `model: <provider>/<id>` in the agent files. The thrash nudge is best-effort: opencode doesn't expose the orchestrator/subagent split at the tool layer, so (unlike Claude) it can't skip a subagent's own edits.
+The agents inherit your session model by default; pin one with `model: <provider>/<id>` in the agent files. Post-edit nudges are best-effort because opencode cannot distinguish orchestrator edits from subagent edits.
 
 ## Configure
 

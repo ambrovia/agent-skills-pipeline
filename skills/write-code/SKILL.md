@@ -48,9 +48,9 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
 
-   For a long mechanical command, use **start → overlap → join** only with frozen inputs. Managed
-   commands are read-only; subagent writes require an isolated worktree. Work outside its input tree,
-   never detach or model-poll, and join before consuming the result.
+   For long mechanical work, prefer one repository script that owns its subprocesses, timeouts,
+   retries, logs, and final exit status. Invoke it once; do not reproduce its inner loop with agent
+   tool calls.
 
 3. **Render UI states (if a design system is configured).** For UI components,
    create the component's story/example fixture rendering its key states, per the
@@ -59,15 +59,15 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 4. **Verify before you ship.** Once all targeted tests are green, run the
    project's verify command, `{{verify}}`, to confirm the full gate passes
-   (types, lint, tests). **Join the result — never start it and end your turn
-   without the result**; use your host's managed wait mechanism and obtain the exit code,
-   since an interrupted run is not a green
+   (types, lint, tests). **Await the result — never background it and end your
+   turn**; use your host's monitor / await / block-until-complete mechanism and
+   stay until you have the exit code, since an interrupted run is not a green
    gate. Verify must pass before pushing — that's the pipeline-builder's
    responsibility, not the pipeline-reviewer's. (A fast typecheck mid-flight is
    fine if the project defines one, but it does not replace the full gate.)
 
-   If verify fails, apply `/pipeline`'s failure classification and three-attempt cap. Raise a
-   `plan-conflict` as the existing `BLOCKER`; do not amend the plan.
+   If verify fails, state the evidence and change strategy before retrying. Raise a plan conflict
+   as the existing `BLOCKER`.
 
 5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
    break because of your changes, you own the fix — see Regression ownership below.

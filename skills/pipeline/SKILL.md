@@ -164,21 +164,10 @@ ephemeral.
 
 ### Loop rules
 
-#### Failure-aware retry contract
-
-Classify each failed cycle in the handoff/chat context before retrying:
-
-- **Cause:** `transient` (provider/process interruption), `environment` (dependency, credential,
-  service, or toolchain), `implementation` (code is wrong but the plan is sound), `plan-conflict`
-  (a plan assumption is false), or `semantic-tool-failure` (the tool completed but its result is
-  unusable).
-- **Recurrence:** `new`, `exact-repeat` (same scoped failure and strategy), or `oscillation`
-  (the run is alternating between already-failed states).
-
-A retry is one diagnose/change/verify cycle, not one tool call. State the evidence and next strategy.
-Change strategy after an exact repeat or oscillation. Allow one safe environment repair and one
-same-operation retry for a new transient failure. Raise plan conflicts as the existing `BLOCKER`.
-Cap every scoped failure at **3 attempts**.
+Before retrying, state what failed, the evidence, and what will change. Do not repeat a failed
+strategy; an obvious transient interruption may be repeated once. If the plan is wrong, raise the
+existing builder `BLOCKER`. One diagnose/change/verify cycle is one attempt; the existing
+three-attempt caps still apply.
 
 - **Refine critique loop (Phase 2):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises `requirements.md` and the pipeline-reviewer re-critiques. Repeat until the score clears the
@@ -193,20 +182,10 @@ Cap every scoped failure at **3 attempts**.
 - **Critique loop (Phase 5):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
   are reached. If it never clears after the cap: mark `blocked` with reason `concept-or-spec-misalignment`.
-- **Review loop (Phase 8):** if NOT DONE, classify the failure, fix with a different strategy, run `{{verify}}`, and re-review. **Max 3 attempts per scoped failure.**
-- **Builder BLOCKER:** raise the false assumption and evidence; do not redesign in flight. **Max 3 blocked cycles per WP.**
-- **CI red after ship push:** classify, fix locally, and re-ship. **Max 3 attempts per scoped failure.**
-- At the hard cap, mark the WP `blocked` with the relevant reason and move on.
-
-### Long-running mechanical commands — start, overlap, join
-
-Choose one branch; never model-poll a long command:
-
-1. **Managed command:** for read-only work with a recoverable handle and frozen command, cwd, environment, and input tree. Work outside that tree, then join once.
-2. **Managed subagent:** for frozen inputs and reliable completion. Writes require an isolated worktree. Join once.
-3. **Foreground:** when neither managed mechanism exists, wait normally.
-
-Never detach with `nohup`/`&`, poll repeatedly, or mutate running inputs. Join gating work and read its exit status before proceeding.
+- **Review loop (Phase 8):** if NOT DONE, send findings to the pipeline-builder, who fixes and re-runs `{{verify}}`; then re-review. **Max 3 attempts.**
+- **Builder BLOCKER:** if the plan conflicts with repository reality, stop and return the false assumption and evidence to the planner. **Max 3 attempts per WP.**
+- **CI red after ship push:** diagnose, fix locally, and re-ship. **Max 3 attempts.**
+- After **3 attempts**, mark the WP `blocked` with the relevant reason and move on.
 
 ### Ship runs AFTER retro and the final review
 

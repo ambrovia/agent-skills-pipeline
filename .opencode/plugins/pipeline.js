@@ -1,9 +1,10 @@
 /**
  * agent-pipeline — opencode plugin.
  *
- * Ports the post-edit thrash detector. A cautious nudge is appended only when
- * equivalent actions/results repeat without progress. opencode surfaces the
- * nudge to the model on its next turn (verified against the
+ * Ports the "edit-streak" hook: after THRESHOLD code edits the orchestrator is
+ * nudged to delegate to its pipeline-builder/pipeline-planner/pipeline-reviewer team instead of doing the
+ * heavy lifting itself. The nudge is appended to the edit tool's result, which
+ * opencode surfaces to the model on its next turn (verified against the
  * `@opencode-ai/plugin` `tool.execute.after` signature: `output.output` is the
  * mutable result string the model reads).
  *
@@ -13,66 +14,57 @@
  * session; opencode's documented mechanism for that is the AGENTS.md rules file.
  * `scripts/install-opencode.sh` writes that guidance into AGENTS.md.
  *
- * Caveat: opencode does not expose an orchestrator/subagent distinction at the
- * tool layer, so — unlike
+ * Caveat (matches the Cursor/Gemini/Codex/Copilot ports): opencode does not
+ * expose an orchestrator/subagent distinction at the tool layer, so — unlike
  * Claude, which skips edits made inside a subagent — this can't tell whether an
  * edit came from the orchestrator or from the pipeline-builder. The nudge is best-effort
  * and may also fire inside a subagent.
  */
 
+const THRESHOLD = 5;
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
+const NO_PROGRESS = /\b(error|failed|failure|timed? out|exception|rejected|cannot|unable|no changes?|unchanged|not found|no match)\b/i;
 
-async function loadDetector() {
-  try {
-    return await import("./thrash-detector.mjs"); // installed opencode plugin
-  } catch {
-    return import("../../hooks/thrash-detector.mjs"); // repository checkout
-  }
-}
+// sessionID -> count of edits since the last nudge. Module scope persists for
+// the lifetime of the opencode process.
+const streak = new Map();
+const failures = new Map();
 
-export async function createPipelinePlugin(detectorLoader = loadDetector) {
-  let detectorState = { sessions: {} };
-  const pending = new Map();
-  const keyFor = (input) => `${input?.sessionID ?? "default"}:${input?.callID ?? input?.toolCallID ?? "unknown"}`;
-
+export const AgentPipeline = async () => {
   return {
-    "tool.execute.before": async (input, output) => {
-      try {
-        if (!input || !EDIT_TOOLS.test(input.tool || "") || !output?.args) return;
-        pending.set(keyFor(input), output.args);
-        if (pending.size > 100) pending.delete(pending.keys().next().value);
-      } catch {
-        // Argument capture is an optimization and must never break a tool call.
-      }
-    },
     "tool.execute.after": async (input, output) => {
       try {
         if (!input || !EDIT_TOOLS.test(input.tool || "")) return;
-        const key = keyFor(input);
-        const args = pending.get(key);
-        pending.delete(key);
-        // Use the before-hook snapshot so the signature is stable across opencode
-        // versions and cannot reflect later mutation. Without it, disable detection.
-        if (!args) return;
 
-        const detector = await detectorLoader();
-        const processed = detector.processPayload({
-          tool_name: input.tool,
-          tool_input: args,
-          tool_response: output?.output,
-          session_id: input.sessionID || "default",
-        }, detectorState);
-        detectorState = processed.state;
+        const sid = input.sessionID || "default";
+        const n = (streak.get(sid) || 0) + 1;
+        const toolResult = output?.output;
 
-        if (processed.kind && output && typeof output.output === "string") {
-          output.output +=
-            `\n\n---\n[agent-pipeline] ${detector.messageFor(processed.kind)}`;
+        if (n < THRESHOLD) {
+          streak.set(sid, n);
+        } else {
+          streak.set(sid, 0);
+          if (output && typeof output.output === "string") {
+            output.output +=
+              `\n\n---\n[agent-pipeline] You've made ${THRESHOLD} code edits since the last ` +
+              `reminder. You're the orchestrator — delegate to your team instead of doing the ` +
+              `heavy lifting yourself: the pipeline-builder implements & ships, the pipeline-planner plans & ` +
+              `structures, the pipeline-reviewer reviews & critiques. Hand structured work to a subagent.`;
+          }
+        }
+
+        if (typeof toolResult !== "string" || !NO_PROGRESS.test(toolResult)) {
+          failures.delete(sid);
+          return;
+        }
+        const recent = [...(failures.get(sid) || []), `${input.tool}\0${toolResult}`].slice(-3);
+        failures.set(sid, recent);
+        if (recent.length === 3 && recent.every((item) => item === recent[0])) {
+          output.output += "\n\n---\n[agent-pipeline] This edit is repeating without progress. Inspect the failure and change strategy.";
         }
       } catch {
         // A nudge must never break a tool call.
       }
     },
   };
-}
-
-export const AgentPipeline = async () => createPipelinePlugin();
+};
