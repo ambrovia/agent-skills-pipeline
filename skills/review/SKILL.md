@@ -49,6 +49,8 @@ Structured findings per lens (CRITICAL / WARNING / OBSERVATION) with file paths,
 
 Then read **ALL** changed files (the supplied target, or the changed-file list from `{{vcs}}`).
 
+For a decomposed build, read the task tree and receipts, then review the integrated branch once. Check that leaf commits are present, changes respect ownership, contracts compose, invalidated work was rebuilt, and full verification passed. Receipts aid navigation; they are not proof. Raise plan contradictions as a BLOCKER with the affected leaf and surface.
+
 ## Be thorough — be hostile
 
 Read every changed file end-to-end. For each file, verify it against the relevant spec section. Don't skim — open the doc, find the section, compare field-by-field, state-by-state, endpoint-by-endpoint. If a state machine has 8 states in the spec, count the states in the code. Surface-level "looks right" is not review.

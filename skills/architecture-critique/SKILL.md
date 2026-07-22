@@ -75,6 +75,8 @@ Score ≥ 7 ships the plan. 5-6 needs work on 2-3 dimensions. ≤ 4 restarts the
 
 The plan's job is to leave the builder *doing*, not *deciding*. Score whether the architecture is actually defined: are the contracts (types/signatures/schemas), the data flow, the states, the file/repo structure, and the tech stack specified — with concrete files named where they're known? Is any real decision deferred to the builder — a data shape, a contract, a library choice, unresolved intent? Contracts must be concrete, not "similar to the existing one". Smell: tasks phrased as goals ("make auth work") instead of defined changes. Treat unresolved builder-facing **decisions** as CRITICAL — but do not demand that every file be named or that every task carry a test; demand that the architecture is **defined**.
 
+Judge the technical task split. Default to one leaf; require each split to reduce context or expose a dependency. Check that ownership covers all writes, context is a useful starting set, and parallel leaves share no mutable state or unsettled contract. Require an integration leaf for cross-leaf behavior. Mechanical leaves must be fully specified and judgment-free.
+
 ### 3. Layer integrity
 
 - Does any task in the plan reach past its layer? (Respect the project's declared layering and strict dependency direction.)

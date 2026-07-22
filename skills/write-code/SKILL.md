@@ -44,6 +44,8 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
    concrete file path while implementing — grep callers, follow imports, cover the
    blast-radius surfaces named. Its example paths are not the complete inventory.
 
+   For a task leaf, start from its context pointers and dependency receipts. Read further only for a concrete dependency or precedent. Write only to `Owns`; otherwise raise a BLOCKER. Return the receipt, with up to three useful carry-forward facts.
+
 2. **Implement in dependency order.** Work task by task. Write the *minimum* code
    to make the failing tests pass. After each logical unit, run the relevant
    tests (a focused subset is fine here).
@@ -85,6 +87,7 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 8. **Open the change.** With the gate green, push and open a PR (or draft PR) via
    `{{vcs}}` and wait for CI to pass.
+   **Leaf exception:** stop after focused verification and commits. The integration builder owns full verify, PR, and CI.
 
 ## Core rules
 
@@ -114,4 +117,4 @@ own the fix. "Outside scope" is not a valid excuse for tests you broke.
 - `{{verify}}` passes the full gate (types, lint, tests).
 - The rename sweep returns zero stale matches.
 - Docs touched by changed behavior are updated in the same commit.
-- The change is opened for review via `{{vcs}}` and CI is green.
+- The change is open with green CI, or the leaf returned its committed receipt.

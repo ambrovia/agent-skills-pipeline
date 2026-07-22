@@ -34,6 +34,8 @@ acceptance criteria (they live in its `## Acceptance criteria` section) plus its
 choose the concrete test files and discover any call sites the combined-seam
 proofs require — the architecture is not an exhaustive path list.
 
+For a task leaf, test its ACs from its context pointers, within its owned surfaces. The final integration leaf owns cross-leaf tests.
+
 ## When this does NOT apply
 
 - A work package with no behavioral surface (pure docs/config). State that

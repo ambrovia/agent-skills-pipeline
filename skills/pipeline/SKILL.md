@@ -55,6 +55,8 @@ package, co-located. You own exactly `.pipeline/work/<id>/` for **each ID in the
         ├── design/            # /design — brief, variants, comparison, synthesis, approved.md (UI only)
         ├── feasibility.md     # /architecture — feasibility findings + verdicts for the reviewer (only when something was load-bearing/new/unknown)
         ├── architecture.md    # /architecture — the technical plan (builder's executable target)
+        ├── integration.json   # clean integration base + attempt identity for replay/recovery
+        ├── receipts/          # accepted technical-task outcomes, one compact JSON file per leaf
         ├── review.md          # /review — verdict, findings, AC table
         ├── retro.jsonl        # /retro — appended observations + cost signals
         └── progress.json      # run state: status, currentStep, critique scores
@@ -161,6 +163,68 @@ ship — to save context/cache-creation cost. Where it doesn't (no durable sessi
 that start cold with no parent context), re-spawn each phase; the plan artifact makes that correct,
 just not free. Never gate the pipeline on session reuse being available. The retro agent is always
 ephemeral.
+
+### Adaptive inner execution — fixed lifecycle, task-shaped work
+
+Keep the outer phase loop fixed. Adapt inside concept and build:
+
+- **Concept:** fan out independent variants, discovery, or probes; the planner alone synthesizes.
+- **Build:** each leaf is one entry in architecture's technical task tree. Run ready leaves concurrently only when their parallel rationale still holds. Otherwise run sequentially.
+- **Review:** one reviewer checks the assembled WP once.
+
+#### Leaf context and receipt
+
+Prompt each leaf with its objective, ACs, context pointers, surfaces, dependency receipts, and verify command. Context is a starting set; expand it only for a concrete dependency or precedent. Do not paste files, conversations, repository dumps, or transcripts.
+
+Each leaf returns a compact receipt; the integration builder records it durably at `.pipeline/work/<id>/receipts/<leaf-id>.json` after accepting the commit:
+
+```json
+{
+  "taskId": "build-change",
+  "attempt": 1,
+  "baseCommit": "<leaf-start-sha>",
+  "sourceCommits": ["<red-test-sha>", "<implementation-sha>"],
+  "integratedCommits": ["<cherry-picked-red-sha>", "<cherry-picked-implementation-sha>"],
+  "changedFiles": ["src/example.ts"],
+  "changedSurfaces": ["contract:Example"],
+  "carryForward": ["at most three terse facts that prevent repeated discovery"],
+  "verification": {"command": "<focused command>", "result": "pass"},
+  "status": "integrated"
+}
+```
+
+Record outcomes, not reasoning. Allow up to three `carryForward` facts: a dead end, dependency, fixture/command, or contract detail. Downstream leaves read only dependency receipts.
+
+#### Isolated leaf execution and integration
+
+One pipeline-builder owns the integration worktree. Require it clean; commit `{"baseCommit":"<current-head>","attempt":1}` alone to `integration.json`. For each ready wave:
+
+1. Create `pipeline/<id>/leaf/<leaf-id>/attempt-<n>` and its worktree from the recorded integration `HEAD`. Reuse only an exact task/attempt/base match. Never run parallel writers in one worktree.
+2. Bootstrap every new leaf worktree before spawning its builder.
+3. Build within `owns`; commit red tests, then implementation; run focused verification. Leaf builders do not merge, rebase, or edit WP state.
+4. **Preflight before cherry-pick.** Require a clean worktree, no merge commits, and inspect `git diff --name-only <baseCommit>..<leafTip>`. Every changed path must match an exact `file:<repo-relative-path>` or owned `path:`; `.pipeline/` is forbidden. Reject ownership mismatches as BLOCKERs.
+5. In dependency order, the integration builder cherry-picks the preflighted source commits and commits the receipt before starting dependants. Never partially integrate a failed leaf.
+6. Run seam tests after each wave and the final integration leaf in the integration worktree. Then run `{{verify}}`, sync docs, and hand the assembled WP to Phase 8.
+7. Remove successful leaf worktrees only after integration. Keep failed worktrees and attempt branches until ship.
+
+Without guaranteed per-writer worktree isolation, use the same worktrees sequentially. If worktrees are unavailable, run in the clean integration worktree, record the starting SHA, keep a recovery branch, and apply the same preflight. Raise a BLOCKER for ownership or semantic conflicts.
+
+`kind: mechanical` still uses the pipeline-builder and the same quality bar.
+
+#### Plan re-entry and invalidation
+
+Raise a BLOCKER when reality contradicts the plan or a contract cannot be met. Include the leaf, evidence, attempts, and affected surfaces.
+
+Pause the leaf and its transitive dependants. Amend and re-critique the task tree. Invalidate changed leaves, consumers of amended surfaces, and their dependants.
+
+Rebuild the branch; do not delete receipts while leaving their code integrated:
+
+1. From `integration.json.baseCommit`, create `pipeline/<id>/integration/attempt-<n>`, apply the manifest and approved plan amendments, then commit the new attempt marker.
+2. Preflight and replay valid source commits in dependency order; regenerate receipts. Do not replay invalid receipts or their code.
+3. Rebuild invalid leaves on new attempt branches; run combined and full verification.
+4. When green and clean, preserve the old tip as `pipeline/<id>/integration/attempt-<n>-old`, move the integration branch to the verified tip with `git reset --hard <rebuilt-tip>`, then remove the rebuilt worktree.
+
+Reuse valid source commits, but regenerate integrated commits and receipts. Resume after Phase 5 critique. Re-entry does not reset the attempt budget.
 
 ### Loop rules
 

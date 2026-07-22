@@ -90,6 +90,8 @@ Stop when the brief is clear. 3-7 branches typical.
 
 ## Phase 2 — Generate variants in parallel (count from Phase 0)
 
+Produce independent variants concurrently when the host supports it; otherwise run them sequentially. Each producer owns one variant directory and the pipeline-planner alone synthesizes. Fan out only independent, read-only discovery or probes.
+
 For `routine`: produce **one** variant honoring the named existing component / pattern, plus an explicit `rejected.md` block listing the X / Y / Z directions you considered and rejected (one line each). Do NOT regenerate the rejected directions.
 
 For `routine-low-conf`: produce **two** variants — A "stay close to existing pattern" and B "challenge the existing pattern".
