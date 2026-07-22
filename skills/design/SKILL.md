@@ -90,7 +90,7 @@ Stop when the brief is clear. 3-7 branches typical.
 
 ## Phase 2 — Generate variants in parallel (count from Phase 0)
 
-When the host supports concurrent subagents, independent variants may be produced concurrently from the same approved brief. Otherwise produce them sequentially; variant quality and count do not depend on host concurrency. Each producer writes only its own variant directory, and the pipeline-planner alone performs comparison and synthesis. Repository discovery or feasibility probes may similarly fan out when they are read-only and independent; their results return to the planner as evidence, never as competing plan edits.
+Produce independent variants concurrently when the host supports it; otherwise run them sequentially. Each producer owns one variant directory and the pipeline-planner alone synthesizes. Fan out only independent, read-only discovery or probes.
 
 For `routine`: produce **one** variant honoring the named existing component / pattern, plus an explicit `rejected.md` block listing the X / Y / Z directions you considered and rejected (one line each). Do NOT regenerate the rejected directions.
 

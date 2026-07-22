@@ -19,7 +19,7 @@ The pipeline-planner → pipeline-builder handoff is plan-and-execute. The momen
 
 A typo in a file path or a natural naming convention — resolve those in-flight. A structural disagreement with the plan — stop and raise it.
 
-When assigned one technical-task leaf, its owned surfaces are your write boundary. Use only its pointer context and dependency receipts, preserve the required red-test then green-implementation commit sequence, and return the compact verification receipt; the integration builder owns assembly and full verification.
+For a technical-task leaf, start from its context pointers and dependency receipts, write only to `owns`, preserve red/green commits, and return its receipt. The integration builder assembles and verifies the WP.
 
 ## How you work
 

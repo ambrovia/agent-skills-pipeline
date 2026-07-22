@@ -85,7 +85,7 @@ Produce:
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
 ### Technical task DAG contract
 
-Default to **one leaf**. Split only when the work has independently verifiable technical units or a real dependency boundary; ordinary file-level steps stay inside one leaf. Most split plans should contain 2–6 leaves. Treat a leaf that requires broad, unrelated repository reading as a decomposition smell: split it further only when that produces coherent units with smaller relevant-context sets, not merely more tasks.
+Default to **one leaf**. Split at independently verifiable units or real dependency boundaries, usually into 2–6 leaves. Broad, unrelated reading is a sign to split further, but only into coherent units with smaller context.
 
 Write exactly one fenced JSON object in `architecture.md`:
 
@@ -115,15 +115,15 @@ Write exactly one fenced JSON object in `architecture.md`:
 }
 ```
 
-- `kind` is `implementation` or `mechanical`. Use `mechanical` only for a fully specified repetitive transformation requiring no design or architecture judgment.
-- `owns` is non-empty and is the single source for changed files and public surfaces. Every entry is namespaced (`file:src/exact.ts`, `path:src/owned-directory/`, `contract:Example`, `schema:records`, `route:GET /records`). `file:` is exact; `path:` covers descendants and ends in `/`. One surface has one leaf owner, and every file the leaf may write must be covered by `file:` or `path:` ownership.
-- `consumes` names contracts owned elsewhere or held stable by the plan. Add the owning leaf to `dependsOn` when it changes that contract.
-- `context` contains **pointers only**, never copied source, transcripts, or broad directory dumps. File pointers and the path portion of section pointers are repository-relative, contain no `..` segment or control character, and are never absolute/home paths. Include the smallest useful starting set of files and plan sections. These pointers orient the builder; they are not a hard reading boundary when implementation reveals a concrete missing dependency or adjacent precedent.
-- `parallel: true` is an opportunity, not a command. Give a concrete `independence` reason explaining why the leaf does not share mutable state or an unsettled contract with another ready leaf. Structural validation cannot prove that claim; the architecture critique must.
-- Every AC maps to at least one leaf. Each leaf maps to an AC or a forced integration/migration obligation.
-- When behavior or wiring crosses multiple leaves, add a final non-parallel integration leaf that depends on them and owns the combined-seam test/wiring. Do not leave new implementation decisions to the integration builder outside the DAG.
+- Use `mechanical` only for a fully specified repetitive change; otherwise use `implementation`.
+- Put every changed file and public surface in one leaf's namespaced `owns`: `file:`, `path:`, `contract:`, `schema:`, or `route:`. End directory ownership with `/`.
+- Put externally owned contracts in `consumes`; depend on their owner when that leaf changes them.
+- Keep `context` to repository-relative file and plan-section pointers. Make it a useful starting set, not a hard reading boundary.
+- Use `parallel: true` only when `independence` states why ready leaves share no mutable state or unsettled contract.
+- Map every AC to a leaf and every leaf to an AC or required integration/migration.
+- Add a final non-parallel integration leaf when behavior or wiring crosses leaves. Keep all implementation decisions in the DAG.
 
-Resolve `validate-task-dag.mjs` next to this `SKILL.md` and run `node <architecture-skill-dir>/validate-task-dag.mjs .pipeline/work/<id>/architecture.md`. Keeping it inside the skill makes the command available in plugin and copied Cursor/opencode installations. The validator checks shape, safe repository-relative context/ownership paths, references, cycles, and unique non-empty ownership; the planner and reviewer remain responsible for whether the decomposition is sensible.
+Run `node <architecture-skill-dir>/validate-task-dag.mjs .pipeline/work/<id>/architecture.md`. Fix all structural errors; decomposition quality remains a planning and critique responsibility.
 
 **Every acceptance criterion MUST have a concrete verification method.** "Write a test" is not specific enough — say exactly what the test does and what it asserts. Map each criterion type to a concrete verification:
 
