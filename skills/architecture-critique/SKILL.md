@@ -98,8 +98,8 @@ Judge the technical task split. Default to one leaf; require each split to reduc
 - Do the schemas match the spec field-by-field, type-by-type? (If the spec says 6 indexes, the plan lists 6.)
 - Are foreign keys, unique constraints, NOT NULL, default values, and check constraints all specified?
 - For work packages that must run across multiple data backends, does the schema work in each of them? (Watch for backend-specific type mismatches, e.g. JSON column types, auto-increment, integer-width differences.)
-- Are migration names forward-only with rollback plans documented?
-- **Smell:** column without a type. Missing FK on a relation. Migration without a rollback note. Schema diverges from the spec's field list.
+- Are migrations safe for the stated tier and actual deployment shape?
+- **Smell:** column without a type. Missing FK on a relation. Schema diverges from the spec's field list. Demand a formal rollback plan only at `critical`, or when the change has a concrete irreversible risk.
 
 ### 6. Naming
 
@@ -121,21 +121,22 @@ From *A Philosophy of Software Design*: deep modules have small interfaces hidin
 
 ### 8. Failure-mode coverage
 
-- Has every error path been identified?
-- For every external call (data store, HTTP, model, queue), is the timeout / retry / failure behaviour specified?
+- Have the error paths normal users are likely to encounter been identified? Require exhaustive failure analysis only at `critical`.
+- For external calls (data store, HTTP, model, queue), is ordinary user-facing failure behaviour specified where relevant? Do not demand retries, fallback systems, or elaborate resilience without a demonstrated need.
 - For every input boundary (user input, agent-authored field, external API response), is the validation rule specified?
-- Does the plan's "Security & abuse cases" block address rate-limiting, input-trust, secret-handling, path-traversal, and SSRF — each marked applicable+addressed or N/A with reason?
+- Does the plan address security and abuse cases that are plausible for this feature and customer? Do not require a ceremonial checklist of irrelevant threats.
 - Does the plan name the *route checklist* (the route × file matrix) for any guard/middleware enumerated in the spec?
-- **Smell:** happy-path-only ACs. "Returns an error" without specifying status. Missing rate-limit on writes. Missing validation at trust boundary. Missing route in route-checklist.
+- **Smell:** likely user failures have no behavior. "Returns an error" without specifying status. Missing validation at a real trust boundary. Missing route in a required route-checklist. A write endpoint does not automatically require rate limiting.
 
 ### 9. Tier-fit — simplicity vs. over- AND under-engineering
 
 Score the plan's rigor **against the WP's Engineering tier** (`plan.md`: `prototype | mvp | production | critical`), not against an absolute maximum. Both directions are defects:
 
-- **Over the tier** (the classic over-engineering smell): a feature flag, abstract base class, plugin point, or registry no caller demands today; error handling for cases that can't happen; validation already done at the boundary; a back-compat shim for code with no callers; audit trails / retries / defensive abstractions on a `prototype` or `mvp`.
-- **Under the tier**: a `production` / `critical` plan with happy-path-only handling, no observability, thin security, no failure-mode analysis, or no rollback — rigor the tier demands but the plan omits.
+- **Customer test:** `prototype` is for builders/internal demos and may need manual steps or omit key features; `mvp` is for tolerant early users and may omit auxiliary features and uncommon edges; `production` is ordinary software for ordinary users and should work normally; `critical` is for enterprise, regulated, contractual, or genuinely high-consequence customers.
+- **Over the tier** (the default failure mode): anything not demanded by a current acceptance criterion, existing system convention, likely ordinary-user failure, or demonstrated risk. Examples: feature flags, abstract bases, plugin points, registries, speculative extensibility, validation already done at the boundary, back-compat shims with no callers, audit trails, retry systems, elaborate observability, formal rollback machinery, or defensive abstractions. Treat these as over-engineering at `production` too; reserve enterprise controls for `critical`.
+- **Under the tier:** a `prototype` whose core cannot be manually demonstrated; an `mvp` whose core does not mostly work for early users; `production` software that fails in normal use or lacks proportionate tests, ordinary error handling, or baseline security; a `critical` plan missing the specific compliance, audit, recovery, operational, or exhaustive failure controls its customer context demands.
 - Is the design-it-twice section absent from a non-trivial decision, or theatre-present on a forced one?
-- **Smell:** abstraction with one implementation or "future-proof" anything **on a low tier**; missing hardening/observability/security depth **on a high tier**. Three similar tasks compressed into a generic helper before the third repeat. Commented-out scaffolding for "next phase".
+- **Smell:** abstraction with one implementation or "future-proof" anything at any tier without a current requirement; treating `production` as shorthand for enterprise infrastructure; three similar tasks compressed into a generic helper before the third repeat; commented-out scaffolding for "next phase".
 
 ### 10. Verifiability
 

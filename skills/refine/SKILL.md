@@ -38,7 +38,7 @@ If the spec contradicts an existing requirements / concept doc, that is **CRITIC
 
 ## Phase 0 — Sharpen the goal
 
-Settle the goal in your own words, then confirm it with the maintainer. **Calibrate to the WP's Engineering tier** (`plan.md`): an `mvp` goal is deliberately narrower than a `production`/`critical` one. Take the tier as set; don't re-open it here.
+Settle the goal in your own words, then confirm it with the maintainer. **Calibrate to the WP's Engineering tier** (`plan.md`) by customer: a `prototype` may be manually demonstrable and miss key features; an `mvp` gives tolerant early users a mostly working core while omitting auxiliary features; `production` is ordinary software that works normally for ordinary users; `critical` adds enterprise, compliance, or high-consequence requirements. Do not smuggle `critical` controls into `production`. Take the tier as set; don't re-open it here.
 
 - **Value & audience** — what value this delivers, and to whom. The one question always worth asking a reachable maintainer; a misread goal is far cheaper to correct here than after the build.
 - **Success** — what a user or the system can observably do once this ships that they couldn't before, at the tier's rigor.

@@ -134,12 +134,21 @@ Everything project-specific lives in one file. Copy [`pipeline.config.example.ym
 ```yaml
 verify: "go test ./..."   # the single command that must pass before ship
 engineering:
-  tier: mvp               # prototype | mvp | production | critical — the scale all planning/critique calibrates to
+  tier: mvp               # prototype | mvp | production | critical — the customer and rigor all phases target
 designSystem: null        # null → the design phases are skipped
 vcs: github
 ```
 
-The **engineering tier** is load-bearing: every planning and critique phase matches its rigor to it, so a home-use MVP doesn't get audit-grade enterprise architecture (and vice-versa). `/work-planning` re-confirms the tier on every run and STRICT HALTs to ask if it's unclear; downstream phases within a work package trust the tier as set.
+The **engineering tier** is load-bearing and is chosen by customer, not by aspiration:
+
+| Tier | Customer | Expected result |
+|---|---|---|
+| `prototype` | Builders or an internal demo audience | The core flow can be demonstrated, often with manual steps. Key features may still be missing. |
+| `mvp` | Early, tolerant users | The core works most of the time. Auxiliary features, polish, and less-common edge cases may be missing. |
+| `production` | Ordinary public or paying users | Standard ordinary software: it works normally and reliably, with proportionate tests, error handling, and security. It does not imply enterprise controls. |
+| `critical` | Large-company, regulated, contractual, or high-consequence customers | Adds the rigor actually demanded by that context, such as compliance evidence, audit trails, rollback procedures, stronger operational controls, and exhaustive failure handling. |
+
+Do not choose `critical` merely because software is deployed or stores real user data. Feature flags, audit systems, elaborate observability, formal rollback machinery, exhaustive fallbacks, and speculative abstractions require a concrete customer, regulatory, contractual, or blast-radius need. At every tier, build only what the current acceptance criteria and known risks require. `/work-planning` re-confirms the tier on every run; downstream phases trust it as set.
 
 ### Steer skills with project rules
 

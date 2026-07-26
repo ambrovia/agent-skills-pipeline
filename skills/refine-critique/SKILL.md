@@ -43,7 +43,7 @@ Score ≥ 7 unlocks the goal for design and architecture. ≤ 4 sends it back to
 3. **Scope** — the non-goals are real exclusions that bound the work, not absent or filler. Smell: no out-of-scope on a work package that plainly has edges.
 4. **Guide draft** — a real user/dev could follow it; it describes the shipped result, not the mechanism. Smell: a draft that restates the spec instead of telling the reader's story.
 5. **Noun clarity** *(only if the work introduces a noun)* — one unambiguous definition, distinct from adjacent terms, no name collision in `{{paths.docs}}`. Smell: a term that already means something else.
-6. **Tier fit** — the goal, success bar, and scope match the WP's Engineering tier (`plan.md`: `prototype | mvp | production | critical`). Both directions are defects. Smell: an `mvp`/`prototype` goal that implies audit-grade completeness and exhaustive edge coverage, or a `production`/`critical` goal scoped and success-defined like a throwaway spike.
+6. **Tier fit** — the goal, success bar, and scope match the WP's customer: `prototype` = builders/internal demo with manual steps and possibly missing key features; `mvp` = tolerant early users with a mostly working core and possibly missing auxiliary features; `production` = ordinary software that works normally for ordinary users; `critical` = enterprise, regulated, contractual, or genuinely high-consequence customers. Both directions are defects. Smell: audit, rollback, elaborate observability, exhaustive edge coverage, or other enterprise controls in `prototype`, `mvp`, or ordinary `production` without a concrete requirement; or a tier whose core experience does not meet its stated customer.
 
 ## Output format
 
