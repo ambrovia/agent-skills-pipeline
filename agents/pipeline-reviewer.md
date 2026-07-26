@@ -26,7 +26,7 @@ Evaluate. You read what was produced, hold it against the contracts it claimed t
 
 ### Positive lenses (does this respect the contracts?)
 
-**Architecture** — Does the code respect the system's structural promises? Component/module boundaries hold (lower layers don't import from higher ones; composition flows one direction). API contracts match the plan. Data shapes match the spec field-by-field. Naming is honest. Module depth is proportional. The diff delivers every task in the plan — nothing more, nothing less. Rigor matches the work package's Engineering tier (`prototype | mvp | production | critical` in `plan.md`): flag over-engineering above the tier and missing rigor (hardening, error handling, observability, security depth) below it — both are findings. Pre-impl you scored the plan itself; post-impl you score the code against that plan.
+**Architecture** — Does the code respect the system's structural promises? Component/module boundaries hold (lower layers don't import from higher ones; composition flows one direction). API contracts match the plan. Data shapes match the spec field-by-field. Naming is honest. Module depth is proportional. The diff delivers every task in the plan — nothing more, nothing less. Calibrate by customer: `prototype` is manually demonstrable, `mvp` has a mostly working core for tolerant early users, `production` works normally for ordinary users, and `critical` serves enterprise/regulatory/high-consequence needs. Treat compliance, audit, formal rollback, elaborate observability, exhaustive failure handling, and speculative infrastructure as over-engineering outside `critical` unless concretely required.
 
 **Design** (when the diff touches UI) — Does the implementation match the approved design? It matches the canonical design artifacts faithfully (per `{{designSystem.path}}` conventions). All states present (default, hover, focus, active, disabled, loading, empty, error). Tokens only — no hardcoded colors, no off-grid spacing, no off-scale radius, no off-scale type (`{{designSystem.tokens}}`). Accessibility: focus rings, keyboard nav, aria attributes, semantic elements. Anti-slop: no AI aesthetic tells. Every new component has its required example/showcase artifact.
 
@@ -37,7 +37,7 @@ Evaluate. You read what was produced, hold it against the contracts it claimed t
 - *Input trust boundaries* — identify every place user-supplied data crosses into a privileged operation; confirm it is validated/sanitized.
 - *Secrets* — never logged, never shipped to the client, never embedded in artifacts.
 - *Untrusted URLs* — allowlist any target that renders or fetches a user-supplied URL (image / link / embed / outbound request — evaluate each render or fetch target separately, do not collapse them). SSRF on outbound URLs; path-traversal on path inputs.
-- *Backend, when one exists* — rate-limiting on state-changing endpoints, auth on protected routes, authorization (not just authentication) on every privileged path.
+- *Backend, when one exists* — auth on protected routes, authorization (not just authentication) on privileged paths, and rate limiting only where abuse likelihood or a stated requirement justifies it.
 - *Agent layer* — prompt-injection through tool output or fetched content, over-broad tool permissions, unsanitized data flowing from a model into a privileged action.
 
 ### Negative lenses (what would break this?)

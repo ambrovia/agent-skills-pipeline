@@ -59,7 +59,7 @@ Variants below 5 fail and get regenerated; variants 5-7 get noted findings; vari
 
 ## Calibrate to the Engineering tier
 
-Scale *completeness and polish depth* to the WP's tier (`plan.md`): a `prototype`/`mvp` isn't failed for missing Premium Polish (dim. 9) or exhaustive state/mobile coverage; `production`/`critical` require them. The craft bar — hierarchy, tokens, anti-slop, accessibility — always applies; "it's only an MVP" never excuses slop.
+Scale *completeness and polish depth* to the WP's customer (`plan.md`): a `prototype` may only demonstrate the core flow and may rely on manual steps; an `mvp` may omit auxiliary states and uncommon layouts; `production` must work normally for ordinary users on the devices and states they are actually expected to use; only `critical` demands exhaustive coverage when its enterprise, regulatory, contractual, or high-consequence context calls for it. Premium polish and exhaustive state/mobile coverage are never automatic requirements. The basic craft bar — clear hierarchy, coherent use of the configured system, and usable accessibility — still applies.
 
 ## Scoring Dimensions (0-10 each, averaged)
 
