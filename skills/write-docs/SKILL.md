@@ -53,9 +53,9 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 **P1 — First insight in 10 seconds.** The opening 50-80 words must answer "what is this" and "why should I care." No preamble, no history, no "in this document we will." Lead with the answer.
 
-**P2 — Inverted pyramid.** Conclusion first, then supporting detail, then background. The most important information is at the top of every page and every section. A reader who stops at any point has gotten the most valuable content available to them.
+**P2 — Inverted pyramid where the reader needs an answer.** Conclusion first, then supporting detail, then background. Put the most important information at the top of task-oriented pages and sections. Keep narrative setup when it supplies necessary context, tension, or voice.
 
-**P3 — One heading per 150-200 words.** Headings are the primary scan target (Layer-Cake pattern is "by far the most effective scanning pattern" — NNG). Each heading must standalone as an information-scent signal. A reader scanning only headings should understand the page structure.
+**P3 — One heading per 150-200 words as a target, not a quota.** Headings are the primary scan target (Layer-Cake pattern is "by far the most effective scanning pattern" — NNG). Each heading must standalone as an information-scent signal. A reader scanning only headings should understand the page structure. Do not add a heading over a short section merely to meet the target.
 
 **P4 — Maximum 4 concepts per section.** Working memory holds ~4 chunks (Cowan 2001, revising Miller). Each section introduces at most 4 new ideas, then grounds them with an example or summary before proceeding.
 
@@ -63,7 +63,7 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 ### Sentences and Paragraphs
 
-**P6 — Sentences average 14-20 words.** At 14 words, comprehension is 90%. At 43 words, comprehension drops below 10%. No sentence exceeds 35 words.
+**P6 — Sentences average 14-20 words.** At 14 words, comprehension is 90%. At 43 words, comprehension drops below 10%. Treat sentences over 35 words as a prompt to check clarity, not an automatic failure. Preserve a clear longer sentence when its cadence or structure earns the length.
 
 **P7 — Paragraphs under 100 words (3-4 sentences).** Web paragraphs over 150 words are too long for screen reading. Short paragraphs create whitespace that signals approachability. 81% of users look at the 1st paragraph; only 32% look at the 4th (NNG).
 
@@ -71,9 +71,9 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 ### Visual Density
 
-**P9 — Code or visual within first 2 screenfuls.** The first two screenfuls capture 74% of viewing time (NNG). A code example, diagram, or table must appear before this threshold. For product docs without code, use a concrete scenario, comparison table, or structural diagram.
+**P9 — Concrete evidence within first 2 screenfuls.** The first two screenfuls capture 74% of viewing time (NNG). For task-oriented and conceptual docs, place a useful code example, diagram, table, or worked scenario before this threshold. Do not add a decorative visual when prose or code is clearer.
 
-**P10 — Every key concept gets a concrete aid.** Text + visual yields 65% retention at 3 days vs. 10% for text alone (Medina, dual-coding theory). The aid can be: code block, diagram, table, screenshot, or worked example. Never rely on prose alone for a concept the reader must remember.
+**P10 — Ground key concepts in specifics.** Text + visual yields 65% retention at 3 days vs. 10% for text alone (Medina, dual-coding theory). Use code, a diagram, table, screenshot, worked example, or concrete fact when it materially improves understanding. Names, numbers, dates, mechanisms, and examples beat abstract claims.
 
 **P11 — Bullet lists for 3+ parallel items.** Users gravitationally fixate on bulleted lists (NNG). Lists compress scanning time and signal structured information. Use numbered lists only for sequential steps.
 
@@ -83,11 +83,25 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 
 **P13 — Concise above all.** Concise text improved usability by 58% — the single highest-impact writing change measured (NNG). Cut every word that doesn't carry information. If removing a sentence doesn't reduce understanding, remove it.
 
+### Voice & Anti-Slop
+
+Preserve the writer's vocabulary, cadence, bluntness, humor, uncertainty, and level of polish. Make the minimum effective edit. Do not flatten distinctive writing merely to make every paragraph equally tidy.
+
+Cut patterns that simulate insight without adding information:
+
+- **Dramatic setups** — binary contrasts ("not X, but Y"), faux-insight openers ("what most people miss"), colon reveals, rhetorical questions answered by the next sentence, and stacked fragments. State the claim directly.
+- **Unsupported importance** — "pivotal moment," "vital role," "testament to," and trailing `-ing` clauses that claim to explain significance. State the fact and its concrete consequence.
+- **Weasel attribution** — "experts agree," "studies show," and "many argue." Name the source or remove the claim.
+- **Synthetic variety** — synonym cycling, repeated sentence shapes, and formatting added for decoration. Repeat the clear term; vary rhythm only when it helps the point.
+- **Manufactured endings** — recap paragraphs, mic-drop metaphors, and fake-profound final lines. End on the last concrete point, takeaway, or next action.
+
+Keep useful uncertainty, rough edges, asides, strong opinions, and longer spoken sentences when they belong to the writer and remain clear. Do not infer whether AI wrote the text; report observable patterns.
+
 ### Activation
 
 **P14 — Time to first working result under 5 minutes.** For getting-started and quickstart pages, the reader must achieve a working result within 5 minutes. The classic exemplars are "7 lines of code," one-click deploy, instant provisioning. The path must be obvious and unbroken.
 
-**P15 — Every page ends with a concrete next action.** After the content: "Next: [specific page]" or "Try it: [specific action]." Never end a documentation page in a dead end. The funnel continues.
+**P15 — Task-oriented pages end with a concrete next action.** After the content: "Next: [specific page]" or "Try it: [specific action]." Reference and explanatory pages may end on their last concrete point when no next action serves the reader.
 
 ---
 
@@ -96,15 +110,15 @@ These are specific, measurable rules. Not guidelines — rules. Each has an empi
 Score documentation on 10 dimensions (1-5 each, 50 max). Score every dimension; do not average away a structural failure. **5 (excellent)** looks like:
 
 1. **10-second value** — the first sentence answers "what" and "why"; scannable in 3 seconds.
-2. **Inverted pyramid** — answer first, then detail, then background; no scrolling for the core point.
-3. **Heading quality** — a heading every 150-200 words; each is a standalone information scent; the headings alone tell the page story.
-4. **Sentence / paragraph length** — paragraphs under 100 words; sentences 14-20; none over 35.
-5. **Concrete aids** — a code/visual/worked example within the first 2 screenfuls; every key concept has one.
+2. **Information order** — answer first where the reader needs one; retain setup only when it supplies context or voice.
+3. **Heading quality** — headings provide standalone information scent without splitting short sections mechanically.
+4. **Sentence / paragraph clarity** — paragraphs are easy to scan; sentence length varies without becoming tangled or robotic.
+5. **Concrete evidence** — important claims and concepts are grounded in useful code, examples, visuals, mechanisms, or facts.
 6. **Cognitive load** — max 4 concepts per section, each followed by an example or summary.
-7. **Language objectivity** — purely factual; zero promotional adjectives ("powerful", "seamless").
-8. **Scannability** — bullet lists for parallel items, bold for key terms, tables for comparisons.
+7. **Language & voice** — factual claims are precise; promotional language and named anti-slop patterns are absent; the writer's voice remains intact.
+8. **Scannability** — lists, emphasis, and tables serve the content rather than decorate it.
 9. **Progressive disclosure** — 3 layers (summary → detail → reference); no dead ends.
-10. **Actionable exit** — ends with a concrete next action or a "Try it" prompt.
+10. **Useful exit** — task-oriented pages end with a concrete next action; other pages end on their last useful point.
 
 **Thresholds:**
 - **40-50:** Publication-ready. Ship it.
@@ -123,10 +137,11 @@ Before describing any feature, component, or interaction: search `{{paths.source
 ### As a writer
 
 1. Read the work package's acceptance criteria (`.pipeline/work/<id>/plan.md`, with state in `.pipeline/work/<id>/progress.json`).
-2. Before writing, plan the funnel: what's the 10-second value? What's the first concrete aid? What's the exit action?
+2. Before writing, plan the funnel: what's the 10-second value? What concrete evidence will help? Does the reader need an exit action?
 3. Write the opening 50-80 words first. This is the most important text on the page.
-4. Apply P1-P15 as you draft. Check sentence length as you go (count words in any sentence that feels long).
-5. After drafting, self-score against the rubric. Any dimension below 3 needs revision before submission.
+4. Apply P1-P15 as you draft. Check any sentence that feels long, but preserve clear cadence and voice.
+5. Run the Voice & Anti-Slop check. Remove observable patterns without sanding down distinctive writing.
+6. After drafting, self-score against the rubric. Any dimension below 3 needs revision before submission.
 
 ### As a pipeline-reviewer
 
@@ -150,4 +165,5 @@ Read each document. For each page:
 - Every changed page scores ≥35 with no dimension below 3.
 - Every documented feature is backed by source evidence in `{{paths.source}}`.
 - Docs live under `{{paths.docs}}` and any commands they reference actually run.
-- Each page ends with a concrete next action (P15) and opens its funnel in 10 seconds (P1).
+- Each page preserves the writer's voice, contains no unresolved anti-slop pattern, and opens its funnel in 10 seconds (P1).
+- Each task-oriented page ends with a concrete next action (P15).
