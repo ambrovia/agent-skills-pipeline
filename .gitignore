@@ -1,5 +1,10 @@
 # Generated release artifacts
 /dist/
+/build/
+
+# APM install artifacts
+/apm_modules/
+/apm.lock.yaml
 
 # Runtime pipeline state (created in consuming repos, never committed here)
 /.pipeline/

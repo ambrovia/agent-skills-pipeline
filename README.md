@@ -23,6 +23,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 
 ## What's in here
 
+- **[`apm.yml`](apm.yml)** — [APM](https://microsoft.github.io/apm/) package manifest so consumers can `apm install ambrovia/agent-skills-pipeline`.
 - **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
 - **[`agents/`](agents/)** — Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents.
 - **[`agents-cursor/`](agents-cursor/)** — Cursor-format subagents (`model: inherit`, no Claude-specific `tools` field), registered via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json).
@@ -31,6 +32,16 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 - **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
 
 ## Install
+
+### APM — Agent Package Manager
+
+Install Pipeline into any project that uses [APM](https://microsoft.github.io/apm/):
+
+```bash
+apm install ambrovia/agent-skills-pipeline
+```
+
+APM deploys the plugin’s skills (and mapped agents/hooks) into your harness directories from the existing `plugin.json` layout — no clone or per-tool installer required.
 
 ### Claude Code — plugin
 
