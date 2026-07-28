@@ -23,14 +23,38 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 
 ## What's in here
 
-- **[`skills/`](skills/)** — the pipeline skills, each a [`SKILL.md`](https://agents.md/) (the Agent Skills open standard).
-- **[`agents/`](agents/)** — Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` persona subagents.
-- **[`agents-cursor/`](agents-cursor/)** — Cursor-format subagents (`model: inherit`, no Claude-specific `tools` field), registered via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json).
-- **[`.cursor-plugin/`](.cursor-plugin/)** — Cursor plugin manifest + Team Marketplace config for GitHub import.
-- **[`hooks/`](hooks/)** — session-start guidance, the existing edit-streak delegation reminder, and a separate guard for repeated edits without progress. Output is wired for Claude, Cursor, Gemini, Copilot, and opencode; Codex installs silent wrappers because Codex 0.142.5 rejects output from these lifecycle hooks. Cursor hooks use `${CURSOR_PLUGIN_ROOT}`.
-- **[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js)** — the opencode plugin entrypoint, exported by [`package.json`](package.json) for npm-style opencode plugin installs.
+| Path | Role |
+|---|---|
+| [`apm.yml`](apm.yml) | [APM](https://microsoft.github.io/apm/) package manifest |
+| [`skills/`](skills/) | Pipeline skills (`SKILL.md`, [Agent Skills](https://agents.md/) standard) |
+| [`agents/`](agents/) | Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` personas |
+| [`agents-cursor/`](agents-cursor/) | Cursor-format personas (`model: inherit`) |
+| [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
+| [`.claude-plugin/`](.claude-plugin/) | Claude Code plugin + marketplace |
+| [`.cursor-plugin/`](.cursor-plugin/) | Cursor plugin + Team Marketplace |
+| [`.codex-plugin/`](.codex-plugin/) | Codex plugin (+ [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)) |
+| [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js) | opencode post-edit plugin (also exported by [`package.json`](package.json)) |
 
 ## Install
+
+Support levels differ by host:
+
+| Host | Skills | Personas | Hooks | How |
+|---|---|---|---|---|
+| **APM** | yes | yes | yes | `apm install` → harness dirs |
+| **Claude Code** | yes | yes | yes | native plugin marketplace |
+| **Cursor** | yes | yes | yes | native plugin / Team Marketplace, or `scripts/install-cursor.sh` |
+| **Codex** | yes | via script | yes | plugin marketplace + `scripts/install-codex.sh` for personas |
+| **opencode** | yes | yes | yes | `scripts/install-opencode.sh` (JS plugin is hooks-only) |
+| **Copilot / Gemini** | copy or APM | Claude-format agents | yes | hooks configs shipped; skills via APM or manual copy |
+
+### APM
+
+```bash
+apm install ambrovia/agent-skills-pipeline
+```
+
+APM reads the plugin layout (`plugin.json` / `.claude-plugin/`, `skills/`, `agents/`, `hooks/`) and deploys into the consumer’s harness directories. Prefer this when the project already uses APM.
 
 ### Claude Code — plugin
 
@@ -41,91 +65,67 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 
 Skills become `/pipeline:refine`, `/pipeline:review`, … and the orchestrator `/pipeline`.
 
-### Codex — plugin
-
-This repo is packaged as a Codex plugin via [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) and advertises that plugin through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Installing it gives Codex the pipeline skills, plugin-level agent metadata (`agents/openai.yaml`), and the bundled no-fail lifecycle hook wrappers in `hooks/hooks.json`.
-
-Codex subagent roles (`pipeline-planner`, `pipeline-reviewer`, `pipeline-builder`) are not registered from the plugin manifest. Install them into a project explicitly:
-
-```bash
-/path/to/agent-skills-pipeline/scripts/install-codex.sh /path/to/project
-```
-
-That copies the generated TOML files into `<project>/.codex/agents/` and writes namespaced `[agents.pipeline-*]` entries into `<project>/.codex/config.toml`, avoiding collisions with project-local `pipeline-builder`, `pipeline-reviewer`, or `pipeline-planner` roles.
-
-Add this repository as a Codex marketplace source:
-
-```text
-codex plugin marketplace add ambrovia/agent-skills-pipeline
-```
-
-Restart Codex, open `/plugins`, choose the **Agent Pipeline** marketplace, and install `pipeline`. The repo also includes `.codex/` custom agent config for project-local development of Pipeline itself; Codex plugin manifests currently do not declare those agent files, so they are not part of the installed plugin contract.
-
 ### Cursor — plugin
 
-This repo ships as a native Cursor plugin via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json) and is importable as a **Team Marketplace** from GitHub (Cursor 2.6+, Teams/Enterprise):
+Native Cursor plugin via [`.cursor-plugin/plugin.json`](.cursor-plugin/plugin.json). Team Marketplace import (Cursor 2.6+, Teams/Enterprise):
 
 ```text
 Dashboard → Plugins → Team Marketplaces → Import from Repo
 https://github.com/ambrovia/agent-skills-pipeline
 ```
 
-Then install **pipeline** from Customize. The manifest bundles skills (`./skills`), Cursor-format subagents (`./agents-cursor`), and lifecycle hooks (`./hooks/cursor-hooks.json`).
-
-**Local / dev install** (Cursor IDE):
+Then install **pipeline** from Customize (skills, `agents-cursor/`, `hooks/cursor-hooks.json`).
 
 ```bash
-scripts/install-cursor.sh
+scripts/install-cursor.sh                 # symlink → ~/.cursor/plugins/local/pipeline
+scripts/install-cursor.sh /path/to/project  # or --project: copy into .cursor/
 ```
 
-That symlinks the repo into `~/.cursor/plugins/local/pipeline`. Restart Cursor or run **Developer: Reload Window**.
+### Codex — plugin
 
-**Project copy** (Cursor CLI or when the plugin loader is unavailable):
+[`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) + [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Plugin install gives skills, `agents/openai.yaml`, and silent Codex hook wrappers in `hooks/hooks.json`.
+
+```text
+codex plugin marketplace add ambrovia/agent-skills-pipeline
+```
+
+Restart Codex, open `/plugins`, install `pipeline`. Personas are **not** in the plugin contract — register them with:
 
 ```bash
-scripts/install-cursor.sh /path/to/project   # or --project for cwd
+scripts/install-codex.sh /path/to/project
 ```
 
-Copies skills, agents, and hooks into the target project's `.cursor/` tree.
+That writes `.codex/agents/*.toml` and namespaced `[agents.pipeline-*]` entries in `.codex/config.toml`.
 
-### Cursor · Copilot · Gemini — manual copy (legacy)
+### opencode — installer
 
-These tools also read `SKILL.md` from their own directory. You can still copy `skills/` (and `agents/`) into it, plus `hooks/` and your tool's hook config (`.cursor/`, `.gemini/`, or `.github/`) so the pipeline surfaces at session start:
+[`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js) covers post-edit guards only. For skills, personas, and session-start guidance:
 
-| Tool | Put skills in |
+```text
+scripts/install-opencode.sh            # current project
+scripts/install-opencode.sh ../my-app  # another project
+scripts/install-opencode.sh --global   # ~/.config/opencode
+```
+
+| Piece | Destination |
 |---|---|
-| Cursor | `.cursor/skills/` or `.agents/skills/` |
+| Skills | `.opencode/skills/` |
+| Agents | `.opencode/agents/` (`@pipeline-planner`, …) |
+| Post-edit guards | `.opencode/plugins/pipeline.js` |
+| Session-start | managed block in `AGENTS.md` |
+
+Not published to npm. Opening this repo in opencode loads the JS plugin from `.opencode/plugins/` automatically.
+
+### Copilot / Gemini — hooks + skills copy
+
+Hook configs ship in-repo ([`.github/hooks/pipeline.json`](.github/hooks/pipeline.json), [`.gemini/settings.json`](.gemini/settings.json)). Skills are not a native plugin on these hosts — use APM, or copy `skills/` (and Claude-format `agents/` if needed):
+
+| Tool | Skills path |
+|---|---|
 | Copilot | `.github/skills/` or `.agents/skills/` |
 | Gemini / Antigravity | `.gemini/skills/` or `.agents/skills/` |
 
-> `.agents/skills/` is the shared standard for all of these. **Claude Code is the exception** — it reads `.claude/skills/`, so use the plugin (or copy into `.claude/`).
-
-### opencode — plugin
-
-opencode supports plugins as JavaScript/TypeScript modules loaded from `.opencode/plugins/`, `~/.config/opencode/plugins/`, or npm packages listed in `opencode.json`. This repo exposes both post-edit nudges through [`.opencode/plugins/pipeline.js`](.opencode/plugins/pipeline.js).
-
-**This package is not published to npm** — install it from a clone using the one-command bootstrap below (or copy `.opencode/plugins/pipeline.js` into your own `.opencode/plugins/`). [`package.json`](package.json) exports that module, so *if you fork and publish it yourself*, you could then list your package in `opencode.json` (`"plugin": ["<your-package>"]`) — but the published-npm path is not provided here.
-
-For local development from this clone, no install is needed: opencode auto-loads project plugins from `.opencode/plugins/`, so opening this repository in opencode loads the plugin directly.
-
-The opencode plugin covers the lifecycle hook only. Pipeline’s skills, persona agents, and session-start guidance are separate opencode configuration files, so the installer remains the one-command bootstrap for the full Pipeline experience in another project:
-
-```text
-scripts/install-opencode.sh            # into the current project
-scripts/install-opencode.sh ../my-app  # into another project
-scripts/install-opencode.sh --global   # into ~/.config/opencode
-```
-
-It installs:
-
-| Piece | Goes to | Why |
-|---|---|---|
-| Skills | `.opencode/skills/` | opencode reads project-level skills from its config directory |
-| Agents | `.opencode/agents/` | opencode-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` — available as `@pipeline-planner`, etc. |
-| Post-edit guards | `.opencode/plugins/pipeline.js` | preserves the edit-streak reminder and warns on repeated edits without progress |
-| Session-start guidance | `AGENTS.md` (managed block) | opencode's rules file — the equivalent of the session-start hook |
-
-The agents inherit your session model by default; pin one with `model: <provider>/<id>` in the agent files. Post-edit nudges are best-effort because opencode cannot distinguish orchestrator edits from subagent edits.
+`.agents/skills/` is the shared location APM targets for most harnesses. Claude Code still uses `.claude/skills/`.
 
 ## Configure
 
