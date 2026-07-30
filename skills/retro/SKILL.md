@@ -1,7 +1,7 @@
 ---
 name: retro
 description: "Collect observations from all sources after a work package or pipeline run. Use at the end of a work package (or the whole pipeline) to log what went well and what created friction. Observe, don't fix. Trigger: 'retro <wp-id>', 'last-session', or 'pipeline'."
-phase: 9
+phase: 10
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -11,10 +11,10 @@ user-invocable: true
 
 ## When this runs
 
-After a work package finishes (success OR failure), or at the end of a full pipeline
-run. It is the observation pass that feeds `/compound`, which mines the log for recurring
-patterns and proposes process improvements. A single friction noted three times becomes an
-actionable change.
+As Pipeline Phase 10: after code review is DONE and the Phase 9 human final review has
+approved every review-driven fix, immediately before `/ship`. For a failed or blocked work
+package, run it as the final observation pass before stopping. It feeds `/compound`, which mines
+the log for recurring patterns and proposes process improvements.
 
 **Skip condition:** none — retro applies to every project type. There is no design-system
 or framework dependency here.
@@ -36,6 +36,10 @@ two branches each append. Writing to `.pipeline/work/<id>/retro.jsonl` means par
 branches touch different files and never collide. Always write to the file co-located with the work
 package you are retro-ing — never a shared log. (If the target is a whole pipeline run spanning
 work packages, write each entry to its own work package's file.)
+
+`retro.jsonl` is a shipped artifact, not post-run scratch. Leave its appended entries as intended
+worktree changes for `/ship` to commit before verification and push. Do not run pipeline retro
+after ship's final clean-worktree attestation.
 
 ## Steps
 
@@ -78,6 +82,8 @@ them when it first runs.
 
 - **Observe, don't fix.** Recording is your job; changing the process is `/compound`'s
   job. Do not edit configs, skills, or code here.
+- **Run before ship.** The pipeline retro is Phase 10 and its `retro.jsonl` changes must be
+  committed and pushed with the work package.
 - **Be specific.** "tests were hard" is useless; "FK-constraint test needed pragma setup
   not documented anywhere" is actionable.
 - **One observation per line.** Don't bundle multiple issues into one record.
