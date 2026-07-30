@@ -125,9 +125,9 @@ null** — see the skip rule at the end.
 | 6 | **orchestrator** (+ pipeline-planner for revisions) | — | Human concept review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the concept summary. Founder reviews design + `architecture.md` together — for UI, the rendered variant via the `design` viewer (design owns it) + annotations. Interactive → pipeline-planner revises to approval, sets `approvals.concept` in `progress.json`. Autonomous / no founder → **park**. No build may start until this lands. |
 | 7 | **pipeline-builder** | `{{models.build}}` | `write-tests` → `write-code` → doc check | TDD red then green. Doc check: if user-facing changes exist, apply `write-docs`; else justify the skip. Must pass `{{verify}}` before handing off. |
 | 8 | **pipeline-reviewer** + **pipeline-builder** | `{{models.review}}` | `review` (+ `write-docs` rubric if docs changed) | Reviewer checks code against the approved `architecture.md` + `plan.md` ACs in `.pipeline/work/<id>/` (warm Phase 5 session reused if the host supports it), writes `review.md`. Positive + negative lenses + AC-completeness audit. Builder applies fixes. **Verdict DONE required** before proceeding. |
-| 9 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Appends to `.pipeline/work/<id>/retro.jsonl`. **Runs before ship.** |
-| 10 | **orchestrator** (+ pipeline-builder for fixes) | — | Human final review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the built-vs-planned summary. Founder confirms the built result against the requirement + architecture before ship. Interactive → approve, or send fixes back to build (Phase 7); sets `approvals.final` in `progress.json`. Autonomous / no founder → **park**. |
-| ship | **pipeline-builder** | `{{models.build}}` | `ship` | Land the change: pass `{{verify}}`, open/ready the PR, wait for CI green. Not a tracked phase — the merge is proof of completion. |
+| 9 | **orchestrator** (+ pipeline-builder for fixes) | — | Human final review — a gate, not a skill | **Mandatory — never skipped, never auto-approved.** Orchestrator posts the built-vs-planned summary. Founder confirms the built result against the requirement + architecture before ship. Interactive → approve, or send fixes back to build (Phase 7); sets `approvals.final` in `progress.json`. Autonomous / no founder → **park**. |
+| 10 | fresh agent | low | `retro` | Fresh-context retro with cost signals. Appends to `.pipeline/work/<id>/retro.jsonl`. **Its findings are committed by ship.** This is the final mutable pipeline phase. |
+| ship | **pipeline-builder** | `{{models.build}}` | `ship` | Commit all remaining pipeline artifacts (including retro), land the change, pass `{{verify}}`, open/ready the PR, wait for CI green, and finish with a clean-worktree attestation. Not a tracked phase — the merge is proof of completion. |
 
 **Producer / evaluator separation is the whole point.** The **pipeline-planner** produces; a *different*
 agent, the **pipeline-reviewer**, evaluates. In Phase 8 the pipeline-reviewer checks the code against the approved
@@ -138,15 +138,15 @@ audit reads a *live* change against the spec — never the pipeline-builder's no
 
 ### Human review gates — the orchestrator summarizes, the human approves
 
-The three human gates (Phases 3, 6, 10) are **not a skill** — a human review does no work of its own. It is the orchestrator **telling the human, in chat, what has been done, where it lives, and how to speak about it**, then the human approving or sending it back. No artifact, no bundled tool — chat prose only. Post a short, jargon-free summary, a few sentences each — an orientation, not a re-derivation:
+The three human gates (Phases 3, 6, 9) are **not a skill** — a human review does no work of its own. It is the orchestrator **telling the human, in chat, what has been done, where it lives, and how to speak about it**, then the human approving or sending it back. No artifact, no bundled tool — chat prose only. Post a short, jargon-free summary, a few sentences each — an orientation, not a re-derivation:
 
 - **Requirements & user value** — what the WP must deliver and who is better off.
 - **What's being built, how it works, tech stack** — the mechanism in plain words, and where the artifacts live (`requirements.md`, `design/`, `architecture.md`).
-- **Built vs planned** *(Phase 10)* — what actually shipped against the plan, with deltas called out.
+- **Built vs planned** *(Phase 9)* — what actually shipped against the plan, with deltas called out.
 
 Then run the gate:
 
-- **Interactive (founder present)** → the founder responds; the relevant producer revises — pipeline-planner for `requirements.md` (Phase 3) / design + `architecture.md` (Phase 6), pipeline-builder for fixes back through build (Phase 10) — loop until the founder approves; set `approvals.requirements` / `approvals.concept` / `approvals.final` in `progress.json`. For a UI concept gate, the founder reviews the rendered variant via the **`design` viewer** (design owns the render + annotation loop).
+- **Interactive (founder present)** → the founder responds; the relevant producer revises — pipeline-planner for `requirements.md` (Phase 3) / design + `architecture.md` (Phase 6), pipeline-builder for fixes back through build (Phase 9) — loop until the founder approves; set `approvals.requirements` / `approvals.concept` / `approvals.final` in `progress.json`. For a UI concept gate, the founder reviews the rendered variant via the **`design` viewer** (design owns the render + annotation loop).
 - **Autonomous (no founder)** → **park**: `status: awaiting-human-review`, `currentStep: human-review-requirements` / `-concept` / `-final`. Never auto-approve; sibling work packages may proceed.
 
 ### Spawn discipline (tool-agnostic)
@@ -238,10 +238,10 @@ three-attempt caps still apply.
   bar or **3 rounds** are reached. If it never clears: mark `blocked` with reason
   `concept-or-spec-misalignment` (the requirement may need another `/refine` pass, or the
   strategic frame may need upstream `/work-planning` work).
-- **Human review gates (Phases 3, 6 & 10):** never skip, never auto-approve. These are orchestrator-run
+- **Human review gates (Phases 3, 6 & 9):** never skip, never auto-approve. These are orchestrator-run
   gates, not a skill (see *Human review gates*). Autonomous runs **park** — they do not proceed past the
   requirement gate (Phase 3), the concept gate (Phase 6, design + architecture), or the final review gate
-  (Phase 10) without founder approval. On resume, the orchestrator re-posts the summary and continues from
+  (Phase 9) without founder approval. On resume, the orchestrator re-posts the summary and continues from
   the parked `currentStep`.
 - **Critique loop (Phase 5):** if findings are CRITICAL/WARNING, send them to the pipeline-planner,
   who revises and the pipeline-reviewer re-critiques. Repeat until the score clears the bar or **3 rounds**
@@ -251,14 +251,22 @@ three-attempt caps still apply.
 - **CI red after ship push:** diagnose, fix locally, and re-ship. **Max 3 attempts.**
 - After **3 attempts**, mark the WP `blocked` with the relevant reason and move on.
 
-### Ship runs AFTER retro and the final review
+### Retro is the final mutable phase; ship commits it
 
-Land the change only after the retro (Phase 9) and the human final review (Phase 10) so the retro
-output is part of the verified tree and the founder has signed off. Ship's **first step** writes
+Run the human final review (Phase 9), then retro (Phase 10), then ship. This lets retro observe
+every review-driven fix while ensuring its output is part of the shipped tree. Ship's **first
+step** commits all outstanding intended changes, including `retro.jsonl`, then writes
 `.pipeline/work/<id>/progress.json` with `status: "done"`, `currentStep: "shipped"`, `completedAt`
-set **and commits it**, so the PR itself shows the pipeline as done. The `ship` skill then owns the
-full land sequence (sync base → `{{verify}}` → open/ready the PR via `{{vcs}}` → wait for CI green).
+set and commits it, so the PR itself shows both the retro and the pipeline as done. The `ship`
+skill then owns the full land sequence (sync base → `{{verify}}` → open/ready the PR via `{{vcs}}`
+→ wait for CI green → final clean-worktree attestation).
 **Ship is the single gate: the WP is not done until ship confirms CI green.**
+
+The final clean-worktree attestation is the mutation boundary. After it, do not create, edit,
+delete, stage, commit, or revert anything locally. The branch/worktree must be clean because every
+intended change is committed and every unintended change is reverted. If a CI repair requires a
+local edit, the prior attestation is invalid: explicitly re-enter ship's repair loop and finish
+with a new attestation.
 
 (Optional: projects MAY cache a signed verify attestation to skip re-running CI; off by default.)
 
@@ -297,7 +305,7 @@ numbers, persona names, critique scores, or review-round counts. Keep it scannab
 - **Never stop after planning.** Planning is only phases 1–6 of 10. It isn't done until the pipeline-builder makes
   it real and the pipeline-reviewer approves.
 - **Never skip a human review gate.** Every work package parks for founder approval on requirements (Phase 3),
-  on the design + architecture concept (Phase 6), and on the built result (Phase 10). "Routine" or
+  on the design + architecture concept (Phase 6), and on the built result (Phase 9). "Routine" or
   "backend-only" is not a skip reason.
 - After each WP, check elapsed time; if a session budget is exceeded (e.g. > 45 min), save
   progress and exit. If context degrades (compaction), finish the current WP and exit.

@@ -22,9 +22,9 @@ sufficient — the PR check must pass.
 
 ## When this runs
 
-After Phase 8 code review has emitted a DONE verdict for the work package, Phase 9
-retro has completed, and the Phase 10 human final review has approved, the change is
-locally complete.
+After Phase 8 code review has emitted a DONE verdict, the Phase 9 human final review
+has approved, and Phase 10 retro has completed. Retro is the final mutable pipeline
+phase; ship commits its findings before validating and pushing the complete tree.
 
 ## What it produces
 
@@ -42,10 +42,17 @@ emitted "Verdict: DONE" for this work package (the `verdict` field in
 proceed to verify/ship. Shipping without code review is a process violation, not
 an efficiency gain.
 
-### 1. Mark the work package done and commit it (FIRST — do not skip)
+### 1. Commit every intended change, including retro (FIRST — do not skip)
 
-Before anything else in the ship sequence, record completion so the PR itself
-shows the pipeline is done. Write `.pipeline/work/<id>/progress.json` with
+Inspect the worktree and classify every change. Commit all intended code, tests, docs,
+review state, and `.pipeline/work/<id>/retro.jsonl`; revert every unintended change.
+Stage files intentionally — never `git add -A` or `git add .`. If changes span multiple
+logical units, make multiple atomic commits.
+
+### 2. Mark the work package done and commit it
+
+Record completion so the PR itself shows the pipeline is done. Write
+`.pipeline/work/<id>/progress.json` with
 `status: "done"`, `currentStep: "shipped"`, and `completedAt` set, then commit it:
 
 ```bash
@@ -53,16 +60,12 @@ git add .pipeline/work/<id>/progress.json
 git commit -m "chore(<id>): mark pipeline done"
 ```
 
-This commit lands in the PR so a reviewer sees the work package as done. If a
+These commits land in the PR so a reviewer sees the retro findings and the work package as done. If a
 later step blocks (verify red, or CI red after retries), overwrite `status` with
 `blocked` and the reason in a follow-up commit.
 
-### 2. Stage and commit all code changes
-
-Stage files intentionally — never `git add -A` or `git add .`.
-
-Commit with `<type>(<scope>): <imperative description>` referencing the work
-package ID. If changes span multiple logical units, make multiple atomic commits.
+Use `<type>(<scope>): <imperative description>` for implementation commits, referencing
+the work package ID.
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Choose a scope that
 names the affected area of `{{paths.source}}`, or omit it.
@@ -137,6 +140,9 @@ complete until CI is green.**
 4. Max 3 push attempts. After 3, mark the work package `blocked` with reason
    `ci-red-after-3-fixes` in `.pipeline/work/<id>/progress.json`.
 
+Any local edit invalidates the previous clean-tree validation. Commit the repair and repeat
+steps 3–7; do not treat the earlier verify or attestation as covering the new tree.
+
 **Ship is only complete when the PR checks return green.** Do not declare success
 before this.
 
@@ -144,6 +150,17 @@ before this.
 
 **Do NOT merge automatically.** Ship stops at "CI-green PR open." Merging is a
 human decision — leave the PR open and re-runnable for the maintainer.
+
+### 9. Final clean-worktree attestation (LAST — mandatory)
+
+After CI is green, run `git status --short` and attest that it returns no entries. Before
+attesting, every intended change must be committed and pushed; every unintended local change
+must be reverted. Also confirm local `HEAD` is the pushed PR head.
+
+This attestation is the end of local mutation. After it, do not create, edit, delete, stage,
+commit, or revert any local file. If any later action requires a local change, the attestation
+is invalid: explicitly re-enter the appropriate ship step, commit and push the change, restore
+CI green, and finish with a new clean-worktree attestation.
 
 ## Rules
 
@@ -155,6 +172,8 @@ human decision — leave the PR open and re-runnable for the maintainer.
 - **Never force push** — history is shared.
 - **Never bypass commit hooks** (`--no-verify`) — hooks exist for a reason.
 - **Never merge** — leave the PR for the maintainer.
+- **Never change the local tree after the final attestation** — re-enter ship and produce a
+  new attestation if a change is required.
 - **One PR per work package** in pipeline mode.
 
 ## Releasing (optional, project-specific)
@@ -179,6 +198,7 @@ exact commands and credentials.
 - `{{verify}}` passed on a clean, main-merged tree.
 - The branch is pushed and a PR is open (or readied) via {{vcs}}.
 - CI on the PR is green.
+- The final clean-worktree attestation found no local changes and local `HEAD` is the pushed PR head.
 - The PR is left open for a human to merge.
 
 ## Target
