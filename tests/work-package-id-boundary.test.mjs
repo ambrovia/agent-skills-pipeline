@@ -11,21 +11,8 @@ test('personas enforce the WP ID boundary', () => {
     'personas/pipeline-reviewer.md',
   ]) {
     const source = read(persona);
-    assert.match(source, /Work-package ID boundary/);
-    assert.match(source, /WP IDs stay in `\.pipeline\/\*\*`/);
-  }
-});
-
-test('implementation phases enforce the WP ID boundary', () => {
-  for (const skill of [
-    'skills/architecture/SKILL.md',
-    'skills/write-tests/SKILL.md',
-    'skills/write-code/SKILL.md',
-    'skills/review/SKILL.md',
-  ]) {
-    const source = read(skill);
-    assert.match(source, /\.pipeline\/\*\*/);
-    assert.match(source, /exact or derived/i);
+    assert.match(source, /WP IDs .*`\.pipeline\/\*\*`/);
+    assert.match(source, /exact or derived/);
   }
 });
 

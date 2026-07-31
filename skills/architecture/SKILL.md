@@ -84,13 +84,6 @@ Produce:
 7. **Protected tests** — `protectedTests: string[]` listing test files (under `{{paths.tests}}`) whose assertions must not change. The definition-of-done audit checks the protected set with `{{vcs}}`-tracked diffs (e.g. `git diff --name-only`).
 8. **Migrations** — when the change renames, removes, or moves an existing symbol (route, test id, table column, function name, file path), enumerate every call site that needs updating. List affected source files, fixtures, unit tests, and end-to-end specs by name with the migration step for each (`delete | reroute | rename`). The migration is part of the plan, not a follow-up.
 9. **Shared files** — `sharedFiles: string[]` listing infrastructure files this work package modifies that other concurrent work packages may also touch (schema definitions, shared types, the router, app entrypoint, seed files). Used by the pipeline to detect overlap and schedule merge order when work packages run in parallel.
-
-### WP ID boundary
-
-WP IDs stay in `.pipeline/**`. Outside it: no exact or derived ID in paths,
-content, identifiers, test artifacts, UI, or VCS/PR metadata. Use domain names.
-Reject leaks.
-
 ### Technical task tree
 
 Default to **one leaf**. Split at independently verifiable units or real dependency boundaries, usually into 2–6 leaves. Broad, unrelated reading is a sign to split further, but only into coherent units with smaller context.

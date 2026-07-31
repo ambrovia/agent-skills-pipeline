@@ -65,8 +65,6 @@ later step blocks (verify red, or CI red after retries), overwrite `status` with
 `blocked` and the reason in a follow-up commit.
 
 Use `<type>(<scope>): <imperative description>` for implementation commits.
-WP IDs stay in `.pipeline/**`; never use them in branch, commit, or PR metadata.
-Use domain language.
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Choose a scope that
 names the affected area of `{{paths.source}}`, or omit it.

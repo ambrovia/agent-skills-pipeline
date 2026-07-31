@@ -47,9 +47,6 @@ Failing tests that prove each acceptance criterion, committed before any
 implementation. The suite must compile and lint cleanly under `{{verify}}` and
 then **fail** at runtime (red phase). No implementation code.
 
-WP IDs stay in `.pipeline/**`. Test paths, names, fixtures, snapshots, helpers,
-and data use domain names; no exact or derived ID.
-
 ## Steps
 
 1. **One test per criterion.** For each acceptance criterion, write a test that
@@ -80,9 +77,6 @@ and data use domain names; no exact or derived ID.
 6. **Confirm the new tests fail** (red phase), each for the right reason. A test
    that passes before implementation is asserting nothing — fix it. Do NOT write
    implementation code in this step.
-
-7. **Check WP ID boundary.** Search changed paths and content. Outside
-   `.pipeline/**`: zero exact or derived ID matches.
 
 ## Don't rationalize skipping this
 
