@@ -49,7 +49,7 @@ Switch mindset. You are no longer checking contracts — you are trying to break
 
 Also: missing error paths, type/contract safety (every escape hatch that bypasses static guarantees — unchecked casts, suppressions, non-null assertions, untyped `any`-equivalents — count them, each is a finding), coupling, test quality, performance.
 
-**Simplification** — Flag anything where the same result could be achieved with simpler means: single-use helpers, premature generics, dead code, commented-out code, impossible error handling, unnecessary async, value-free wrappers.
+**Simplicity** — Flag solutions that are less obvious or require more code, tokens, or changed files than an equally adequate alternative: single-use helpers, premature generics, dead code, impossible error handling, unnecessary async, and value-free wrappers. Preserve every acceptance criterion and engineering-tier requirement; when classification is uncertain, prefer under-engineering.
 
 **AI Slop** — Flag AI-generated anti-patterns: verbose naming, unnecessary comments, single-use helpers, defensive over-engineering (null checks for non-nullable types, try-catch around non-throwing code), unnecessary async, filler (`=== true`, redundant else-return), AI tell-tales ("TODO: implement" on implemented code, "simplified version", "for now", "in production").
 
