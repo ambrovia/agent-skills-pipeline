@@ -31,11 +31,11 @@ Resolve the worktree **before reading the WP**: an existing worktree or `origin/
 
 ```bash
 git fetch origin
-# reuse the target's worktree if it exists, else create one off origin/main
-git worktree list | grep -q "pipeline-<target>" \
-  && cd "$(git worktree list | awk '/pipeline-<target>/{print $1; exit}')" \
-  || { git worktree add ../<repo>.worktrees/pipeline-<target> -b pipeline/<target> origin/main \
-       && cd ../<repo>.worktrees/pipeline-<target>; }
+# derive <domain-slug> from the title; never use the WP ID
+git worktree list | grep -q "pipeline-<domain-slug>" \
+  && cd "$(git worktree list | awk '/pipeline-<domain-slug>/{print $1; exit}')" \
+  || { git worktree add ../<repo>.worktrees/pipeline-<domain-slug> -b pipeline/<domain-slug> origin/main \
+       && cd ../<repo>.worktrees/pipeline-<domain-slug>; }
 ```
 
 **Bootstrap the worktree before any build or verify.** A fresh (or long-idle) worktree doesn't inherit installed deps, virtualenvs, or build artifacts from the main checkout. After `cd`, run the project's usual install / env / build bootstrap so `{{verify}}` and the tooling can actually run. Skipping this produces a false failure (or a stale bundle from the wrong tree). If the bootstrap itself can't run (missing secrets/toolchain), mark the WP `blocked` with that reason.
@@ -199,7 +199,7 @@ Record outcomes, not reasoning. Allow up to three `carryForward` facts: a dead e
 
 One pipeline-builder owns the integration worktree. Require it clean; commit `{"baseCommit":"<current-head>","attempt":1}` alone to `integration.json`. For each ready wave:
 
-1. Create `pipeline/<id>/leaf/<leaf-id>/attempt-<n>` and its worktree from the recorded integration `HEAD`. Reuse only an exact task/attempt/base match. Never run parallel writers in one worktree.
+1. Create `pipeline/<domain-slug>/leaf/<leaf-slug>/attempt-<n>` from integration `HEAD`. Slugs use domain language, never the WP ID. Reuse only an exact task/attempt/base match. Never run parallel writers in one worktree.
 2. Bootstrap every new leaf worktree before spawning its builder.
 3. Build within `owns`; commit red tests, then implementation; run focused verification. Leaf builders do not merge, rebase, or edit WP state.
 4. **Preflight before cherry-pick.** Require a clean worktree, no merge commits, and inspect `git diff --name-only <baseCommit>..<leafTip>`. Every changed path must match an exact `file:<repo-relative-path>` or owned `path:`; `.pipeline/` is forbidden. Reject ownership mismatches as BLOCKERs.
@@ -219,10 +219,10 @@ Pause the leaf and its transitive dependants. Amend and re-critique the task tre
 
 Rebuild the branch; do not delete receipts while leaving their code integrated:
 
-1. From `integration.json.baseCommit`, create `pipeline/<id>/integration/attempt-<n>`, apply the manifest and approved plan amendments, then commit the new attempt marker.
+1. From `integration.json.baseCommit`, create `pipeline/<domain-slug>/integration/attempt-<n>`; domain slug only, never WP ID. Apply amendments; commit the attempt marker.
 2. Preflight and replay valid source commits in dependency order; regenerate receipts. Do not replay invalid receipts or their code.
-3. Rebuild invalid leaves on new attempt branches; run combined and full verification.
-4. When green and clean, preserve the old tip as `pipeline/<id>/integration/attempt-<n>-old`, move the integration branch to the verified tip with `git reset --hard <rebuilt-tip>`, then remove the rebuilt worktree.
+3. Rebuild invalid leaves on domain-named attempt branches; never WP ID. Run combined and full verification.
+4. When green and clean, preserve the old tip as `pipeline/<domain-slug>/integration/attempt-<n>-old`, move the integration branch to the verified tip with `git reset --hard <rebuilt-tip>`, then remove the rebuilt worktree.
 
 Reuse valid source commits, but regenerate integrated commits and receipts. Resume after Phase 5 critique. Re-entry does not reset the attempt budget.
 

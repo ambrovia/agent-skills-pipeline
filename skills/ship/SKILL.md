@@ -57,15 +57,14 @@ Record completion so the PR itself shows the pipeline is done. Write
 
 ```bash
 git add .pipeline/work/<id>/progress.json
-git commit -m "chore(<id>): mark pipeline done"
+git commit -m "chore(pipeline): mark work package done"
 ```
 
 These commits land in the PR so a reviewer sees the retro findings and the work package as done. If a
 later step blocks (verify red, or CI red after retries), overwrite `status` with
 `blocked` and the reason in a follow-up commit.
 
-Use `<type>(<scope>): <imperative description>` for implementation commits, referencing
-the work package ID.
+Use `<type>(<scope>): <imperative description>` for implementation commits.
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Choose a scope that
 names the affected area of `{{paths.source}}`, or omit it.
