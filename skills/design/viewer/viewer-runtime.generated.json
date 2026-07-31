@@ -1,5 +1,8 @@
 {
   "projectRoot": "..",
   "toolchain": "none",
-  "postcssConfigDir": null
+  "postcssConfigDir": null,
+  "packageRoot": ".",
+  "tailwindConfigPath": null,
+  "aliases": {}
 }

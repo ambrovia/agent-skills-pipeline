@@ -87,6 +87,12 @@ const POSTCSS_CONFIG_NAMES = [
   ".postcssrc.cjs",
   ".postcssrc.mjs",
 ];
+const TAILWIND_CONFIG_NAMES = [
+  "tailwind.config.js",
+  "tailwind.config.cjs",
+  "tailwind.config.mjs",
+  "tailwind.config.ts",
+];
 
 function parseArgs(argv) {
   const opts = { project: process.cwd(), port: 5173 };
@@ -304,6 +310,15 @@ function cssImportsFromMainEntries(project, roots) {
         } else if (spec.startsWith("/")) {
           const resolved = resolve(project, spec.slice(1));
           if (fileExists(resolved)) found.push(resolved);
+        } else {
+          try {
+            const resolved = createRequire(file).resolve(spec);
+            if (fileExists(resolved)) found.push(realpathSync(resolved));
+          } catch {
+            // A package export can point at a generated CSS artifact that does not
+            // exist until its package build runs. Explicit viewer config handles
+            // that case below; unresolved incidental imports are ignored here.
+          }
         }
       }
     }
@@ -322,13 +337,82 @@ function commonCssEntries(roots) {
   return found;
 }
 
-function detectCssEntries(project, viewerConfig, designSystem) {
+function nearestPackageWithCssBuild(project, target) {
+  const projectRoot = resolve(project);
+  let current = dirname(resolve(target));
+  while (current.startsWith(projectRoot)) {
+    const packageJson = join(current, "package.json");
+    if (fileExists(packageJson)) {
+      try {
+        const pkg = JSON.parse(readText(packageJson));
+        if (pkg?.scripts?.["build:css"]) return { directory: current, packageJson: pkg };
+      } catch {
+        return null;
+      }
+    }
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return null;
+}
+
+function nearestPackageRoot(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    if (fileExists(join(current, "package.json"))) return current;
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return projectRoot;
+}
+
+function packageRunner(project) {
+  const packageManager = readText(join(project, "package.json"));
+  try {
+    const value = JSON.parse(packageManager).packageManager ?? "";
+    if (value.startsWith("bun@")) return { command: "bun", args: ["run", "build:css"] };
+    if (value.startsWith("pnpm@")) return { command: "pnpm", args: ["run", "build:css"] };
+    if (value.startsWith("yarn@")) return { command: "yarn", args: ["build:css"] };
+  } catch {
+    // Fall through to npm for projects without readable package-manager metadata.
+  }
+  return { command: "npm", args: ["run", "build:css"] };
+}
+
+function materializeConfiguredCss(project, entries) {
+  const attemptedPackages = new Set();
+  for (const entry of entries) {
+    const owner = nearestPackageWithCssBuild(project, entry);
+    const looksGenerated = /\.(?:compiled|generated|built)\.[^.]+$/.test(entry);
+    if (fileExists(entry) && !looksGenerated) continue;
+    if (!owner || attemptedPackages.has(owner.directory)) continue;
+    attemptedPackages.add(owner.directory);
+    const runner = packageRunner(project);
+    log(`building configured generated CSS in ${slash(relative(project, owner.directory)) || "."}`);
+    const result = spawnSync(runner.command, runner.args, {
+      cwd: owner.directory,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    if (result.status !== 0) {
+      loud(`build:css failed in ${owner.directory}; continuing with CSS discovery fallback`);
+    }
+  }
+  return entries.filter(fileExists);
+}
+
+export function detectCssEntries(project, viewerConfig, designSystem) {
   const explicit = [
     ...toArray(viewerConfig.css),
     ...toArray(viewerConfig.cssEntry),
     ...toArray(viewerConfig.cssEntries),
   ].map((entry) => resolveProjectPath(project, entry));
-  if (explicit.length > 0) return { entries: explicit.filter(fileExists), source: "explicit config" };
+  if (explicit.length > 0) {
+    const materialized = materializeConfiguredCss(project, explicit);
+    if (materialized.length > 0) return { entries: materialized, source: "explicit config" };
+    loud(`configured CSS entries do not exist after build: ${explicit.map((entry) => slash(relative(project, entry))).join(", ")}; falling back to discovery`);
+  }
 
   const roots = sourceRoots(project, designSystem.path);
   const mainImports = cssImportsFromMainEntries(project, roots);
@@ -388,30 +472,153 @@ function packageVersion(project, packageName) {
   }
 }
 
-function hasPostcssConfig(project) {
-  return POSTCSS_CONFIG_NAMES.some((name) => fileExists(join(project, name)));
+function nearestPostcssConfigDir(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    if (POSTCSS_CONFIG_NAMES.some((name) => fileExists(join(current, name)))) return current;
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return null;
 }
 
-function detectToolchain(project, viewerConfig, cssEntries) {
+function nearestTailwindConfig(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    for (const name of TAILWIND_CONFIG_NAMES) {
+      const candidate = join(current, name);
+      if (fileExists(candidate)) return candidate;
+    }
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return null;
+}
+
+export function detectToolchain(project, viewerConfig, cssEntries) {
   const hint = viewerConfig.toolchain ?? viewerConfig.cssToolchain;
+  const primaryEntry = cssEntries.find((entry) =>
+    /@import\s+["']tailwindcss["']|@tailwind|@config|@source/.test(readText(entry)),
+  ) ?? cssEntries[0];
+  const packageRoot = primaryEntry ? nearestPackageRoot(project, primaryEntry) : resolve(project);
+  const postcssConfigDir = primaryEntry
+    ? nearestPostcssConfigDir(project, primaryEntry)
+    : nearestPostcssConfigDir(project, project);
+  const tailwindConfigPath = primaryEntry ? nearestTailwindConfig(project, primaryEntry) : null;
   if (hint && hint !== "auto") {
-    if (hint === "tailwind-v3") return { toolchain: "tailwind-v3", postcssConfigDir: project };
-    if (hint === "tailwind-v4") return { toolchain: "tailwind-v4", postcssConfigDir: null };
-    return { toolchain: "none", postcssConfigDir: null };
+    if (hint === "tailwind-v3") return { toolchain: "tailwind-v3", postcssConfigDir, packageRoot, tailwindConfigPath };
+    if (hint === "tailwind-v4") return { toolchain: "tailwind-v4", postcssConfigDir: null, packageRoot, tailwindConfigPath };
+    return { toolchain: "none", postcssConfigDir: null, packageRoot, tailwindConfigPath };
   }
 
-  const tailwindVersion = packageVersion(project, "tailwindcss");
+  const tailwindVersion = packageVersion(packageRoot, "tailwindcss");
   const major = tailwindVersion ? Number(tailwindVersion.split(".")[0]) : 0;
-  const hasTailwindVite = Boolean(resolvePackageJson(project, "@tailwindcss/vite"));
+  const hasTailwindVite = Boolean(resolvePackageJson(packageRoot, "@tailwindcss/vite"));
   const referencesTailwind = cssReferencesTailwind(cssEntries);
 
   if (major >= 4 && hasTailwindVite && referencesTailwind) {
-    return { toolchain: "tailwind-v4", postcssConfigDir: null };
+    return { toolchain: "tailwind-v4", postcssConfigDir: null, packageRoot, tailwindConfigPath };
   }
-  if (major === 3 && hasPostcssConfig(project)) {
-    return { toolchain: "tailwind-v3", postcssConfigDir: project };
+  if (major === 3 && postcssConfigDir && referencesTailwind) {
+    return { toolchain: "tailwind-v3", postcssConfigDir, packageRoot, tailwindConfigPath };
   }
-  return { toolchain: "none", postcssConfigDir: null };
+  return { toolchain: "none", postcssConfigDir: null, packageRoot, tailwindConfigPath };
+}
+
+function packageEntry(pkg) {
+  const rootExport = pkg?.exports?.["."];
+  if (typeof rootExport === "string") return rootExport;
+  if (rootExport && typeof rootExport === "object") {
+    for (const key of ["import", "default", "module", "browser"]) {
+      if (typeof rootExport[key] === "string") return rootExport[key];
+    }
+  }
+  return typeof pkg?.module === "string" ? pkg.module : pkg?.main;
+}
+
+function workspaceAliases(project) {
+  const aliases = {};
+  for (const container of ["packages", "apps"]) {
+    const root = join(project, container);
+    if (!dirExists(root)) continue;
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const directory = join(root, entry.name);
+      const packageJson = join(directory, "package.json");
+      if (!fileExists(packageJson)) continue;
+      try {
+        const pkg = JSON.parse(readText(packageJson));
+        const target = packageEntry(pkg);
+        const resolved = target ? resolve(directory, target) : null;
+        if (typeof pkg.name === "string" && resolved && fileExists(resolved)) {
+          aliases[pkg.name] = resolved;
+        }
+      } catch {
+        // An unrelated malformed workspace manifest must not break the viewer.
+      }
+    }
+  }
+  return aliases;
+}
+
+function tsconfigAliases(project, preferredRoots = []) {
+  const candidates = walkFiles(project, (dir) => {
+    const rel = slash(relative(project, dir));
+    return !rel.startsWith("data/") && !rel.startsWith("docs/") && !rel.startsWith(".pipeline/work/");
+  }).filter((file) => file.endsWith(`${sep}tsconfig.json`) || file === join(project, "tsconfig.json"));
+  const values = new Map();
+  for (const configPath of candidates) {
+    try {
+      const config = JSON.parse(readText(configPath));
+      const paths = config?.compilerOptions?.paths;
+      if (!paths || typeof paths !== "object") continue;
+      const base = resolve(dirname(configPath), config.compilerOptions.baseUrl ?? ".");
+      for (const [rawAlias, rawTargets] of Object.entries(paths)) {
+        const alias = rawAlias.endsWith("/*") ? rawAlias.slice(0, -2) : rawAlias;
+        const target = toArray(rawTargets)[0];
+        if (!target) continue;
+        const cleanTarget = target.endsWith("/*") ? target.slice(0, -2) : target;
+        const resolved = resolve(base, cleanTarget);
+        if (!dirExists(resolved) && !fileExists(resolved)) continue;
+        const candidates = values.get(alias) ?? [];
+        candidates.push({ resolved, configDir: dirname(configPath) });
+        values.set(alias, candidates);
+      }
+    } catch {
+      // JSON-with-comments or extended configs are left to explicit viewer aliases.
+    }
+  }
+  const aliases = {};
+  for (const [alias, candidates] of values) {
+    const unique = uniq(candidates.map(({ resolved }) => resolve(resolved)));
+    if (unique.length === 1) {
+      aliases[alias] = unique[0];
+      continue;
+    }
+    const preferred = uniq(
+      candidates
+        .filter(({ configDir }) => preferredRoots.some((root) =>
+          configDir === resolve(root) || configDir.startsWith(`${resolve(root)}${sep}`),
+        ))
+        .map(({ resolved }) => resolve(resolved)),
+    );
+    if (preferred.length === 1) aliases[alias] = preferred[0];
+  }
+  return aliases;
+}
+
+export function detectAliases(project, viewerConfig, preferredRoots = []) {
+  const explicit = viewerConfig.aliases;
+  const configured = explicit && typeof explicit === "object"
+    ? Object.fromEntries(
+        Object.entries(explicit)
+          .filter(([, target]) => typeof target === "string")
+          .map(([alias, target]) => [alias, resolveProjectPath(project, target)]),
+      )
+    : {};
+  return { ...workspaceAliases(project), ...tsconfigAliases(project, preferredRoots), ...configured };
 }
 
 function jsString(value) {
@@ -430,6 +637,7 @@ function writeGeneratedViewerFiles(project, viewerDir) {
   const storyGlobs = detectStoryGlobs(project, explicitStoryGlobs);
   const css = detectCssEntries(project, viewerConfig, designSystem);
   const toolchain = detectToolchain(project, viewerConfig, css.entries);
+  const aliases = detectAliases(project, viewerConfig, [toolchain.packageRoot]);
 
   const storyLines = (storyGlobs.length > 0 ? storyGlobs : DEFAULT_STORY_GLOBS)
     .map((glob) => storyGlobFromProject(project, viewerDir, glob))
@@ -468,6 +676,9 @@ function writeGeneratedViewerFiles(project, viewerDir) {
         projectRoot: project,
         toolchain: toolchain.toolchain,
         postcssConfigDir: toolchain.postcssConfigDir,
+        packageRoot: toolchain.packageRoot,
+        tailwindConfigPath: toolchain.tailwindConfigPath,
+        aliases,
       },
       null,
       2,
@@ -481,26 +692,63 @@ function writeGeneratedViewerFiles(project, viewerDir) {
     log(`CSS entries (${css.source}): ${css.entries.map((entry) => slash(relative(project, entry))).join(", ")}`);
   }
   log(`CSS toolchain: ${toolchain.toolchain}`);
+  if (Object.keys(aliases).length > 0) {
+    log(`module aliases: ${Object.keys(aliases).join(", ")}`);
+  }
 }
 
-/** Resolve to any HTTP response (even a 404) — that proves the port is serving. */
-function probe(port) {
+function requestText(port, path) {
   return new Promise((res) => {
-    const req = get({ host: "localhost", port, path: "/", timeout: 1500 }, (r) => {
-      r.resume();
-      res(true);
+    const req = get({ host: "localhost", port, path, timeout: 1500 }, (r) => {
+      let body = "";
+      r.setEncoding("utf8");
+      r.on("data", (chunk) => {
+        body += chunk;
+      });
+      r.on("end", () => res({ reachable: true, status: r.statusCode ?? 0, body }));
     });
-    req.on("error", () => res(false));
+    req.on("error", () => res({ reachable: false, status: 0, body: "" }));
     req.on("timeout", () => {
       req.destroy();
-      res(false);
+      res({ reachable: false, status: 0, body: "" });
     });
   });
 }
 
-async function waitUntilReady(port, deadline) {
+async function inspectViewer(port) {
+  const root = await requestText(port, "/");
+  if (!root.reachable) return { reachable: false, projectRoot: null };
+  const runtime = await requestText(port, "/viewer-runtime.generated.json");
+  if (!runtime.reachable || runtime.status !== 200) {
+    return { reachable: true, projectRoot: null };
+  }
+  try {
+    const parsed = JSON.parse(runtime.body);
+    return {
+      reachable: true,
+      projectRoot: typeof parsed.projectRoot === "string" ? realpathSync(parsed.projectRoot) : null,
+    };
+  } catch {
+    return { reachable: true, projectRoot: null };
+  }
+}
+
+export async function chooseViewerPort(startPort, project, inspect = inspectViewer) {
+  const canonicalProject = realpathSync(project);
+  for (let port = startPort; port < startPort + 50; port++) {
+    const state = await inspect(port);
+    if (!state.reachable) return { port, reuse: false };
+    if (state.projectRoot === canonicalProject) return { port, reuse: true };
+    log(`port ${port} belongs to another service or project; trying ${port + 1}`);
+  }
+  throw new Error(`no available viewer port in ${startPort}-${startPort + 49}`);
+}
+
+async function waitUntilReady(port, deadline, project) {
+  const canonicalProject = realpathSync(project);
   while (Date.now() < deadline) {
-    if (await probe(port)) return true;
+    const state = await inspectViewer(port);
+    if (state.projectRoot === canonicalProject) return true;
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }
   return false;
@@ -518,8 +766,7 @@ async function main() {
   }
 
   const project = realpathSync(opts.project);
-  const { port } = opts;
-  const url = `http://localhost:${port}`;
+  const requestedPort = opts.port;
 
   // 1. Sync the viewer into the project, unless we're already inside it.
   const destViewer = join(project, "viewer");
@@ -538,8 +785,12 @@ async function main() {
   // 2. Generate target-specific static imports before Vite evaluates the app.
   writeGeneratedViewerFiles(project, viewerDir);
 
-  // 3. Already running? Reuse it after refreshing generated files for HMR.
-  if (await probe(port)) {
+  // 3. Reuse only this project's viewer. A different project on the preferred
+  // port gets a different port instead of receiving the wrong generated files.
+  const selection = await chooseViewerPort(requestedPort, project);
+  const { port } = selection;
+  const url = `http://localhost:${port}`;
+  if (selection.reuse) {
     log(`already running — refreshed viewer files and reusing ${url}`);
     process.stdout.write(url + "\n");
     return 0;
@@ -578,7 +829,7 @@ async function main() {
   child.unref();
 
   // 6. Wait until it answers, then hand off the URL.
-  const ready = await waitUntilReady(port, Date.now() + READY_TIMEOUT_MS);
+  const ready = await waitUntilReady(port, Date.now() + READY_TIMEOUT_MS, project);
   if (!ready) {
     log(`did not become ready within ${READY_TIMEOUT_MS / 1000}s — see ${logFile}`);
     return 1;
@@ -588,10 +839,13 @@ async function main() {
   return 0;
 }
 
-main().then(
-  (code) => process.exit(code),
-  (err) => {
-    log(`unexpected error: ${err?.message ?? err}`);
-    process.exit(1);
-  },
-);
+const invokedDirectly = process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+if (invokedDirectly) {
+  main().then(
+    (code) => process.exit(code),
+    (err) => {
+      log(`unexpected error: ${err?.message ?? err}`);
+      process.exit(1);
+    },
+  );
+}
