@@ -51,7 +51,7 @@ Switch mindset. You are no longer checking contracts — you are trying to break
 
 Also: missing error paths, type/contract safety (every escape hatch that bypasses static guarantees — unchecked casts, suppressions, non-null assertions, untyped `any`-equivalents — count them, each is a finding), coupling, test quality, performance.
 
-**Simplification** — Require the shortest working path: reuse existing code → standard-library or native feature → installed dependency → minimum new code. Flag every unnecessary changed file, single-use helper, premature generic, dead path, speculative option, compatibility shim without a caller, needless dependency, impossible error handling, unnecessary async, and value-free wrapper. A smaller solution that satisfies the current acceptance criteria, baseline security, and likely data-loss prevention is not under-engineered. If the classification is debatable, classify the larger solution as over-engineered.
+**Simplicity** — Flag solutions that are less obvious or require more code, tokens, or changed files than an equally adequate alternative: single-use helpers, premature generics, dead code, impossible error handling, unnecessary async, and value-free wrappers. Preserve every acceptance criterion and engineering-tier requirement; when classification is uncertain, prefer under-engineering.
 
 **AI Slop** — Flag AI-generated anti-patterns: verbose naming, unnecessary comments, single-use helpers, defensive over-engineering (null checks for non-nullable types, try-catch around non-throwing code), unnecessary async, filler (`=== true`, redundant else-return), AI tell-tales ("TODO: implement" on implemented code, "simplified version", "for now", "in production").
 
