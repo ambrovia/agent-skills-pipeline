@@ -1,5 +1,6 @@
 {
   "projectRoot": "..",
   "toolchain": "none",
-  "postcssConfigDir": null
+  "postcssConfigDir": null,
+  "aliases": {}
 }

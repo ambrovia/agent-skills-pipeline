@@ -35,6 +35,11 @@ export default defineConfig(async () => {
 
   return {
     plugins,
+    resolve: {
+      alias: Object.entries(runtimeConfig.aliases ?? {})
+        .sort(([left], [right]) => right.length - left.length)
+        .map(([find, replacement]) => ({ find, replacement })),
+    },
     css:
       runtimeConfig.toolchain === "tailwind-v3" && runtimeConfig.postcssConfigDir
         ? { postcss: runtimeConfig.postcssConfigDir }
