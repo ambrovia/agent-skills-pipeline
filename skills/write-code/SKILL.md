@@ -91,6 +91,10 @@ Follow any `pipeline.config rules` slot below as binding (it overrides this skil
 
 ## Core rules
 
+**WP IDs stay in `.pipeline/**`.** Outside it: no exact or derived ID in paths,
+content, identifiers, test artifacts, UI, or VCS/PR metadata. Use domain names.
+Before completion, search; zero leaks.
+
 **Never weaken a test to make it pass.** If a test reveals a design flaw, fix the
 implementation, not the test.
 

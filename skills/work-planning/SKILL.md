@@ -176,7 +176,7 @@ If a maintainer pastes implementation detail into the spec, strip it out before 
     ```
     If the track doesn't exist yet, create `.pipeline/<track>.md` first with the standard header (track frame summary, scope rules, reference docs) + an empty registry table + dependency-graph section.
 3. **Validate.** Run the project's verify command, `{{verify}}` — coordination-file checks must pass (these catch a duplicate ID, an invalid complexity, an unknown type, or a dangling dep). If the project defines a faster typecheck/lint subset, run that first as a sanity pass.
-4. **Single commit.** All changes ship together: the seeded `.pipeline/work/<id>/plan.md` + the `.pipeline/<track>.md` registry/dependency update. Message: `plan: register <ID> — <title>`.
+4. **Single commit.** Ship the seeded `.pipeline/work/<id>/plan.md` + `.pipeline/<track>.md` update together. Message: `plan: register work package — <title>`. Never put the ID in commit metadata.
 
 ---
 
