@@ -2,5 +2,7 @@
   "projectRoot": "..",
   "toolchain": "none",
   "postcssConfigDir": null,
+  "packageRoot": ".",
+  "tailwindConfigPath": null,
   "aliases": {}
 }

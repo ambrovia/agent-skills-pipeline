@@ -87,6 +87,12 @@ const POSTCSS_CONFIG_NAMES = [
   ".postcssrc.cjs",
   ".postcssrc.mjs",
 ];
+const TAILWIND_CONFIG_NAMES = [
+  "tailwind.config.js",
+  "tailwind.config.cjs",
+  "tailwind.config.mjs",
+  "tailwind.config.ts",
+];
 
 function parseArgs(argv) {
   const opts = { project: process.cwd(), port: 5173 };
@@ -350,6 +356,17 @@ function nearestPackageWithCssBuild(project, target) {
   return null;
 }
 
+function nearestPackageRoot(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    if (fileExists(join(current, "package.json"))) return current;
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return projectRoot;
+}
+
 function packageRunner(project) {
   const packageManager = readText(join(project, "package.json"));
   try {
@@ -366,12 +383,13 @@ function packageRunner(project) {
 function materializeConfiguredCss(project, entries) {
   const attemptedPackages = new Set();
   for (const entry of entries) {
-    if (fileExists(entry)) continue;
     const owner = nearestPackageWithCssBuild(project, entry);
+    const looksGenerated = /\.(?:compiled|generated|built)\.[^.]+$/.test(entry);
+    if (fileExists(entry) && !looksGenerated) continue;
     if (!owner || attemptedPackages.has(owner.directory)) continue;
     attemptedPackages.add(owner.directory);
     const runner = packageRunner(project);
-    log(`configured CSS is missing; running build:css in ${slash(relative(project, owner.directory)) || "."}`);
+    log(`building configured generated CSS in ${slash(relative(project, owner.directory)) || "."}`);
     const result = spawnSync(runner.command, runner.args, {
       cwd: owner.directory,
       stdio: "inherit",
@@ -454,30 +472,59 @@ function packageVersion(project, packageName) {
   }
 }
 
-function hasPostcssConfig(project) {
-  return POSTCSS_CONFIG_NAMES.some((name) => fileExists(join(project, name)));
+function nearestPostcssConfigDir(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    if (POSTCSS_CONFIG_NAMES.some((name) => fileExists(join(current, name)))) return current;
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return null;
 }
 
-function detectToolchain(project, viewerConfig, cssEntries) {
+function nearestTailwindConfig(project, target) {
+  const projectRoot = resolve(project);
+  let current = fileExists(target) ? dirname(resolve(target)) : resolve(target);
+  while (current.startsWith(projectRoot)) {
+    for (const name of TAILWIND_CONFIG_NAMES) {
+      const candidate = join(current, name);
+      if (fileExists(candidate)) return candidate;
+    }
+    if (current === projectRoot) break;
+    current = dirname(current);
+  }
+  return null;
+}
+
+export function detectToolchain(project, viewerConfig, cssEntries) {
   const hint = viewerConfig.toolchain ?? viewerConfig.cssToolchain;
+  const primaryEntry = cssEntries.find((entry) =>
+    /@import\s+["']tailwindcss["']|@tailwind|@config|@source/.test(readText(entry)),
+  ) ?? cssEntries[0];
+  const packageRoot = primaryEntry ? nearestPackageRoot(project, primaryEntry) : resolve(project);
+  const postcssConfigDir = primaryEntry
+    ? nearestPostcssConfigDir(project, primaryEntry)
+    : nearestPostcssConfigDir(project, project);
+  const tailwindConfigPath = primaryEntry ? nearestTailwindConfig(project, primaryEntry) : null;
   if (hint && hint !== "auto") {
-    if (hint === "tailwind-v3") return { toolchain: "tailwind-v3", postcssConfigDir: project };
-    if (hint === "tailwind-v4") return { toolchain: "tailwind-v4", postcssConfigDir: null };
-    return { toolchain: "none", postcssConfigDir: null };
+    if (hint === "tailwind-v3") return { toolchain: "tailwind-v3", postcssConfigDir, packageRoot, tailwindConfigPath };
+    if (hint === "tailwind-v4") return { toolchain: "tailwind-v4", postcssConfigDir: null, packageRoot, tailwindConfigPath };
+    return { toolchain: "none", postcssConfigDir: null, packageRoot, tailwindConfigPath };
   }
 
-  const tailwindVersion = packageVersion(project, "tailwindcss");
+  const tailwindVersion = packageVersion(packageRoot, "tailwindcss");
   const major = tailwindVersion ? Number(tailwindVersion.split(".")[0]) : 0;
-  const hasTailwindVite = Boolean(resolvePackageJson(project, "@tailwindcss/vite"));
+  const hasTailwindVite = Boolean(resolvePackageJson(packageRoot, "@tailwindcss/vite"));
   const referencesTailwind = cssReferencesTailwind(cssEntries);
 
   if (major >= 4 && hasTailwindVite && referencesTailwind) {
-    return { toolchain: "tailwind-v4", postcssConfigDir: null };
+    return { toolchain: "tailwind-v4", postcssConfigDir: null, packageRoot, tailwindConfigPath };
   }
-  if (major === 3 && hasPostcssConfig(project)) {
-    return { toolchain: "tailwind-v3", postcssConfigDir: project };
+  if (major === 3 && postcssConfigDir && referencesTailwind) {
+    return { toolchain: "tailwind-v3", postcssConfigDir, packageRoot, tailwindConfigPath };
   }
-  return { toolchain: "none", postcssConfigDir: null };
+  return { toolchain: "none", postcssConfigDir: null, packageRoot, tailwindConfigPath };
 }
 
 function packageEntry(pkg) {
@@ -516,13 +563,12 @@ function workspaceAliases(project) {
   return aliases;
 }
 
-function tsconfigAliases(project) {
+function tsconfigAliases(project, preferredRoots = []) {
   const candidates = walkFiles(project, (dir) => {
     const rel = slash(relative(project, dir));
     return !rel.startsWith("data/") && !rel.startsWith("docs/") && !rel.startsWith(".pipeline/work/");
   }).filter((file) => file.endsWith(`${sep}tsconfig.json`) || file === join(project, "tsconfig.json"));
   const values = new Map();
-  const conflicts = new Set();
   for (const configPath of candidates) {
     try {
       const config = JSON.parse(readText(configPath));
@@ -536,18 +582,34 @@ function tsconfigAliases(project) {
         const cleanTarget = target.endsWith("/*") ? target.slice(0, -2) : target;
         const resolved = resolve(base, cleanTarget);
         if (!dirExists(resolved) && !fileExists(resolved)) continue;
-        const previous = values.get(alias);
-        if (previous && resolve(previous) !== resolve(resolved)) conflicts.add(alias);
-        else values.set(alias, resolved);
+        const candidates = values.get(alias) ?? [];
+        candidates.push({ resolved, configDir: dirname(configPath) });
+        values.set(alias, candidates);
       }
     } catch {
       // JSON-with-comments or extended configs are left to explicit viewer aliases.
     }
   }
-  return Object.fromEntries([...values].filter(([alias]) => !conflicts.has(alias)));
+  const aliases = {};
+  for (const [alias, candidates] of values) {
+    const unique = uniq(candidates.map(({ resolved }) => resolve(resolved)));
+    if (unique.length === 1) {
+      aliases[alias] = unique[0];
+      continue;
+    }
+    const preferred = uniq(
+      candidates
+        .filter(({ configDir }) => preferredRoots.some((root) =>
+          configDir === resolve(root) || configDir.startsWith(`${resolve(root)}${sep}`),
+        ))
+        .map(({ resolved }) => resolve(resolved)),
+    );
+    if (preferred.length === 1) aliases[alias] = preferred[0];
+  }
+  return aliases;
 }
 
-export function detectAliases(project, viewerConfig) {
+export function detectAliases(project, viewerConfig, preferredRoots = []) {
   const explicit = viewerConfig.aliases;
   const configured = explicit && typeof explicit === "object"
     ? Object.fromEntries(
@@ -556,7 +618,7 @@ export function detectAliases(project, viewerConfig) {
           .map(([alias, target]) => [alias, resolveProjectPath(project, target)]),
       )
     : {};
-  return { ...workspaceAliases(project), ...tsconfigAliases(project), ...configured };
+  return { ...workspaceAliases(project), ...tsconfigAliases(project, preferredRoots), ...configured };
 }
 
 function jsString(value) {
@@ -575,7 +637,7 @@ function writeGeneratedViewerFiles(project, viewerDir) {
   const storyGlobs = detectStoryGlobs(project, explicitStoryGlobs);
   const css = detectCssEntries(project, viewerConfig, designSystem);
   const toolchain = detectToolchain(project, viewerConfig, css.entries);
-  const aliases = detectAliases(project, viewerConfig);
+  const aliases = detectAliases(project, viewerConfig, [toolchain.packageRoot]);
 
   const storyLines = (storyGlobs.length > 0 ? storyGlobs : DEFAULT_STORY_GLOBS)
     .map((glob) => storyGlobFromProject(project, viewerDir, glob))
@@ -614,6 +676,8 @@ function writeGeneratedViewerFiles(project, viewerDir) {
         projectRoot: project,
         toolchain: toolchain.toolchain,
         postcssConfigDir: toolchain.postcssConfigDir,
+        packageRoot: toolchain.packageRoot,
+        tailwindConfigPath: toolchain.tailwindConfigPath,
         aliases,
       },
       null,

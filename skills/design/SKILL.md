@@ -222,12 +222,14 @@ Stand the viewer up for the founder — they never set it up by hand. Run the bu
    service owns the port, select the next free port instead of reusing the wrong viewer.
 2. Copy the viewer into `<project-root>/viewer/` once (it must live in the project — it compiles that project's stories live; skipped if already present).
 3. `npm install` in the viewer only if `node_modules` is missing (the Vite/esbuild toolchain ships a platform-native binary, so first run needs a network install).
-4. Resolve the project's real CSS entry. If configured compiled CSS is missing, run the owning
-   package's existing `build:css` script (the same build used by the application); if it still cannot
-   be produced, fall back to app-entry/common-CSS discovery rather than starting unstyled.
-5. Resolve workspace package names and unambiguous `tsconfig` path aliases so stories use the same
-   module graph as the application. Project-specific aliases may override detection through
-   `viewer.aliases`.
+4. Resolve the project's real CSS entry. Refresh configured generated CSS with the owning package's
+   existing `build:css` script (the same build used by the application); if it cannot be produced,
+   fall back to app-entry/common-CSS discovery rather than starting unstyled. Resolve Tailwind,
+   PostCSS, and Tailwind configuration relative to the package owning that CSS entry, including
+   package-relative Tailwind v3 content globs.
+5. Resolve workspace package names and `tsconfig` path aliases so stories use the same module graph
+   as the application. When an alias is ambiguous across a monorepo, prefer the CSS-owning package's
+   definition; project-specific aliases may override detection through `viewer.aliases`.
 6. Start the Vite dev server detached and poll until that project's runtime identity answers.
 7. Print the selected base URL; open `<base-url>/#<ComponentName>` for the variant. Exit non-zero if it never comes up.
 
