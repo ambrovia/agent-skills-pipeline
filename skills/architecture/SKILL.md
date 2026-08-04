@@ -20,8 +20,11 @@ current repository structure, and any `@lore` on the surfaces this change touche
 change a costly or cross-cutting decision.
 
 Run a focused feasibility probe only when a load-bearing assumption is new, unknown, or contradicted by
-available evidence. Put reproducible question, method, result, and verdict in `feasibility.md`; keep
-scratch work under `probes/`. A probe reduces uncertainty and does not become a deliverable.
+available evidence. When the premise depends on deployed or live state (bucket contents, running jobs,
+live rows, remote config, external behaviour), probe that live surface — a repo read is not enough; if
+unreachable, mark it `UNVERIFIED`. Put reproducible question, method, result, and verdict in
+`feasibility.md`; keep scratch work under `probes/`. A probe reduces uncertainty and does not become a
+deliverable.
 
 Reconcile the requested outcome with reality. Verify that every symbol the plan or spec names — table,
 route, component, constant, export — exists in the shape assumed, and record each disagreement with how
@@ -60,9 +63,9 @@ cross-leaf seam. The orchestrator decides at runtime whether those leaves run se
 how many builder subagents to spawn.
 
 For migrations, renames, shared files, protected tests, or concurrency, state the concrete invariant and
-name the affected sites — source, fixtures, tests — with the step each one needs. Do not add rollback
-machinery, observability, compatibility layers, or exhaustive failure handling without an AC, configured
-rule, tier need, or plausible change-caused risk.
+name the affected sites — source, fixtures, tests — with the step each one needs. Do not add a mechanism,
+abstraction, rollback layer, observability, compatibility shim, or failure-handling path without an AC,
+configured rule, or plausible change-caused risk — tier sets rigor, not ambition.
 
 ## Done
 

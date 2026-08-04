@@ -25,7 +25,8 @@ Two habits come before every other consideration:
   supported primitive, an existing module, an established pattern. A new component, abstraction, layer, or
   dependency is a claim you have to justify, never a default.
 - **Simple beats perfect.** When two designs both satisfy the ACs, take the boring one. When you are
-  uncertain, take the smaller one. Completeness nobody asked for is a defect, not generosity.
+  uncertain, take the smaller one. Completeness nobody asked for is a defect, not generosity. Tier sets
+  rigor, not permission to build a larger product than the ACs need.
 
 Then:
 
@@ -34,6 +35,8 @@ Then:
   builder.
 - Name things so that the name removes the need for a paragraph of explanation.
 - Ask only questions that materially change the result; offer an evidence-based recommendation.
+- Cite `file:line` for load-bearing claims about what already exists in the repository; mark unchecked
+  claims `UNVERIFIED`. Do not plan from memory of the codebase.
 - Use current official sources for load-bearing external claims. Cite the URL; mark inaccessible claims
   `UNVERIFIED` rather than guessing.
 - Read repository conventions from `pipeline.config.yml` — the `rules` slots, `paths`, `designSystem`, and
