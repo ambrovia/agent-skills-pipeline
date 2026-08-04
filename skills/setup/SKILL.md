@@ -10,9 +10,9 @@ user-invocable: true
 # Setup
 
 Configuration lives in `pipeline.config.yml` at the repository root — `verify`, `vcs`, `paths`,
-`designSystem`, `engineering.tier`, and the `rules` slots (`code`, `testing`, `architecture`,
-`design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each pointing at a markdown file
-of binding project guidance. Start from `pipeline.config.example.yml`.
+`designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, and the `rules` slots (`code`,
+`testing`, `architecture`, `design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each
+pointing at a markdown file of binding project guidance. Start from `pipeline.config.example.yml`.
 
 Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at that path. The location is
 host-neutral, so every tool reads the same rules. Rule files are maintainer-authored and committed; a
@@ -30,6 +30,13 @@ patterns. Distinguish:
 - an existing invariant supported by evidence;
 - a future policy the maintainer may choose;
 - conditional guidance or a generic suggestion.
+
+For an established repository, also inspect available retros, compound candidates, and lore. For each
+recurring lesson, identify whether the generic pipeline already handles it, it should become a repository
+rule, or it is no longer applicable. Never promote a historical observation automatically.
+
+Configure worktree bootstrap, cleanup, and forbidden-artifact checks only from commands and hazards the
+repository already owns or the maintainer approves. Leave absent lifecycle settings unset; never guess.
 
 Present evidence, proposed rule text, applicability, blocking force, and trade-offs. Ask the maintainer
 to approve or revise it. Write only approved rules and wire only real paths; `null` deliberately means

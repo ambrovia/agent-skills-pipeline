@@ -28,7 +28,9 @@ restate the type system, exercise trivially-true branches, or exist to move a co
 nobody can read is a maintenance cost that hides the few tests that matter. For a compound AC, cover its
 material conditions without mechanically forcing one file or one test per AC.
 
-Confirm new behavioral tests fail for the intended missing behavior rather than setup noise. Record the
+When adding an automated behavior test, run it before implementation and confirm it fails for the missing
+behavior. Use the smallest relevant test command; no full verification or separate red commit is required.
+Skip this when the approved evidence is manual, rendered, static, or an existing failing test. Record the
 AC-to-evidence map and any evidence limitation. Stop on a plan contradiction or when required evidence
 cannot be produced without new scope.
 

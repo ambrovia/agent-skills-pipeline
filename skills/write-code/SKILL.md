@@ -23,9 +23,11 @@ next reader to rediscover it.
 Commit at each completed task boundary. An interrupted session then resumes from the last commit instead
 of stranding work in a dirty tree.
 
-Run focused checks after meaningful edits. Do not weaken tests, edit outside owned paths, perform adjacent
-cleanup, add speculative capability, or redesign around a plan contradiction. Raise a blocker with
-evidence when new scope or a changed structural decision is required.
+Use focused checks while building; do not run `{{verify}}` after every edit. Run it when the integrated
+implementation is ready, and rerun it only after later changes invalidate the result. Add tests only for
+approved behavior where they can catch a meaningful regression. Do not weaken tests, edit outside owned
+paths, perform adjacent cleanup, add speculative capability, or redesign around a plan contradiction.
+Raise a blocker with evidence when new scope or a changed structural decision is required.
 
 Finish only when required evidence is green — including `{{verify}}` and the end-to-end evidence named in
 `architecture.md` — change-caused regressions are fixed, and the diff contains no unrelated work or WP-ID

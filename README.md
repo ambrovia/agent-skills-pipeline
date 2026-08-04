@@ -137,6 +137,9 @@ engineering:
   tier: mvp               # prototype | mvp | production | critical — the customer and rigor all phases target
 designSystem: null        # null → the design phases are skipped
 vcs: github
+# worktree:               # optional repository-owned lifecycle commands
+#   bootstrap: "go mod download"
+#   cleanup: null
 ```
 
 The **engineering tier** is load-bearing and is chosen by customer, not by aspiration:

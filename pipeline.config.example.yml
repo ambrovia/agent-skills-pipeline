@@ -33,6 +33,13 @@ designSystem: null
 # Version control + where "ship" opens PRs and waits for CI. github | gitlab | none
 vcs: github
 
+# Optional worktree lifecycle commands and contamination checks. Configure only
+# commands the repository owns; the pipeline never guesses cleanup behavior.
+# worktree:
+#   bootstrap: "npm ci"
+#   cleanup: null
+#   forbiddenArtifacts: ["core", "**/*.tsbuildinfo"]
+
 # Project rules — OPTIONAL files that let THIS repo steer specific skills without
 # forking them. Each key below is a fixed rule "slot" the skills know to look for;
 # point it at a markdown file of binding project guidance and the relevant skill

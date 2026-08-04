@@ -24,24 +24,26 @@ require a maintainer-approved plan amendment or another WP.
 
 Each WP lives under `.pipeline/work/<id>/`; its track registry/dependency graph lives in
 `.pipeline/<track>.md`. Repository-specific behaviour comes from `pipeline.config.yml` — `verify`,
-`vcs`, `paths`, `designSystem`, `engineering.tier`, and the `rules` slots, whose files live under
-`.pipeline/rules/` and are read-only to every pipeline phase. Written state must let a cold agent resume
-without session memory. Never read or mutate another WP's folder except its declared coordination
-dependency.
+`vcs`, `paths`, `designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, and the
+`rules` slots, whose files live under `.pipeline/rules/` and are read-only to every pipeline phase.
+Written state must let a cold agent resume without session memory. Never read or mutate another WP's
+folder except its declared coordination dependency.
 
 Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/approved.md` (`/design`),
 `architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
 from `/review`, persisted by the orchestrator because the reviewer is read-only), `retro.jsonl`
-(`/retro`), and `progress.json` recording phase, status, attempts, artifacts, approvals, and verdicts.
+(`/retro`), and `progress.json` recording phase, status, session starts, completed evaluation attempts,
+artifacts, approvals, and verdicts.
 `/ship` consolidates the folder before the PR.
 
 Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
 the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
 configured workflow, cut from the current remote default branch rather than a local checkout that may be
-stale — a stale base hides registered work and reintroduces reverted code. Bootstrap a new or long-idle
-worktree — install, environment, build — before any build or verification runs there; a missing bootstrap
-produces false failures and stale artifacts, and a bootstrap that cannot run is a blocked state. Preserve
-an unrelated dirty tree and stop if safe isolation is impossible.
+stale — a stale base hides registered work and reintroduces reverted code. Confirm the repository and
+worktree before writing. Run configured bootstrap only when the worktree is new or stale, and never reuse
+a development server from another checkout. Run configured contamination and cleanup checks before
+commit or removal; never invent cleanup commands. Preserve an unrelated dirty tree and stop if safe
+isolation or required bootstrap is impossible.
 
 `/work-planning` is maintainer-only. If the strategic frame, plan, ACs, tier, or dependencies are missing
 or contradictory, record a precise blocked state and park.
@@ -141,9 +143,16 @@ builder redesign or let the orchestrator create scope.
 
 ### 5. Implementation review
 
-Run `/review` as a fresh read-only reviewer over the complete integrated diff. `DONE` requires every AC
-to pass and no blocking finding. Send only blocking findings to the builder, then run focused verification
-and fresh review. Cap identical lifecycle retries at three changed strategies before blocking.
+Before review, choose its runtime shape as deliberately as a build wave: one reviewer, sequential
+reviewers, or parallel reviewers. Default to one fresh reviewer over the complete integrated diff because
+one reviewer can follow behavior across seams. Split only when distinct risk areas justify independent
+attention. Split reviewers work independently; finish with one reviewer assessing the complete integrated
+change and combined findings.
+
+`DONE` requires every AC to pass and no blocking finding. Send only blocking findings to the builder, then
+run focused verification and fresh review. Count completed evaluations, not sessions or interrupted runs.
+Each retry must use a changed strategy. After three unsuccessful evaluations, park for maintainer
+direction instead of declaring the work impossible.
 
 After `DONE`, summarize delivered outcomes, AC evidence, material trade-offs, and non-blocking limitations
 for final human approval. Park until approved; never auto-approve the built result.
