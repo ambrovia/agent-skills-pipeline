@@ -21,7 +21,7 @@ change a costly or cross-cutting decision.
 
 Run a focused feasibility probe only when a load-bearing assumption is new, unknown, or contradicted by
 available evidence. When the premise depends on deployed or live state (bucket contents, running jobs,
-live rows, remote config, external behaviour), probe that live surface — a repo read is not enough; if
+live rows, remote config, external behavior), probe that live surface — a repo read is not enough; if
 unreachable, mark it `UNVERIFIED`. Put reproducible question, method, result, and verdict in
 `feasibility.md`; keep scratch work under `probes/`. A probe reduces uncertainty and does not become a
 deliverable.

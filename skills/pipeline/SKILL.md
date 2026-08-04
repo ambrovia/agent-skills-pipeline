@@ -23,7 +23,7 @@ review, and ship still owe work.
 require a maintainer-approved plan amendment or another WP.
 
 Each WP lives under `.pipeline/work/<id>/`; its track registry/dependency graph lives in
-`.pipeline/<track>.md`. Repository-specific behaviour comes from `pipeline.config.yml` — `verify`,
+`.pipeline/<track>.md`. Repository-specific behavior comes from `pipeline.config.yml` — `verify`,
 `vcs`, `paths`, `designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, and the
 `rules` slots, whose files live under `.pipeline/rules/` and are read-only to every pipeline phase.
 Written state must let a cold agent resume without session memory. Never read or mutate another WP's
@@ -33,8 +33,7 @@ Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/app
 `architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
 from `/review`, persisted by the orchestrator because the reviewer is read-only), `retro.jsonl`
 (`/retro`), and `progress.json` recording phase, status, session starts, completed evaluation attempts,
-artifacts, approvals, and verdicts.
-`/ship` consolidates the folder before the PR.
+artifacts, approvals, and verdicts. `/ship` consolidates the folder before the PR.
 
 Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
 the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
@@ -124,10 +123,10 @@ unavailable; never auto-approve, and never treat "routine" or "backend-only" as 
 
 ### 4. Build
 
-Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`; use other reliable
-evidence permitted by `{{rules.testing}}` when a new automated test is disproportionate. The build must
-produce the end-to-end evidence named in `architecture.md`. Run `/write-docs` only for an explicit docs
-deliverable or authoritative docs made false by the change.
+Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`. Where a new
+automated test would be disproportionate, other reliable evidence stands in only if `architecture.md` or
+`{{rules.testing}}` names it. The build must produce the end-to-end evidence named in `architecture.md`.
+Run `/write-docs` only for an explicit docs deliverable or authoritative docs made false by the change.
 
 Default to one builder subagent. When `architecture.md` names multiple leaves, decide sequential vs
 parallel and the subagent count for that wave — do not fan out by habit. Each parallel leaf gets an

@@ -31,13 +31,14 @@ points at a file that is actually present. If setup was never run, or a slot thi
 empty without a recorded decision, say so and offer `/setup` first.
 
 Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`, and
-enough source to understand the existing capability. Ask only questions whose answers would materially change the outcome, boundary,
-or acceptance criteria. Offer an evidence-based read for the maintainer to confirm or correct.
+enough source to understand the existing capability. Ask only questions whose answers would materially
+change the outcome, boundary, or acceptance criteria. Offer an evidence-based read for the maintainer to
+confirm or correct.
 
 Confirm:
 
 1. **Value:** Name who benefits, what improves, and the concrete cost of not doing the work. Do not
-   register work justified only by completeness, imitation, or “nice to have.”
+   register work justified only by completeness, imitation, or "nice to have".
 2. **Existing behavior:** Identify what already exists and isolate the genuine missing delta. Do not
    rebuild an existing capability. Use focused exploration when the answer is not readily visible.
 3. **Stable frame:** The track's shared strategic boundary or load-bearing primitive is established in
@@ -118,7 +119,7 @@ other solution choices unless the maintainer explicitly approves one as a hard c
 
 Collectively, the ACs define the complete required outcome; prose, examples, scenarios, downstream
 artifacts, and tests do not create additional requirements. For compound behavior, make each required
-condition visible rather than hiding it behind words such as “complete,” “robust,” or “best practice.”
+condition visible rather than hiding it behind words such as "complete", "robust", or "best practice".
 
 Validation scenarios clarify representative behavior. Use as many as needed for ambiguity and no more.
 Every AC needs reliable evidence downstream, but this skill does not prescribe one new automated test

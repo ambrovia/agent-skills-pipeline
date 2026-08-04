@@ -9,7 +9,8 @@ verify: "npm run verify"
 
 # The customer every planning + critique phase is building for (over- and
 # under-building both count as defects). /work-planning re-confirms it each run
-# and HALTs if unclear. Overridable per-track and per-work-package.
+# and stops for a maintainer decision if unclear. Overridable per-track and
+# per-work-package.
 #   prototype  — builders/internal demo: core flow works manually; key features may be absent
 #   mvp        — early tolerant users: core works mostly; auxiliary features and edge cases may be absent
 #   production — ordinary users/customers: works normally and reliably; standard tests, errors, and security
@@ -24,7 +25,7 @@ paths:
   docs: ["docs/**"]
 
 # Path + conventions of your design system. null → the design + design-critique
-# + visual-polish phases are skipped (backend / infra / library repos).
+# phases are skipped (backend / infra / library repos).
 designSystem: null
 # designSystem:
 #   path: "src/design-system"
@@ -49,14 +50,14 @@ vcs: github
 # component budget, reuse-before-build, type conventions, security policy) reaches
 # the otherwise-generic skills. Which skill reads which slot is noted after each.
 rules:
-  code: null           # language / type / style conventions — write-code, architecture, review
-  testing: null        # what counts as a test, layout, lanes/fixtures, combined/integration seam — write-tests, architecture, review
+  code: null           # language / type / style conventions — write-code, architecture, architecture-critique, review
+  testing: null        # what counts as a test, layout, lanes/fixtures, combined/integration seam — write-tests, architecture, architecture-critique, review, pipeline
   architecture: null   # architecture invariants & conventions — architecture, architecture-critique, write-code, review
   design-system: null  # component budget, tokens, reuse-before-build, promotion — design, design-critique, write-code, review
-  frontend: null       # client / UI conventions — design, write-code, review
+  frontend: null       # client / UI conventions — design, design-critique, write-code, review
   visual: null         # visual fidelity / regression policy — design, design-critique, review
   aesthetics: null     # aesthetic quality bar — design, design-critique
-  security: null       # security policy / threat model — architecture, write-code, review
+  security: null       # security policy / threat model — architecture, architecture-critique, write-code, review
   docs: null           # documentation voice & conventions — write-docs, review
 # Rule files live under .pipeline/rules/ — host-neutral, so every tool reads the same
 # ones. They are maintainer-authored and committed: /setup writes them with your

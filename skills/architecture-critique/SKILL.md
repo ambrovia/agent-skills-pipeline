@@ -9,10 +9,11 @@ user-invocable: true
 
 # Architecture critique
 
-Read the approved plan, requirements, design when applicable, architecture, feasibility evidence, and
-configured project rules. Fact-audit every load-bearing claim about existing code or precedent:
-independently locate it and cite `file:line` (or mark `UNVERIFIED`). Do the same against current official
-sources for external claims.
+Review as a fresh evaluator. Read the approved plan, requirements, design when applicable, architecture,
+feasibility evidence, and the `pipeline.config.yml` rule slots `/architecture` works under
+(`{{rules.architecture}}`, `{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared
+slots). Fact-audit every load-bearing claim about existing code or precedent: independently locate it and
+cite `file:line` (or mark `UNVERIFIED`). Do the same against current official sources for external claims.
 
 Check that the plan:
 
@@ -35,8 +36,8 @@ claim is false or `UNVERIFIED`, no end-to-end evidence is named, the plan builds
 scope or introduces unrequired mechanism at the stated tier, or a concrete material risk lacks a plan.
 Do not block on absent optional sections, alternative preferences, or speculative scale already excluded.
 
-Report operational severity, evidence, authority, and what works. Verdict is `PASS` with no blockers.
-Never score or rewrite the plan.
+Use `BLOCKING`, `NON-BLOCKING DEFECT`, and `FOLLOW-UP / NOTE`; cite evidence and authority and report what
+works. Verdict is `PASS` with no blockers. Never score or rewrite the plan.
 
 ## Target
 
