@@ -9,6 +9,11 @@ user-invocable: true
 
 # Setup
 
+Configuration lives in `pipeline.config.yml` at the repository root — `verify`, `vcs`, `paths`,
+`designSystem`, `engineering.tier`, `models`, and the `rules` slots (`code`, `testing`, `architecture`,
+`design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each pointing at a markdown file
+of binding project guidance. Start from `pipeline.config.example.yml`.
+
 For each requested rule slot, inspect repository configuration, code, tests, docs, CI, and established
 patterns. Distinguish:
 

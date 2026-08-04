@@ -1,7 +1,7 @@
 ---
 name: architecture
 description: "Produce the technical plan for an approved work package. Use when implementation needs contracts, cross-cutting decisions, feasibility evidence, ownership, or ordered tasks. Define necessary decisions without transcribing local implementation."
-phase: 4
+phase: 3
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -14,7 +14,8 @@ approved requirements and design constrain the in-scope solution. Architecture m
 
 ## Understand and verify
 
-Read the approved artifacts, configured architecture/code/testing/security rules, relevant source, and
+Read the approved artifacts, the `pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
+`{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source, and
 current repository structure. Ask only questions that change a costly or cross-cutting decision.
 
 Run a focused feasibility probe only when a load-bearing assumption is new, unknown, or contradicted by
@@ -34,7 +35,11 @@ Include what a cold builder needs:
 - public/cross-layer contracts, data flow, persistence or migration semantics where applicable;
 - plausible changed failure/security behavior appropriate to the tier;
 - load-bearing files/modules and dependency order;
-- verification approach using existing lanes where adequate;
+- verification approach using existing lanes where adequate, including the one piece of end-to-end
+  evidence that will show the change working through its real consuming path in production conditions —
+  an integration or E2E test, a scripted run, or a specific manual check with its expected observation.
+  Name the cheapest form that would actually catch a broken wire; do not mandate a new harness when an
+  existing lane or a recorded manual check suffices;
 - documentation made false by the change;
 - technical tasks with ownership only where coordination needs it.
 

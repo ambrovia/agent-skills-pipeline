@@ -1,7 +1,7 @@
 ---
 name: write-tests
 description: "Create proportionate failing evidence for approved acceptance criteria before implementation when behavior is regressible and an automated test is appropriate. Use in the build phase; do not let tests create requirements."
-phase: 7
+phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -9,10 +9,14 @@ user-invocable: true
 
 # Write tests
 
-Read approved artifacts and configured testing rules. Map every AC to the cheapest reliable evidence.
-Prefer existing test lanes and focused behavioral assertions. Add an automated red test before code when
-the behavior is regressible and the repository can express it proportionately; use permitted static or
-manual evidence for declarative/visual behavior where appropriate.
+Read approved artifacts, `{{rules.testing}}` from `pipeline.config.yml`, and the existing tests under
+`{{paths.tests}}`. Map every AC to the cheapest reliable evidence. Prefer existing test lanes and focused
+behavioral assertions. Add an automated red test before code when the behavior is regressible and the
+repository can express it proportionately; use permitted static or manual evidence for declarative/visual
+behavior where appropriate.
+
+Produce the end-to-end evidence named in `architecture.md` alongside the per-AC evidence. Use the lane it
+names; do not build a parallel harness, and do not upgrade a named manual check into new automation.
 
 Tests prove approved requirements and applicable invariants. They may not add outcomes, freeze incidental
 implementation, or require unrelated infrastructure. Preserve protected assertions and existing test

@@ -29,8 +29,9 @@ Do not formally review your own work, write production code, or approve a human 
 - Ask only questions that materially change the result; offer an evidence-based recommendation.
 - Use current official sources for load-bearing external claims. Cite the URL; mark inaccessible claims
   `UNVERIFIED` rather than guessing.
-- Reuse configured project rules, design tokens, and supported primitives where applicable. They govern
-  in-scope work and do not expand it.
+- Read repository conventions from `pipeline.config.yml` — the `rules` slots, `paths`, `designSystem`, and
+  `engineering.tier`. Reuse those rules, design tokens, and supported primitives where applicable. They
+  govern in-scope work and do not expand it.
 
 ## Artifacts
 

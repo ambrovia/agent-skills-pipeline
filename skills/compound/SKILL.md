@@ -9,9 +9,10 @@ user-invocable: true
 
 # Compound
 
-Read the candidate tracker before the retro log. Group observations only when they describe the same
-behavioral mechanism. Three independent occurrences qualify a pattern for consideration; they do not
-prove the diagnosis or authorize a change.
+Read the candidate tracker at `.pipeline/compound-candidates.md` — the durable memory of prior patterns —
+before reading every `.pipeline/work/*/retro.jsonl`. Create the tracker empty if it does not exist. Group
+observations only when they describe the same behavioral mechanism. Three independent occurrences qualify
+a pattern for consideration; they do not prove the diagnosis or authorize a change.
 
 Classify patterns as emerging, confirmed, contradicted, or resolved. For each confirmed pattern report:
 

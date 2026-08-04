@@ -1,7 +1,7 @@
 ---
 name: work-planning
 description: "Create and register an outcome-level work-package spec in `.pipeline/`. Maintainer-only. Use when a maintainer asks to add, split, or reshape a work package under a track. Do not use during an active pipeline run or for implementation planning."
-phase: 1
+phase: 0
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[track-letter] [short-title] (e.g. 'L mobile-collapse')"
@@ -25,8 +25,8 @@ outcomes silently. A new outcome requires an approved plan amendment or a separa
 
 ## Before registering
 
-Read the relevant track file, configured project documentation, and enough source to understand the
-existing capability. Ask only questions whose answers would materially change the outcome, boundary,
+Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`, and
+enough source to understand the existing capability. Ask only questions whose answers would materially change the outcome, boundary,
 or acceptance criteria. Offer an evidence-based read for the maintainer to confirm or correct.
 
 Confirm:
@@ -38,9 +38,9 @@ Confirm:
 3. **Stable frame:** The track's shared strategic boundary or load-bearing primitive is established in
    configured project documentation. If it is missing or contested, stop for maintainer resolution.
    A WP-specific detail may instead be marked for refinement.
-4. **Tier:** Confirm the customer-based engineering tier: `prototype`, `mvp`, `production`, or
-   `critical`. Deployment or real data alone does not imply `critical`. Record an explicit reason for
-   any WP override of the project or track tier.
+4. **Tier:** Confirm the customer-based engineering tier from `pipeline.config.yml` `engineering.tier`:
+   `prototype`, `mvp`, `production`, or `critical`. Deployment or real data alone does not imply
+   `critical`. Record an explicit reason for any WP override of the project or track tier.
 5. **Dependencies:** Keep only dependencies that make this WP impossible to implement or verify before
    the dependency is done. Related work is not automatically a dependency.
 6. **Identity:** Use a valid track and a unique WP ID. Exact and derived WP IDs must remain inside

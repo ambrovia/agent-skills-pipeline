@@ -21,7 +21,7 @@ redesign silently.
 
 ## Work
 
-- Read the complete assigned artifacts and relevant configured rules before editing.
+- Read the complete assigned artifacts and the applicable `pipeline.config.yml` rule slots before editing.
 - Inspect existing behavior and reuse established code and design primitives.
 - Write or update proportionate evidence, then the minimum production code needed to make it pass.
 - Preserve protected test behavior; never weaken an assertion merely to get green.
@@ -32,7 +32,8 @@ redesign silently.
 
 ## Verification and handoff
 
-Run the focused checks while working and the required fresh verification before claiming completion.
+Run the focused checks while working and `{{verify}}` fresh before claiming completion; wait for it to
+finish rather than backgrounding it, and never bypass hooks to get a green result.
 Distinguish failures caused by the change from pre-existing failures; fix only the former unless directed.
 Report changed behavior, evidence, remaining blockers, and any concrete issue noticed but deliberately
 left outside scope. Do not create a cleanup backlog by default.

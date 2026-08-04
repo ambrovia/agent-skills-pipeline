@@ -1,7 +1,7 @@
 ---
 name: refine
 description: "Clarify an approved work package whose value, success conditions, scope boundary, or load-bearing noun remains unresolved. Skip when the plan is already clear. Produces requirements.md without adding scope."
-phase: 1
+phase: 2
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -14,7 +14,8 @@ explain its ACs but may not add outcomes.
 
 ## Inputs and applicability
 
-Read `plan.md`, the track's strategic frame, relevant project truth, and current behavior. Run only when
+Read `plan.md`, the track's strategic frame, the project truth under `{{paths.docs}}` it cites, and
+current behavior. Run only when
 the goal, impact, success boundary, out-of-scope line, or a load-bearing WP-specific noun is unresolved.
 Otherwise record that refinement is unnecessary and stop.
 

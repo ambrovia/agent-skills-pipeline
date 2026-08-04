@@ -1,7 +1,6 @@
 ---
 name: pipeline
 description: "Orchestrate one or more already-approved work packages end to end through applicable planning, independent critique, implementation, review, human approval, retro, and a CI-green PR. Never creates scope."
-phase: 0
 persona: orchestrator
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -20,13 +19,23 @@ review their work itself.
 require a maintainer-approved plan amendment or another WP.
 
 Each WP lives under `.pipeline/work/<id>/`; its track registry/dependency graph lives in
-`.pipeline/<track>.md`. `progress.json` records phase, status, attempts, artifacts, approvals, and verdicts.
-Written state must let a cold agent resume without session memory. Never read or mutate another WP's
-folder except its declared coordination dependency.
+`.pipeline/<track>.md`. Repository-specific behaviour comes from `pipeline.config.yml` — `verify`,
+`vcs`, `paths`, `designSystem`, `engineering.tier`, and the `rules` slots. Written state must let a cold
+agent resume without session memory. Never read or mutate another WP's folder except its declared
+coordination dependency.
+
+Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/approved.md` (`/design`),
+`architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
+from `/review`, persisted by the orchestrator because the reviewer is read-only), `retro.jsonl`
+(`/retro`), and `progress.json` recording phase, status, attempts, artifacts, approvals, and verdicts.
+`/ship` consolidates the folder before the PR.
 
 Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
 the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
-configured workflow. Preserve an unrelated dirty tree and stop if safe isolation is impossible.
+configured workflow. Bootstrap a new or long-idle worktree — install, environment, build — before any
+build or verification runs there; a missing bootstrap produces false failures and stale artifacts, and a
+bootstrap that cannot run is a blocked state. Preserve an unrelated dirty tree and stop if safe isolation
+is impossible.
 
 `/work-planning` is maintainer-only. If the strategic frame, plan, ACs, tier, or dependencies are missing
 or contradictory, record a precise blocked state and park.
@@ -43,10 +52,12 @@ write. Do not leak the expected verdict or prior diagnosis into a fresh review.
 
 ## Lifecycle
 
+Each skill's frontmatter `phase` names the section it belongs to; `phase: 0` runs before a pipeline run.
+
 ### 1. Preflight
 
 Resolve target WPs and dependency order. Confirm registry entries, valid plan sections, stable strategic
-frame, tier, applicable project configuration, isolated worktree, and clean ownership boundary. Skip a
+frame, tier, `pipeline.config.yml`, isolated bootstrapped worktree, and clean ownership boundary. Skip a
 WP already done. A blocked dependency blocks descendants without attempting their phases.
 
 ### 2. Requirement clarification when needed
@@ -72,18 +83,21 @@ Use fresh `/design-critique` and `/architecture-critique` reviewers for artifact
 blocking findings, with the same three-attempt discipline. Non-blocking defects and notes are retained
 for visibility but are not assigned automatically.
 
-Request maintainer concept approval only when the phase made a material product, UX, public-contract, or
-irreversible technical choice. Summarize choices, trade-offs, and blockers; do not present rubric scores.
-Park when approval is required but unavailable.
+The concept gate is mandatory: no build starts until the maintainer approves the design and architecture
+together. Summarize the product/UX choices, contracts, trade-offs, end-to-end evidence plan, and open
+blockers in plain language; do not present rubric scores. For UI, render the approved design so the
+maintainer reviews the surface rather than prose. Park as `awaiting-human-review` when approval is
+unavailable; never auto-approve, and never treat "routine" or "backend-only" as a skip reason.
 
 ### 4. Build
 
 Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`; use other reliable
-evidence permitted by configured rules when a new automated test is disproportionate. Run `/write-docs`
-only for an explicit docs deliverable or authoritative docs made false by the change.
+evidence permitted by `{{rules.testing}}` when a new automated test is disproportionate. The build must
+produce the end-to-end evidence named in `architecture.md`. Run `/write-docs` only for an explicit docs
+deliverable or authoritative docs made false by the change.
 
 Default to one builder task. Split only at real dependency or safe parallel boundaries from
-`architecture.md`. Each parallel leaf gets an isolated worktree, explicit owned writes, start commit,
+`architecture.md`. Each parallel leaf gets an isolated bootstrapped worktree, explicit owned writes, start commit,
 dependency receipts, and focused verification. No leaf writes shared surfaces without ownership. Integrate
 complete leaves in dependency order; never integrate partial work. If an upstream amendment invalidates
 descendants, mark and replay them rather than reusing stale receipts. Verify real cross-leaf seams.

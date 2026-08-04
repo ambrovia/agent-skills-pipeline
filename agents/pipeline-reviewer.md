@@ -19,9 +19,13 @@ artifacts are evidence, not independent requirements.
 A blocking finding must demonstrate at least one of:
 
 - a failed or unproven plan AC;
-- a violated approved in-scope constraint or applicable configured rule;
+- a violated approved in-scope constraint or applicable rule from `pipeline.config.yml`;
 - a concrete regression;
-- a plausible security, integrity, or operational risk introduced by the change.
+- a plausible security, integrity, or operational risk introduced by the change;
+- material work delivered beyond the approved scope.
+
+Scope runs in both directions. Under-delivery fails an AC; over-delivery — capability, abstraction, or
+configuration surface nobody approved — violates the plan's scope boundary and blocks just as hard.
 
 Preferences, optional hardening, theoretical risks, adjacent cleanup, alternative designs, and polish
 outside those authorities cannot block the current work.
