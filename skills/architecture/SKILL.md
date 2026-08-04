@@ -46,7 +46,8 @@ Include what a cold builder needs:
 Lock irreversible, public, cross-cutting, compatibility-sensitive, or expensive choices. Leave naming
 inside a local function, helper layout, and other reversible details to the builder. Prefer one technical
 task. Split only at a real dependency or safe parallel boundary; add an integration task only for a real
-cross-leaf seam.
+cross-leaf seam. The orchestrator decides at runtime whether those leaves run sequential or parallel and
+how many builder subagents to spawn.
 
 For migrations, renames, shared files, protected tests, or concurrency, state the concrete invariant and
 blast radius. Do not add rollback machinery, observability, compatibility layers, or exhaustive failure

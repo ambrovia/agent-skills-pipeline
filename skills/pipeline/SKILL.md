@@ -12,6 +12,10 @@ Drive approved WPs through a fixed lifecycle while running only phases whose tri
 orchestrator coordinates producers, reviewers, state, and human gates; it does not plan, implement, or
 review their work itself.
 
+Keep going until every targeted WP is `done`, `blocked`, or parked awaiting a human. Never end a turn
+without a tool call unless that terminal state is reached. Never stop after planning — critique, build,
+review, and ship still owe work.
+
 ## Authority and state
 
 `plan.md` owns required outcomes, ACs, tier, scope, and intent. `requirements.md`, approved design, and
@@ -45,10 +49,34 @@ or contradictory, record a precise blocked state and park.
 - The planner produces requirements, design, and architecture.
 - The reviewer is a fresh read-only evaluator and never repairs its own findings.
 - The builder writes tests, code, docs, and blocking fixes.
-- The orchestrator assigns phases, persists state, summarizes gates, and enforces transitions.
+- The orchestrator assigns phases, persists state, summarizes gates, enforces transitions, and decides
+  how work is dispatched to subagents.
 
-Reusing a session is an optimization only. Every assignment names the artifact to read and output to
-write. Do not leak the expected verdict or prior diagnosis into a fresh review.
+## Spawn and scheduling
+
+Spawn each persona as a **subagent in the host tool** (Claude Code agents, Cursor/Codex/Gemini/Copilot
+subagents, or the host's equivalent). Do not mode-switch the orchestrator into planner, reviewer, or
+builder work. Continuity lives in `.pipeline/` state — a cold spawn reconstitutes from the WP artifacts
+and produces the same result.
+
+Session reuse is an optimization only. Where the host keeps warm sessions, reuse a persona across its
+phases; where it does not, re-spawn each phase. Never gate a phase on reuse. Every assignment names the
+artifact to read and the output to write. Do not leak the expected verdict or prior diagnosis into a
+fresh review.
+
+**The orchestrator owns runtime shape.** Before each phase (and before each build wave), decide:
+
+- **sequential vs parallel** — run one subagent at a time, or fan out independent units together;
+- **how many subagents** — usually one planner or one reviewer per phase; for build, one builder by
+  default, more only when architecture names independently owned leaves whose parallel rationale still
+  holds;
+- **wave boundaries** — start dependants only after their dependency receipts are accepted.
+
+Prefer sequential when ownership overlaps, contracts are unsettled, isolation is unavailable, or the
+extra fan-out would not shorten the critical path. Prefer parallel only for truly independent leaves
+with explicit write ownership and bootstrapped isolation. Architecture proposes split boundaries;
+the orchestrator chooses the live schedule and may collapse a planned parallel split back to sequential
+when reality no longer supports it.
 
 ## Lifecycle
 
@@ -96,11 +124,13 @@ evidence permitted by `{{rules.testing}}` when a new automated test is dispropor
 produce the end-to-end evidence named in `architecture.md`. Run `/write-docs` only for an explicit docs
 deliverable or authoritative docs made false by the change.
 
-Default to one builder task. Split only at real dependency or safe parallel boundaries from
-`architecture.md`. Each parallel leaf gets an isolated bootstrapped worktree, explicit owned writes, start commit,
-dependency receipts, and focused verification. No leaf writes shared surfaces without ownership. Integrate
-complete leaves in dependency order; never integrate partial work. If an upstream amendment invalidates
-descendants, mark and replay them rather than reusing stale receipts. Verify real cross-leaf seams.
+Default to one builder subagent. When `architecture.md` names multiple leaves, decide sequential vs
+parallel and the subagent count for that wave — do not fan out by habit. Each parallel leaf gets an
+isolated bootstrapped worktree, explicit owned writes, start commit, dependency receipts, and focused
+verification. No leaf writes shared surfaces without ownership. Without per-writer isolation, run the
+same leaves sequentially. Integrate complete leaves in dependency order; never integrate partial work.
+If an upstream amendment invalidates descendants, mark and replay them rather than reusing stale
+receipts. Verify real cross-leaf seams.
 
 On repository/plan contradiction, return to the owning phase. Do not let the builder redesign or let the
 orchestrator create scope.
