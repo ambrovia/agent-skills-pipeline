@@ -13,11 +13,11 @@ Freeform "vibe coding" with an agent fails at scale: no separation between decid
 
 ```
 work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶ review ──▶ retro ──▶ ship
-                pipeline-planner    pipeline-reviewer      pipeline-builder        pipeline-reviewer    fresh     pipeline-builder
+                 planner     reviewer      builder        reviewer   any      builder
 ```
 
 - **The agent that designs is not the agent that reviews it.** Producer/evaluator separation is enforced by persona.
-- **Planning is phase 1, never the finish line.** A plan isn't done until the pipeline-builder makes it real and the pipeline-reviewer signs off.
+- **Planning is the first phase, never the finish line.** A plan isn't done until the pipeline-builder makes it real and the pipeline-reviewer signs off.
 - **Gates are mechanical.** Your `verify` command must pass and the review verdict must be `DONE` before ship.
 - Phases that don't apply are skipped — a backend work package skips the design phases automatically.
 
@@ -27,8 +27,9 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 |---|---|
 | [`apm.yml`](apm.yml) | [APM](https://microsoft.github.io/apm/) package manifest |
 | [`skills/`](skills/) | Pipeline skills (`SKILL.md`, [Agent Skills](https://agents.md/) standard) |
-| [`agents/`](agents/) | Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` personas |
-| [`agents-cursor/`](agents-cursor/) | Cursor-format personas (`model: inherit`) |
+| [`personas/`](personas/) | Persona source of truth; [`scripts/generate-agents.mjs`](scripts/generate-agents.mjs) renders every host format below |
+| [`agents/`](agents/) | Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` personas (generated) |
+| [`agents-cursor/`](agents-cursor/) | Cursor-format personas (`model: inherit`, generated) |
 | [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
 | [`.claude-plugin/`](.claude-plugin/) | Claude Code plugin + marketplace |
 | [`.cursor-plugin/`](.cursor-plugin/) | Cursor plugin + Team Marketplace |
@@ -54,7 +55,7 @@ Support levels differ by host:
 apm install ambrovia/agent-skills-pipeline
 ```
 
-APM reads the plugin layout (`plugin.json` / `.claude-plugin/`, `skills/`, `agents/`, `hooks/`) and deploys into the consumer’s harness directories. Prefer this when the project already uses APM.
+APM reads the plugin layout (`plugin.json` / `.claude-plugin/`, `skills/`, `agents/`, `hooks/`) and deploys into the consumer's harness directories. Prefer this when the project already uses APM.
 
 ### Claude Code — plugin
 
@@ -137,6 +138,9 @@ engineering:
   tier: mvp               # prototype | mvp | production | critical — the customer and rigor all phases target
 designSystem: null        # null → the design phases are skipped
 vcs: github
+# worktree:               # optional repository-owned lifecycle commands
+#   bootstrap: "go mod download"
+#   cleanup: null
 ```
 
 The **engineering tier** is load-bearing and is chosen by customer, not by aspiration:
@@ -156,29 +160,31 @@ The skills are deliberately generic — repo-specific knowledge (test layout, wh
 
 ```yaml
 rules:
-  code: .claude/rules/typescript.md       # → write-code, architecture, review
-  testing: .claude/rules/testing.md        # → write-tests, review
-  design-system: .claude/rules/design.md   # → design, design-critique, write-code, review
-  security: .claude/rules/security.md      # → review
+  code: .pipeline/rules/typescript.md       # → write-code, architecture, architecture-critique, review
+  testing: .pipeline/rules/testing.md       # → write-tests, architecture, architecture-critique, review, pipeline
+  design-system: .pipeline/rules/design.md  # → design, design-critique, write-code, review
+  security: .pipeline/rules/security.md     # → architecture, architecture-critique, write-code, review
 ```
+
+Rule files live under `.pipeline/rules/` so every host reads the same ones — nothing about them is Claude-, Cursor-, or Codex-specific. They are maintainer-authored and committed: `/setup` writes them with your approval, and a pipeline run may not edit them (the orchestrator owns `.pipeline/work/<id>/` and nothing else under `.pipeline/`).
 
 | Slot | Read by | Use it for |
 |---|---|---|
-| `code` | write-code, architecture, review | language / type / style conventions |
-| `testing` | write-tests, review | what counts as a test, layout, lanes/fixtures |
-| `architecture` | architecture, architecture-critique, review | architecture invariants & conventions |
+| `code` | write-code, architecture, architecture-critique, review | language / type / style conventions |
+| `testing` | write-tests, architecture, architecture-critique, review, pipeline | what counts as a test, layout, lanes/fixtures |
+| `architecture` | architecture, architecture-critique, write-code, review | architecture invariants & conventions |
 | `design-system` | design, design-critique, write-code, review | component budget, tokens, reuse-before-build, promotion |
-| `frontend` | design, write-code, review | client / UI conventions |
-| `visual` | design-critique, review | visual fidelity / regression policy |
+| `frontend` | design, design-critique, write-code, review | client / UI conventions |
+| `visual` | design, design-critique, review | visual fidelity / regression policy |
 | `aesthetics` | design, design-critique | aesthetic quality bar |
-| `security` | review | security policy / threat model |
-| `docs` | write-docs | documentation voice & conventions |
+| `security` | architecture, architecture-critique, write-code, review | security policy / threat model |
+| `docs` | write-docs, review | documentation voice & conventions |
 
 This is how one repo makes `/review` enforce its own reuse-before-build rule, or `/write-tests` follow its real-vs-mock lane policy, while another repo running the same plugin does something different — same skills, different rules. See [`pipeline.config.example.yml`](pipeline.config.example.yml) for the full slot list.
 
 ## The skills
 
-`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `ship` · `retro` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
+`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 

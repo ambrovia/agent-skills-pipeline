@@ -1,120 +1,38 @@
 ---
 name: write-code
-description: "Write the minimum code to make all failing tests pass (TDD green phase). Use when a work package has red tests in place and needs implementation against a clear target, before review. Triggers on a build/implement task for a planned work package."
-phase: 7
+description: "Implement an approved work package or its assigned technical leaf with the smallest clear solution that satisfies its evidence and contracts. Use after requirements are approved and verification targets are known."
+phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
 ---
 
-# Write Code — implement to green, nothing more
+# Write code
 
-## When this runs
+Read the assigned plan, approved design/architecture, AC-to-evidence map, the applicable
+`pipeline.config.yml` rule slots (`{{rules.code}}`, `{{rules.architecture}}`, `{{rules.design-system}}`,
+`{{rules.frontend}}`, `{{rules.security}}` — skip undeclared slots), and relevant existing code.
+Implement only the approved outcome and blocking retry findings.
 
-The work package has failing tests in place from the red phase. Implementation
-now has a clear, executable target: make the red tests green, and nothing more.
+Use the simplest repository-native solution. Reuse existing abstractions; add one only when the current
+change needs it. Preserve compatibility, migrations, security boundaries, UI behavior, and ownership
+explicitly required by the plan or applicable project rules. Make local reversible choices without
+returning to architecture, and record a non-obvious one as `@lore` where it lives rather than leaving the
+next reader to rediscover it.
 
-**Why this discipline matters:** with failing tests already in place,
-implementation has a concrete target. Writing the minimum code to pass keeps the
-codebase lean and prevents scope creep. Every line of code exists because a test
-demands it.
+Commit at each completed task boundary. An interrupted session then resumes from the last commit instead
+of stranding work in a dirty tree.
 
-## Project rules
+Use focused checks while building; do not run `{{verify}}` after every edit. Run it when the integrated
+implementation is ready, and rerun it only after later changes invalidate the result. Add tests only for
+approved behavior where they can catch a meaningful regression. Do not weaken tests, edit outside owned
+paths, perform adjacent cleanup, add speculative capability, or redesign around a plan contradiction.
+Raise a blocker with evidence when new scope or a changed structural decision is required.
 
-Follow any `pipeline.config rules` slot below as binding (it overrides this skill on conflict); skip undeclared slots.
+Finish only when required evidence is green — including `{{verify}}` and the end-to-end evidence named in
+`architecture.md` — change-caused regressions are fixed, and the diff contains no unrelated work or WP-ID
+leakage. Report pre-existing failures separately.
 
-- **`{{rules.code}}`** — language / type / style conventions the implementation must follow.
-- **`{{rules.frontend}}`** — client / UI conventions (if this touches UI).
-- **`{{rules.design-system}}`** — tokens + reuse-before-build: adopt or extend existing components, don't fork them.
-- **`{{rules.testing}}`** — conventions for any tests you touch in the green phase.
+## Target
 
-## What it produces
-
-- Implementation in `{{paths.source}}` that turns the red tests green.
-- Updated docs in `{{paths.docs}}` when behavior you changed is documented there.
-- A clean `{{verify}}` run — the full gate passes before anything reaches a pipeline-reviewer.
-
-## Steps
-
-1. **Read the target.** Read the technical plan (`.pipeline/work/<id>/architecture.md`)
-   — the executable target — plus the spec ACs in `.pipeline/work/<id>/plan.md`, the
-   per-track `.pipeline/<track>.md` if it needs coordination context, and
-   `.pipeline/work/<id>/progress.json`. Read the existing failing tests — they are the spec.
-   The plan names *what must change* (surfaces, contracts, obligations); **you** find every
-   concrete file path while implementing — grep callers, follow imports, cover the
-   blast-radius surfaces named. Its example paths are not the complete inventory.
-
-   For a task leaf, start from its context pointers and dependency receipts. Read further only for a concrete dependency or precedent. Write only to `Owns`; otherwise raise a BLOCKER. Return the receipt, with up to three useful carry-forward facts.
-
-2. **Implement in dependency order.** Work task by task. Write the *minimum* code
-   to make the failing tests pass. After each logical unit, run the relevant
-   tests (a focused subset is fine here).
-
-   For long mechanical work, prefer one repository script that owns its subprocesses, timeouts,
-   retries, logs, and final exit status. Invoke it once; do not reproduce its inner loop with agent
-   tool calls.
-
-3. **Render UI states (if a design system is configured).** For UI components,
-   create the component's story/example fixture rendering its key states, per the
-   conventions of `{{designSystem.path}}`. If no design system is configured
-   (`pipeline.config designSystem: null`), skip this step — it does not apply.
-
-4. **Verify before you ship.** Once all targeted tests are green, run the
-   project's verify command, `{{verify}}`, to confirm the full gate passes
-   (types, lint, tests). **Await the result — never background it and end your
-   turn**; use your host's monitor / await / block-until-complete mechanism and
-   stay until you have the exit code, since an interrupted run is not a green
-   gate. Verify must pass before pushing — that's the pipeline-builder's
-   responsibility, not the pipeline-reviewer's. (A fast typecheck mid-flight is
-   fine if the project defines one, but it does not replace the full gate.)
-
-   If verify fails, state the evidence and change strategy before retrying. Raise a plan conflict
-   as the existing `BLOCKER`.
-
-5. **Run the regression sweep.** Run the affected tests. If pre-existing tests
-   break because of your changes, you own the fix — see Regression ownership below.
-
-6. **Rename sweep.** When your changes rename, remove, or replace a symbol (field,
-   type, token, status value, route), grep the full codebase for the old name
-   before pushing. Zero matches required (excluding test assertions that verify
-   the old name is gone).
-
-7. **Doc sync.** If your implementation changes behavior documented in
-   `{{paths.docs}}` (API shapes, state machines, UI layouts, lifecycles, data
-   models, decision records), update the relevant doc section in the same commit.
-   Docs are part of the deliverable, not a follow-up task. The pipeline-reviewer will flag
-   stale docs as CRITICAL.
-
-8. **Open the change.** With the gate green, push and open a PR (or draft PR) via
-   `{{vcs}}` and wait for CI to pass.
-   **Leaf exception:** stop after focused verification and commits. The integration builder owns full verify, PR, and CI.
-
-## Core rules
-
-**Never weaken a test to make it pass.** If a test reveals a design flaw, fix the
-implementation, not the test.
-
-**STOP — never fake green.** If something outside your control blocks a real gate
-(missing credentials, exhausted credits, unavailable service, env the worktree
-can't provide), **HALT** — mark the WP `blocked` with the reason. Do **not** add
-`ignore` / `skipIf` / mute flags to force green.
-
-**Regression ownership.** If pre-existing tests break because of your changes, you
-own the fix. "Outside scope" is not a valid excuse for tests you broke.
-
-**Don't rationalize shortcuts:**
-
-| Rationalization | Reality |
-| --- | --- |
-| "The test is wrong." | Prove it's wrong before changing it. Most of the time, the implementation is wrong. |
-| "I'll add this extra feature while I'm here." | Scope creep is the #1 cause of work-package failure. Build exactly what was asked. |
-| "I can skip this task, it's covered by the next one." | Each task exists because it was independently testable. Skipping creates gaps. |
-| "I'll skip/ignore this so verify is green." | HALT and mark `blocked`. Skip-to-green is forbidden. |
-
-## Done when
-
-- All red tests for the work package are green.
-- `{{verify}}` passes the full gate (types, lint, tests).
-- The rename sweep returns zero stale matches.
-- Docs touched by changed behavior are updated in the same commit.
-- The change is open with green CI, or the leaf returned its committed receipt.
+$ARGUMENTS
