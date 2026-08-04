@@ -37,7 +37,8 @@ that evidence is missing or does not demonstrate the path, that blocks.
 Inspect:
 
 - conformance to approved architecture and design within plan scope;
-- meaningful tests and preservation of protected behavior;
+- tests that can fail for a reason someone would care about, no more of them than that needs, and
+  preservation of protected behavior;
 - concrete regressions and wiring/integration failures;
 - plausible changed security, data-integrity, concurrency, and failure risks;
 - work delivered beyond approved scope — unrequested capability, speculative abstraction, unnecessary

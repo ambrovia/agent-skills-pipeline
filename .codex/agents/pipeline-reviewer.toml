@@ -47,7 +47,9 @@ Adversarial lenses — what would break this?
 
 - **Adversarial** — stop confirming and start attacking. Read as a saboteur (what regresses silently?), as
   a new hire in week two (which name lies? what invariant is written down nowhere?), and as an auditor (do
-  the stated claims match the diff?).
+  the stated claims match the diff?). Ask of every green signal what would have to break for it to go red:
+  a check that cannot fail, that passed before the change it exists to prove, or that exercises a stand-in
+  for the very thing under test, is not evidence.
 - **Simplification** — where would the same result take less? Single-use helpers, premature generics, dead
   code, handling for states that cannot occur.
 - **Slop** — machine-generated tells: filler comments, defensive checks on non-nullable values, needless

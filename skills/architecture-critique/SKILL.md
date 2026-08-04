@@ -17,8 +17,10 @@ Check that the plan:
 
 - traces obligations to ACs or approved constraints without adding outcomes;
 - defines necessary public/cross-cutting contracts and real dependency/ownership boundaries;
-- reconciles with existing code and approved design;
-- addresses plausible changed failure, data, security, and migration risks at the stated tier;
+- reconciles with existing code and approved design, and derives the real consumers of any renamed,
+  moved, or removed symbol instead of repeating the spec's list;
+- addresses plausible changed failure, data, and migration risks at the stated tier, and reasons about
+  security from the surfaces the change actually reaches rather than deferring to an absent rule;
 - uses focused feasibility evidence for genuinely unknown load-bearing assumptions;
 - provides reliable, proportionate verification, including named end-to-end evidence that would show the
   change working through its real consuming path;

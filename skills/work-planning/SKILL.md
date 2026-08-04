@@ -25,6 +25,11 @@ outcomes silently. A new outcome requires an approved plan amendment or a separa
 
 ## Before registering
 
+Confirm the pipeline itself is configured before registering work against it: `pipeline.config.yml`
+exists with a working `verify`, `paths`, `vcs`, and `engineering.tier`, and every rule slot it declares
+points at a file that is actually present. If setup was never run, or a slot this work will depend on is
+empty without a recorded decision, say so and offer `/setup` first.
+
 Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`, and
 enough source to understand the existing capability. Ask only questions whose answers would materially change the outcome, boundary,
 or acceptance criteria. Offer an evidence-based read for the maintainer to confirm or correct.

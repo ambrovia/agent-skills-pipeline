@@ -18,6 +18,12 @@ Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at t
 host-neutral, so every tool reads the same rules. Rule files are maintainer-authored and committed; a
 pipeline run may not edit them.
 
+On a first run, propose the slots most repositories need rather than only the ones asked for: `code`,
+`testing`, and `security` at minimum, plus `design-system` and `frontend` wherever a UI exists. Reason
+each one from current best practice for this stack and what the repository already does. Leaving a slot
+`null` is a legitimate answer, but it should be a recorded maintainer decision — an empty slot quietly
+reduces every later phase to generic judgment on the subject it covers.
+
 For each requested rule slot, inspect repository configuration, code, tests, docs, CI, and established
 patterns. Distinguish:
 

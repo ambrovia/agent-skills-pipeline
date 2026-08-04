@@ -15,14 +15,19 @@ approved requirements and design constrain the in-scope solution. Architecture m
 ## Understand and verify
 
 Read the approved artifacts, the `pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
-`{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source, and
-current repository structure. Ask only questions that change a costly or cross-cutting decision.
+`{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source,
+current repository structure, and any `@lore` on the surfaces this change touches. Ask only questions that
+change a costly or cross-cutting decision.
 
 Run a focused feasibility probe only when a load-bearing assumption is new, unknown, or contradicted by
 available evidence. Put reproducible question, method, result, and verdict in `feasibility.md`; keep
 scratch work under `probes/`. A probe reduces uncertainty and does not become a deliverable.
 
-Reconcile the requested outcome with reality. If it requires a new outcome or contradicts the plan,
+Reconcile the requested outcome with reality. Verify that every symbol the plan or spec names — table,
+route, component, constant, export — exists in the shape assumed, and record each disagreement with how
+the plan handles it. Where the change renames, moves, or removes an existing symbol, derive its consumers
+from the repository rather than from the list the spec supplied; specs undercount this, and the plan is
+where the real number has to appear. If reconciliation requires a new outcome or contradicts the plan,
 propose a plan amendment and stop. If it invalidates approved design, return an explicit design-change
 proposal.
 
@@ -33,7 +38,12 @@ Include what a cold builder needs:
 - AC-to-implementation obligation mapping;
 - existing behavior being reused and the actual change boundary;
 - public/cross-layer contracts, data flow, persistence or migration semantics where applicable;
-- plausible changed failure/security behavior appropriate to the tier;
+- plausible changed failure behavior appropriate to the tier;
+- security reasoned from the surfaces this change actually reaches — a state-changing endpoint, untrusted
+  input, a credential, a path, an outbound request, an agent-authored field. For each, reason from current
+  best practice for that kind of surface, state the abuse case and how the plan closes it, and say plainly
+  which surfaces this change does not touch. `{{rules.security}}` carries the project's threat model and
+  governs where it is configured; its absence is not permission to skip the reasoning;
 - load-bearing files/modules and dependency order;
 - verification approach using existing lanes where adequate, including the one piece of end-to-end
   evidence that will show the change working through its real consuming path in production conditions —
@@ -50,8 +60,9 @@ cross-leaf seam. The orchestrator decides at runtime whether those leaves run se
 how many builder subagents to spawn.
 
 For migrations, renames, shared files, protected tests, or concurrency, state the concrete invariant and
-blast radius. Do not add rollback machinery, observability, compatibility layers, or exhaustive failure
-handling without an AC, configured rule, tier need, or plausible change-caused risk.
+name the affected sites — source, fixtures, tests — with the step each one needs. Do not add rollback
+machinery, observability, compatibility layers, or exhaustive failure handling without an AC, configured
+rule, tier need, or plausible change-caused risk.
 
 ## Done
 

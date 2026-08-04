@@ -24,7 +24,9 @@ and no WP-ID leakage outside `.pipeline/**`. Stop rather than repairing product 
    the superseded phase artifacts (`requirements.md`, `design/`, `architecture.md`, `feasibility.md`,
    `probes/`, `receipts/`, `integration.json`, `review.md`). Consolidation is editorial: never change the
    work-package outcome, constraints, or acceptance criteria, and never drop a decision a future reader
-   needs. Anything worth keeping is in `plan.md` before the rest is removed.
+   needs. Anything worth keeping is in `plan.md` before the rest is removed — including every deferral,
+   known limitation, and accepted residual risk that outlives the run. A deferral recorded only in a
+   deleted artifact is a deferral nobody will ever act on.
 2. Ensure retro and every intended change are present. Stage deliberately — inspect the worktree, commit
    intended changes with domain-based messages, revert unintended ones, and never stage the whole tree
    blindly. Never put the WP ID in branch, commit, or PR metadata.

@@ -37,10 +37,11 @@ from `/review`, persisted by the orchestrator because the reviewer is read-only)
 
 Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
 the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
-configured workflow. Bootstrap a new or long-idle worktree — install, environment, build — before any
-build or verification runs there; a missing bootstrap produces false failures and stale artifacts, and a
-bootstrap that cannot run is a blocked state. Preserve an unrelated dirty tree and stop if safe isolation
-is impossible.
+configured workflow, cut from the current remote default branch rather than a local checkout that may be
+stale — a stale base hides registered work and reintroduces reverted code. Bootstrap a new or long-idle
+worktree — install, environment, build — before any build or verification runs there; a missing bootstrap
+produces false failures and stale artifacts, and a bootstrap that cannot run is a blocked state. Preserve
+an unrelated dirty tree and stop if safe isolation is impossible.
 
 `/work-planning` is maintainer-only. If the strategic frame, plan, ACs, tier, or dependencies are missing
 or contradictory, record a precise blocked state and park.
@@ -86,8 +87,9 @@ Each skill's frontmatter `phase` names the section it belongs to; `phase: 0` run
 ### 1. Preflight
 
 Resolve target WPs and dependency order. Confirm registry entries, valid plan sections, stable strategic
-frame, tier, `pipeline.config.yml`, isolated bootstrapped worktree, and clean ownership boundary. Skip a
-WP already done. A blocked dependency blocks descendants without attempting their phases.
+frame, tier, `pipeline.config.yml` with the rule files its slots name actually present, isolated
+bootstrapped worktree, and clean ownership boundary. Skip a WP already done. A blocked dependency blocks
+descendants without attempting their phases.
 
 ### 2. Requirement clarification when needed
 
@@ -133,8 +135,9 @@ same leaves sequentially. Integrate complete leaves in dependency order; never i
 If an upstream amendment invalidates descendants, mark and replay them rather than reusing stale
 receipts. Verify real cross-leaf seams.
 
-On repository/plan contradiction, return to the owning phase. Do not let the builder redesign or let the
-orchestrator create scope.
+Resume an interrupted builder from its last task commit — assess the working tree and continue rather
+than restarting the phase. On repository/plan contradiction, return to the owning phase. Do not let the
+builder redesign or let the orchestrator create scope.
 
 ### 5. Implementation review
 

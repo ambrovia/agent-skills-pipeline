@@ -17,6 +17,10 @@ Each entry records date, scope/WP where permitted, source, kind (`success` or `f
 observation, evidence, and optional related known pattern. One observation per line. Record what worked
 so later cleanup does not remove it.
 
+Close each work package with one `cost` entry: phases run, critique and review rounds, retry attempts,
+and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was
+proportionate is only visible in aggregate, and `/compound` cannot see it otherwise.
+
 Check `.pipeline/compound-candidates.md` before writing a new free-text observation: reuse the matching
 candidate's identifier when the same behavior recurs, and only write free text for friction with no
 matching row. If no tracker exists, append free text — `/compound` clusters it later.

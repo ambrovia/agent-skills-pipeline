@@ -17,7 +17,11 @@ Implement only the approved outcome and blocking retry findings.
 Use the simplest repository-native solution. Reuse existing abstractions; add one only when the current
 change needs it. Preserve compatibility, migrations, security boundaries, UI behavior, and ownership
 explicitly required by the plan or applicable project rules. Make local reversible choices without
-returning to architecture.
+returning to architecture, and record a non-obvious one as `@lore` where it lives rather than leaving the
+next reader to rediscover it.
+
+Commit at each completed task boundary. An interrupted session then resumes from the last commit instead
+of stranding work in a dirty tree.
 
 Run focused checks after meaningful edits. Do not weaken tests, edit outside owned paths, perform adjacent
 cleanup, add speculative capability, or redesign around a plan contradiction. Raise a blocker with
