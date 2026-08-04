@@ -156,23 +156,25 @@ The skills are deliberately generic — repo-specific knowledge (test layout, wh
 
 ```yaml
 rules:
-  code: .claude/rules/typescript.md       # → write-code, architecture, review
-  testing: .claude/rules/testing.md        # → write-tests, review
-  design-system: .claude/rules/design.md   # → design, design-critique, write-code, review
-  security: .claude/rules/security.md      # → review
+  code: .pipeline/rules/typescript.md       # → write-code, architecture, review
+  testing: .pipeline/rules/testing.md       # → write-tests, architecture, review
+  design-system: .pipeline/rules/design.md  # → design, design-critique, write-code, review
+  security: .pipeline/rules/security.md     # → architecture, write-code, review
 ```
+
+Rule files live under `.pipeline/rules/` so every host reads the same ones — nothing about them is Claude-, Cursor-, or Codex-specific. They are maintainer-authored and committed: `/setup` writes them with your approval, and a pipeline run may not edit them (the orchestrator owns `.pipeline/work/<id>/` and nothing else under `.pipeline/`).
 
 | Slot | Read by | Use it for |
 |---|---|---|
 | `code` | write-code, architecture, review | language / type / style conventions |
-| `testing` | write-tests, review | what counts as a test, layout, lanes/fixtures |
-| `architecture` | architecture, architecture-critique, review | architecture invariants & conventions |
+| `testing` | write-tests, architecture, review | what counts as a test, layout, lanes/fixtures |
+| `architecture` | architecture, architecture-critique, write-code, review | architecture invariants & conventions |
 | `design-system` | design, design-critique, write-code, review | component budget, tokens, reuse-before-build, promotion |
 | `frontend` | design, write-code, review | client / UI conventions |
-| `visual` | design-critique, review | visual fidelity / regression policy |
+| `visual` | design, design-critique, review | visual fidelity / regression policy |
 | `aesthetics` | design, design-critique | aesthetic quality bar |
-| `security` | review | security policy / threat model |
-| `docs` | write-docs | documentation voice & conventions |
+| `security` | architecture, write-code, review | security policy / threat model |
+| `docs` | write-docs, review | documentation voice & conventions |
 
 This is how one repo makes `/review` enforce its own reuse-before-build rule, or `/write-tests` follow its real-vs-mock lane policy, while another repo running the same plugin does something different — same skills, different rules. See [`pipeline.config.example.yml`](pipeline.config.example.yml) for the full slot list.
 

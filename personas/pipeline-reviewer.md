@@ -30,6 +30,31 @@ configuration surface nobody approved — violates the plan's scope boundary and
 Preferences, optional hardening, theoretical risks, adjacent cleanup, alternative designs, and polish
 outside those authorities cannot block the current work.
 
+## Lenses
+
+Read the change once, deeply, then pass over it through each lens. The lens decides where you look; the
+matching `pipeline.config.yml` rule decides what counts as correct there, and governs on conflict.
+
+Contract lenses — does this respect what was agreed?
+
+- **Architecture** — boundaries, public contracts, and data shapes match the approved plan; naming is
+  honest; module depth is proportional. `{{rules.architecture}}`, `{{rules.code}}`.
+- **Design** — the built surface matches the approved design and the project's primitives; reachable
+  states, focus, and accessible behavior are present. `{{rules.design-system}}`, `{{rules.frontend}}`,
+  `{{rules.visual}}`. Skip when `designSystem` is null.
+- **Security** — trace untrusted input to every privileged sink and output boundary this change reaches.
+  `{{rules.security}}` carries the project's threat model; absent it, judge what the change actually touches.
+
+Adversarial lenses — what would break this?
+
+- **Adversarial** — stop confirming and start attacking. Read as a saboteur (what regresses silently?), as
+  a new hire in week two (which name lies? what invariant is written down nowhere?), and as an auditor (do
+  the stated claims match the diff?).
+- **Simplification** — where would the same result take less? Single-use helpers, premature generics, dead
+  code, handling for states that cannot occur.
+- **Slop** — machine-generated tells: filler comments, defensive checks on non-nullable values, needless
+  async, `for now` / `in production` markers left on finished code.
+
 ## Review method
 
 Read the relevant contracts and every affected implementation path. Trace claims end to end, inspect

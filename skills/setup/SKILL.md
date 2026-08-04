@@ -10,9 +10,13 @@ user-invocable: true
 # Setup
 
 Configuration lives in `pipeline.config.yml` at the repository root — `verify`, `vcs`, `paths`,
-`designSystem`, `engineering.tier`, `models`, and the `rules` slots (`code`, `testing`, `architecture`,
+`designSystem`, `engineering.tier`, and the `rules` slots (`code`, `testing`, `architecture`,
 `design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each pointing at a markdown file
 of binding project guidance. Start from `pipeline.config.example.yml`.
+
+Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at that path. The location is
+host-neutral, so every tool reads the same rules. Rule files are maintainer-authored and committed; a
+pipeline run may not edit them.
 
 For each requested rule slot, inspect repository configuration, code, tests, docs, CI, and established
 patterns. Distinguish:

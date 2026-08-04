@@ -33,13 +33,6 @@ designSystem: null
 # Version control + where "ship" opens PRs and waits for CI. github | gitlab | none
 vcs: github
 
-# Model ROLES, not vendor ids. Each tool maps these to its own models.
-# high = most capable (design, review). fast = quick (build).
-models:
-  design: high
-  review: high
-  build: fast
-
 # Project rules — OPTIONAL files that let THIS repo steer specific skills without
 # forking them. Each key below is a fixed rule "slot" the skills know to look for;
 # point it at a markdown file of binding project guidance and the relevant skill
@@ -50,18 +43,22 @@ models:
 # the otherwise-generic skills. Which skill reads which slot is noted after each.
 rules:
   code: null           # language / type / style conventions — write-code, architecture, review
-  testing: null        # what counts as a test, layout, lanes/fixtures, combined/integration seam — write-tests, review
-  architecture: null   # architecture invariants & conventions — architecture, architecture-critique, review
+  testing: null        # what counts as a test, layout, lanes/fixtures, combined/integration seam — write-tests, architecture, review
+  architecture: null   # architecture invariants & conventions — architecture, architecture-critique, write-code, review
   design-system: null  # component budget, tokens, reuse-before-build, promotion — design, design-critique, write-code, review
   frontend: null       # client / UI conventions — design, write-code, review
-  visual: null         # visual fidelity / regression policy — design-critique, review
+  visual: null         # visual fidelity / regression policy — design, design-critique, review
   aesthetics: null     # aesthetic quality bar — design, design-critique
-  security: null       # security policy / threat model — review
-  docs: null           # documentation voice & conventions — write-docs
-# Example (a TS app that keeps its rules under .claude/rules/):
-#   code: .claude/rules/typescript.md
-#   testing: .claude/rules/testing.md
-#   design-system: .claude/rules/design-system.md
-#   frontend: .claude/rules/frontend.md
-#   visual: .claude/rules/visual-regression.md
-#   aesthetics: .claude/rules/aesthetic-quality.md
+  security: null       # security policy / threat model — architecture, write-code, review
+  docs: null           # documentation voice & conventions — write-docs, review
+# Rule files live under .pipeline/rules/ — host-neutral, so every tool reads the same
+# ones. They are maintainer-authored and committed: /setup writes them with your
+# approval, and no pipeline run may edit them (the orchestrator owns .pipeline/work/<id>/
+# and nothing else under .pipeline/).
+# Example (a TS app):
+#   code: .pipeline/rules/typescript.md
+#   testing: .pipeline/rules/testing.md
+#   design-system: .pipeline/rules/design-system.md
+#   frontend: .pipeline/rules/frontend.md
+#   visual: .pipeline/rules/visual-regression.md
+#   aesthetics: .pipeline/rules/aesthetic-quality.md

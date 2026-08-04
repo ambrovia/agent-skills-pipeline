@@ -24,9 +24,10 @@ require a maintainer-approved plan amendment or another WP.
 
 Each WP lives under `.pipeline/work/<id>/`; its track registry/dependency graph lives in
 `.pipeline/<track>.md`. Repository-specific behaviour comes from `pipeline.config.yml` — `verify`,
-`vcs`, `paths`, `designSystem`, `engineering.tier`, and the `rules` slots. Written state must let a cold
-agent resume without session memory. Never read or mutate another WP's folder except its declared
-coordination dependency.
+`vcs`, `paths`, `designSystem`, `engineering.tier`, and the `rules` slots, whose files live under
+`.pipeline/rules/` and are read-only to every pipeline phase. Written state must let a cold agent resume
+without session memory. Never read or mutate another WP's folder except its declared coordination
+dependency.
 
 Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/approved.md` (`/design`),
 `architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
