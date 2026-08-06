@@ -60,11 +60,11 @@ function buildClaudeTools(meta) {
 }
 
 function modelFromCapability(capability) {
-  return capability === 'high' ? 'opus' : 'sonnet';
+  return capability === 'high' ? 'fable' : 'sonnet';
 }
 
 function codexModelFromCapability(capability) {
-  return capability === 'high' ? 'gpt-5.5' : 'gpt-5.4-mini';
+  return capability === 'high' ? 'gpt-5.6-sol' : 'gpt-5.6-terra';
 }
 
 function yamlQuote(s) {

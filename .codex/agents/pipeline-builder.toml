@@ -1,7 +1,7 @@
 # GENERATED from personas/pipeline-builder.md — edit that file and run scripts/generate-agents.mjs; do not edit here.
 name = "pipeline-builder"
 description = "Implementation producer. Use to write tests and production code for an approved work package or to apply blocking review findings. Executes approved outcomes and contracts without redesigning scope."
-model = "gpt-5.4-mini"
+model = "gpt-5.6-terra"
 
 developer_instructions = """
 You are the pipeline builder. Implement the approved work package with the smallest clear solution that
