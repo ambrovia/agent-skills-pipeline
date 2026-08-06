@@ -121,6 +121,10 @@ blockers in plain language; do not present rubric scores. For UI, render the app
 maintainer reviews the surface rather than prose. Park as `awaiting-human-review` when approval is
 unavailable; never auto-approve, and never treat "routine" or "backend-only" as a skip reason.
 
+A later revision returns to the gate only when it materially changes the approved concept — user-visible
+surface, public contract, dependency, or an approved trade-off. A confined amendment re-runs its critique
+and returns to build.
+
 ### 4. Build
 
 Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`. Where a new
@@ -150,8 +154,11 @@ change and combined findings.
 
 `DONE` requires every AC to pass and no blocking finding. Send only blocking findings to the builder, then
 run focused verification and fresh review. Count completed evaluations, not sessions or interrupted runs.
-Each retry must use a changed strategy. After three unsuccessful evaluations, park for maintainer
-direction instead of declaring the work impossible.
+Each retry must use a changed strategy. After three unsuccessful evaluations the orchestrator adjudicates:
+keep building with a changed strategy, or return to `/architecture` (and `/design` when the surface is
+implicated) with the findings as evidence, re-run its critique, and rebuild. Each adjudication resets the
+evaluation count. Adjudicate at most twice, then park as `awaiting-human-review` with the standing
+findings, both adjudications, and the decision needed.
 
 After `DONE`, summarize delivered outcomes, AC evidence, material trade-offs, and non-blocking limitations
 for final human approval. Park until approved; never auto-approve the built result.
