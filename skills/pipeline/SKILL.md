@@ -112,14 +112,15 @@ system is configured. Run `/architecture` for the technical decisions needed by 
 may produce a correspondingly small plan.
 
 Use fresh `/design-critique` and `/architecture-critique` reviewers for artifacts that exist. Retry only
-blocking findings, with the same three-attempt discipline. Non-blocking defects and notes are retained
-for visibility but are not assigned automatically.
+blocking findings, with the same three-attempt discipline, completing each loop before the concept gate.
+Non-blocking defects and notes are retained for visibility but are not assigned automatically.
 
 The concept gate is mandatory: no build starts until the maintainer approves the design and architecture
 together. Summarize the product/UX choices, contracts, trade-offs, end-to-end evidence plan, and open
-blockers in plain language; do not present rubric scores. For UI, render the approved design so the
+blockers in plain language; do not present rubric scores. For UI, render the reviewed design so the
 maintainer reviews the surface rather than prose. Park as `awaiting-human-review` when approval is
-unavailable; never auto-approve, and never treat "routine" or "backend-only" as a skip reason.
+unavailable; do not revise or re-critique the presented artifacts while parked or after approval. Never
+auto-approve, and never treat "routine" or "backend-only" as a skip reason.
 
 A later revision returns to the gate only when it materially changes the approved concept — user-visible
 surface, public contract, dependency, or an approved trade-off. A confined amendment re-runs its critique
