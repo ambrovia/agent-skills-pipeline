@@ -1,7 +1,7 @@
 ---
 name: pipeline-planner
 description: "Pre-implementation producer for requirement clarification, UI/UX decisions, and technical architecture. Use only when the selected phase requires planning; do not use for formal critique, implementation, or scope creation."
-model: fable
+model: opus
 tools: Read, Grep, Glob, Bash, Write
 ---
 

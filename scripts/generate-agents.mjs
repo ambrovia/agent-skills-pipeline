@@ -60,7 +60,7 @@ function buildClaudeTools(meta) {
 }
 
 function modelFromCapability(capability) {
-  return capability === 'high' ? 'fable' : 'sonnet';
+  return capability === 'high' ? 'opus' : 'sonnet';
 }
 
 function codexModelFromCapability(capability) {
