@@ -165,6 +165,31 @@ Dex's four-phase leverage model for keeping quality while going fast:
 
 ---
 
+## Case study: Matt Pocock's skills suite (studied Aug 2026)
+
+The most complete public artifact of the **skills-as-governance** school: `github.com/mattpocock/skills` ("Skills For Real Engineers", ~60k-subscriber distribution, official Claude Code marketplace plugin + `npx skills add` for editable copies). It is explicitly positioned *against* process-owning frameworks (GSD, BMAD, Spec-Kit): "they take away your control and make bugs in the process hard to resolve." Skills are small, adaptable, composable, model-agnostic.
+
+**Architecture worth noting**
+- **Invocation hierarchy**: user-invoked skills orchestrate (`disable-model-invocation: true`); model-invoked skills hold reusable discipline. A user-invoked skill may call model-invoked ones, never another user-invoked one. Clean rule we don't have.
+- **Main flow**: `/grill-with-docs` (interview + writes CONTEXT.md/ADRs) → optional `/prototype` detour via `/handoff` → `/to-spec` → `/to-tickets` (tracer-bullet vertical slices with declared **blocking edges**) → `/implement` per ticket with fresh context, driving `/tdd` and closing with `/code-review`.
+- **Context doctrine**: grill→spec→tickets stay in one unbroken window (the "smart zone", ~150k tokens); each implementation starts fresh from its ticket. Phase-boundary decision tree with five options in cost order: Continue → /clear → /handoff → subagent → /compact ("the default, not the first reach"). Core insight: every move except Continue turns a **primary source** (the session as it happened) into a **secondary source** (a lossy summary) — pay lossiness only when staying costs more.
+- **Four failure modes → four fixes**: misalignment → grilling; verbosity/no shared language → CONTEXT.md ubiquitous language (DDD) + ADRs; broken code → feedback loops (types/browser/tests, red-green-refactor); ball of mud → deep-module design discipline (Ousterhout, Kent Beck).
+
+**Key skills, condensed**
+- **wayfinder** — for efforts too big for one session. A single **map issue** on the tracker (`wayfinder:map`) indexes **decision tickets** — questions whose resolution is a decision, not build slices ("plan, don't do"). Ticket types: research (AFK subagent) / prototype (HITL) / grilling (HITL) / task. **Fog of war**: the map is deliberately incomplete — "Not yet specified" holds what can't yet be phrased sharply; resolving tickets graduates fog into new tickets. **Frontier** = open + unblocked + unclaimed; claim by assignee; native blocking edges; one ticket per session; refer by name, never bare id. When the map clears it **hands off to /to-spec — it doesn't build**. This is graph-engineering vocabulary (work graph on a tracker, typed edges, frontier) without any runtime.
+- **grilling** — the interview primitive behind five skills. Maps the subject as a **design tree**; each **round** asks the whole **frontier** (all questions whose prerequisites are settled), numbered with a recommended answer each. Hard split: **facts are the agent's job** (dispatch subagents to find out), **decisions are the human's**; ends at a confirmation gate, never acts on agreement. No async mode by design — "a grilling session nobody answers has produced the agent's opinion rather than yours."
+- **code-review** — two axes run as **parallel sub-agents so they don't pollute each other**: Standards (repo standards + a fixed Fowler smell baseline; smells are labelled judgement calls; repo overrides baseline; skip what tooling enforces) and Spec (missing requirements / scope creep / wrong implementation, each quoting the spec line). Findings are **never merged or reranked across axes** — "the separation exists to prevent one axis masking the other." This is Cursor's decorrelated review lenses, in single-repo skill form.
+- **codebase-design** — deep-module vocabulary (module, interface, depth-as-leverage, seam, adapter, leverage, locality); the **deletion test**; "one adapter means a hypothetical seam, two means a real one"; **DESIGN-IT-TWICE**: parallel sub-agents design the interface several radically different ways, then compare on depth/locality/seam placement (decorrelated lenses applied to design).
+- **to-spec / to-tickets** — spec is synthesis, not interview; seam-first ("prefer existing seams; the ideal number is one"); no file paths or code in specs ("they go stale"; exception: decision-rich prototype snippets). Tickets are tracer bullets: narrow but complete through every layer, demoable alone, sized to one fresh context window, each declaring blocking edges; wide refactors sequenced as expand–contract; user quizzed on granularity and edges before publishing.
+- **writing-for-agents** — the authoring discipline behind the whole set. Two budgets: **context load** (always-loaded tokens) vs **cognitive load** (how many docs the human must index). Levers: context pointers (wording decides reach-through reliability), progressive disclosure, completion criteria vs premature completion, **leading words** (compact pretrained concepts — "tight", "red", "tracer bullet"), and **pruning via the no-op test**: delete the line; if agent behavior wouldn't change, it stays deleted. "The default move is deletion, not explanation." Don't over-fit to one model.
+
+**What it validates / challenges for us**
+- Validates: skills-as-process is a viable product shape with real distribution (plugin = subscribe, skills.sh = fork); tracker/file-backed shared state (T5); decorrelated review (Cursor, T4); program-design-adjacent artifacts (Dex, T3); HANDBOOK.md-conformant authoring (short, checkable, no-op-tested rules, T6).
+- Challenges: the suite is **HITL-first** — a human in every grilling, every decision ticket, every wizard step (his `/wizard` generates interactive bash for human-only steps). Our pipeline is agent-team-first with human gates; his suite shows how much structure a human-in-loop workflow can carry *without* personas or gates. Also his anti-framework stance: the moment our pipeline feels like it "owns the process" rather than offering composable discipline, we inherit the GSD/BMAD critique.
+- Directly stealable: grilling rounds + facts/decisions split (refine phase); wayfinder map/fog/frontier for large work packages (work-planning phase); two-axis no-rerank review (review skill); design-it-twice (architecture/program design); blocking-edge tickets with expand–contract (decomposition); phase-boundary tree with primary/secondary sources (context policy between phases, feeds Option C); writing-for-agents no-op test as the audit rubric for Option D.
+
+---
+
 ## 4. Cross-cutting synthesis
 
 Five forces are simultaneously reshaping agent pipelines:
@@ -277,6 +302,7 @@ Our pipeline already *is* a graph (phases = nodes, personas = roles, gates = edg
 - StrongDM lights-off factory: factory.strongdm.ai; Dan Shapiro's five levels: danshapiro.com (Jan 2026)
 - Geoffrey Huntley — Ralph loops: ghuntley.com/ralph
 - Cognition — Frontier Code: cognition.com/blog/frontier-code; SWE-Marathon: swe-marathon.org; DeepSWE: deepswe.datacurve.ai
+- Matt Pocock — Skills For Real Engineers (repo studied Aug 2026): github.com/mattpocock/skills — esp. wayfinder, grilling, code-review, codebase-design, to-spec, to-tickets, writing-for-agents, ask-matt + PHASE-BOUNDARIES
 
 **Graph/loop engineering wave (Jun–Jul 2026)**
 - TheNewStack — loop engineering origin (Boris Cherny, Peter Steinberger, Addy Osmani) (Jun 10, 2026): thenewstack.io/loop-engineering/; Addy Osmani: addyosmani.com/blog/loop-engineering/
