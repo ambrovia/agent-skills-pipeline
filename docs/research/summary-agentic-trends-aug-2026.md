@@ -61,6 +61,48 @@ Scope: what moved in agentic engineering since our loops-and-goals research (see
 
 Suggested order: 1 + 6 first (cheap, core identity), then 3 → 4, with 5 as the shared state model, 7 alongside from the start, 2 folded into 1's review path, 8 as hardening, 9 deferred to frontier tasks.
 
+## Measured priorities (session-lab forensics, 2026-08-10)
+
+The work packages above were research-derived. A fleet forensic scan (tools/session-lab: 1,928 codex
+rollout threads + 19,673 Claude Code sessions from ~/hyperidle and ~/Development/nimmly, Jun–Aug
+2026, cross-checked with codeburn and the .pipeline retro logs) has since measured where tokens
+actually go. Full evidence: `docs/research/token-levers-and-trend-mapping.md` and
+`tools/session-lab/report.html`.
+
+Headline: typical runs (after excluding the five gigantic AU refactoring programs AU19/20/21/26/28)
+process **~916 context tokens per 1 token of output**; 77% of productive session-trees exceed
+1000:1, none of 761 is below 10:1. The cost engine is context re-processing, not generation.
+Measured burn ranking:
+
+1. **Fork tax** — spawn = fork the full parent conversation (100–170k tokens), re-paid on every
+   inference. Threads making ≤5 tool calls consumed 53–83% of input in the top runs.
+2. **Round multiplication** — every critique/review/fix round is a fresh fork over a grown context
+   (L1: 12 fix→review pairs after first DONE consumed more than all planning+build).
+3. **Polling** — 34,002 wait-style calls fleet-wide; orchestrators spend ~75–81% of tool calls
+   polling, each poll a full-context inference.
+4. **Context size per thread** — artifact re-reads (architecture.md 260×), compaction churn
+   (3,934 compactions in one run).
+
+Demoted by measurement: skill-prompt leanness (WP 6) from headline to hygiene; event-log substrate
+(WP 5) to handoff-briefs-lite; parallelism (WP 9 direction) rejected as it multiplies the fork tax.
+
+Revised plan, in priority order:
+
+1. **Program design + round caps + typed verdicts** (extends WP 1, folds in WP 2) — attacks round
+   multiplication and the program-quality problem together; research (T3/T9) and measurement agree
+   this is highest leverage. Includes scope/ambition governance at plan time (C12 over-scoping).
+2. **Loop profiles with compact mode** (WP 4, informed by WP 3) — compact = one agent, zero forks,
+   no polling orchestrator; standard/frontier keep the machinery. Removes the fork tax for the
+   majority of work chunks. Spawn becomes a cost decision (Pocock phase-boundary tree), not default.
+3. **Handoff briefs / lean artifacts** (WP 5, reduced scope) — small structured phase handoffs
+   instead of full-context inheritance; line-budgeted artifacts; pointers over inlined content.
+4. **Capability routing + eval harness** (WP 3 routing half + WP 7) — frontier judgment / cheap
+   execution per assessment; fixture WPs with cost-per-package and rework-rate so 1–3 can be proven
+   with data. session-lab is the prototype of the cost side.
+5. **Skills governance audit** (WP 6) — retained as hygiene under the no-op test, no longer a
+   headline item.
+6. **Evidence-based gates** (WP 8) — unchanged, scheduled as hardening.
+
 ## Sources
 
 1. Anthropic — Scaling Managed Agents: Decoupling the brain from the hands (Apr 2026). anthropic.com/engineering/managed-agents
