@@ -42,6 +42,20 @@ complexity (ceremony complexity) — mapped against five archetypal journeys in 
    signatures) decided before build. Open: new skill vs extension of architecture.
 7. **Tracer-bullet slices** (candidate, not yet committed) — execution of large work as
    vertical slices, each reviewed per slice; rounds stay local to a slice.
+8. **Probe — hypothesis-driven development** (from journeys gap G1) — a skill or phase, not a
+   lane: hypothesis → cheapest experiment → verdict, producing decision records rather than
+   code. Great teams get from the uncertain into the certain deliberately; that movement is the
+   capability to encode. Budget-gated; exit when the decision is taken; POC promotion is an
+   explicit decision, never drift.
+9. **Procedure design** (from journeys gap G3) — the repeatable counterpart of program design:
+   purpose, reference implementation (first successful application), per-unit steps, per-unit
+   acceptance criteria, exception rules (when to escalate instead of apply). Becomes the
+   injection payload for empty-context repetition armies (item 1); repetition conformance is
+   mechanically checkable even where one-shot design is not.
+10. **Journey navigation as a matrix, not labels** (from journeys gap G2) — adaptivity is not a
+    classification into five (or N) journey labels up front; it is a matrix/graph of decisions
+    taken along the way, because how complex or hard something gets is often not knowable
+    upfront. Position shifts as evidence arrives; transitions are decisions, not detections.
 
 ## Group 3 — Adaptive care (judgement/iteration economics)
 
@@ -87,3 +101,9 @@ refactor repetitions, heavy scrutiny for architectural decisions, an exploratory
 3. Budget-gate feasibility: which harnesses expose token usage to a system part.
 4. Empty-context spawn support per host: Claude subagents already start empty; codex fork mode
    configurable (verify minimal/no-fork behavior); opencode/others to check.
+5. **Skill architecture for the Group 2 additions**: probe, procedure design, program design,
+   journey navigation — which are individual skills, which are phases inside existing skills,
+   which are artifact formats only? How do they fall together (one planning family vs separate
+   tools)? Unresolved by design — to be figured out during implementation planning.
+6. Journey navigation scope: own work package or folded into the existing Group 2 items
+   (progressive planning depth / refinement scaling)? Open.

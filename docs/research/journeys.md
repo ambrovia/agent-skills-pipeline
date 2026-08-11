@@ -64,7 +64,7 @@ where the axes shift — and where gates belong.
 | 5 | Refinement scaling for large WPs | — | ● | ○ | ● discovery phase | ● prototyping is the refinement |
 | 6 | Program design | — | ● | ● | ● the procedure | ○ only after the decision |
 | 7 | Tracer-bullet slices | ● each bug is a slice | — | ○ | ● each application | — |
-| 8 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory lane |
+| 8 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory mode (probe) |
 | 9 | Delta-based iteration | ○ | ○ | ● | ● per-application deltas | ○ |
 | 10 | Typed verdicts extension | ○ | ● | ● | ○ | ● decision-gate clarity |
 | 11 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
@@ -86,15 +86,20 @@ where the axes shift — and where gates belong.
 5. **J1 needs fan-out mechanics to survive empty-spawn**: wave boundaries, dependency receipts,
    and owned writes (already in the pipeline skill) must work when children start empty.
 
-## Gaps uncovered
+## Gaps uncovered — and maintainer direction (2026-08-10)
 
-- **G1 — Exploratory lane (J5).** No idea fully covers "output is learning, not code": a mode
-  with its own success measure (decisions taken, feasibility established), budget-gated, with an
-  explicit exit gate into a building journey. Closest today: feasibility probes in architecture +
-  budget gate — not a first-class lane.
-- **G2 — Journey detection.** Something must classify which journey a WP is (and detect
-  transitions, e.g. J5→J3) — the two-axis assessment is the natural place (refinement/planning
-  emits it), but the classification itself is undesigned.
-- **G3 — Procedure artifact format (J4).** Program design covers one-shot shape decisions; a
-  repeatable procedure for mass application is a different artifact (injection-ready, per-unit
-  acceptance) and has no home yet.
+- **G1 — Exploratory mode (J5).** Direction: **probe as a skill or phase — not a lane.**
+  Hypothesis → cheapest experiment → verdict, producing decision records, not code. The deeper
+  value: hypothesis-driven development is how great teams get **from the uncertain into the
+  certain** — that movement is the capability to encode. Budget-gated, explicit exit on
+  decision-taken, POC promotion explicit. Folded into work-groups.md Group 2 item 8.
+- **G2 — Journey navigation.** Direction: **not label classification.** Five labels are a
+  starting vocabulary, not the mechanism — there are probably more; the real shape is a
+  **matrix or graph of decisions taken along the way**, since how complex or hard something
+  gets is often not knowable upfront. Whether this becomes its own package or folds into the
+  existing Group 2 items is open. Recorded in work-groups.md Group 2 item 10 + open decision 6.
+- **G3 — Procedure artifact (J4).** Direction: **procedure design belongs in Group 2** as the
+  repeatable counterpart of program design (reference implementation, per-unit steps, per-unit
+  acceptance, exception rules; injection payload for repetition armies). Where it lives — own
+  skill, phase, or artifact format — is part of the open skill-architecture question
+  (work-groups.md open decision 5).
