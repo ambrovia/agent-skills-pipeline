@@ -2,7 +2,7 @@
 
 Date: 2026-08-10. Status: maintainer insight, recorded for reference. Splits the old single
 "proportionality" axis (solution-axes.md A4) into two orthogonal axes, defines the archetypal
-journeys through that space, and maps the 13 improvement ideas (work-groups.md) against them.
+journeys through that space, and maps the 16 improvement ideas (work-groups.md) against them.
 
 ## The two axes
 
@@ -51,9 +51,9 @@ decisions, not code; budget-gated; exits into J3/J2 once the decision is taken.
 Journeys compose: a WP can travel J5 → J3, or contain J4 inside a J3. The transition points are
 where the axes shift — and where gates belong.
 
-## Mapping: 13 ideas × 5 journeys
+## Mapping: 16 ideas × 5 journeys
 
-● = primary help, ○ = secondary, — = not relevant.
+● = primary help, ○ = secondary, — = not relevant. Rows 8–10 are preliminary assessments.
 
 | # | Idea (work-groups.md) | J1 bugs | J2 arch | J3 feature | J4 refactor | J5 POC |
 |---|---|---|---|---|---|---|
@@ -64,25 +64,29 @@ where the axes shift — and where gates belong.
 | 5 | Refinement scaling for large WPs | — | ● | ○ | ● discovery phase | ● prototyping is the refinement |
 | 6 | Program design | — | ● | ● | ● the procedure | ○ only after the decision |
 | 7 | Tracer-bullet slices | ● each bug is a slice | — | ○ | ● each application | — |
-| 8 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory mode (probe) |
-| 9 | Delta-based iteration | ○ | ○ | ● | ● per-application deltas | ○ |
-| 10 | Typed verdicts extension | ○ | ● | ● | ○ | ● decision-gate clarity |
-| 11 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
-| 12 | Verify-in-build hooks | ● per-fix checks | ○ | ○ | ● conformance to procedure | ○ |
-| 13 | Human-gate rebalance | — | ● decision gates | ● concept/final | ○ pattern approval | ● the decide moment |
+| 8 | Probe (hypothesis-driven) | — | ○ rule feasibility | ○ | ● pattern discovery is probing | ● the core mode |
+| 9 | Procedure design | — | — | ○ | ● discover → proceduralize → repeat | — |
+| 10 | Journey navigation (matrix) | ○ | ○ | ● | ● transitions | ● exit into J3/J2 |
+| 11 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory mode (probe) |
+| 12 | Delta-based iteration | ○ | ○ | ● | ● per-application deltas | ○ |
+| 13 | Typed verdicts extension | ○ | ● | ● | ○ | ● decision-gate clarity |
+| 14 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
+| 15 | Verify-in-build hooks | ● per-fix checks | ○ | ○ | ● conformance to procedure | ○ |
+| 16 | Human-gate rebalance | — | ● decision gates | ● concept/final | ○ pattern approval | ● the decide moment |
 
 ## Observations from the mapping
 
-1. **Ideas 1, 3, 7, 8, 12 are the journey-shapers** — they differentiate most across journeys
-   (fan-out vs sequential, slices vs monolith, LGTM vs scrutiny). These are where adaptivity
-   becomes visible.
-2. **Ideas 2, 9, 10, 11, 13 are journey-agnostic infrastructure** — they should land once and
+1. **Ideas 1, 3, 7, 8, 9, 10, 11, 15 are the journey-shapers** — they differentiate most across
+   journeys (fan-out vs sequential, slices vs monolith, probe vs build, procedure vs one-shot,
+   LGTM vs scrutiny). These are where adaptivity becomes visible.
+2. **Ideas 2, 12, 13, 14, 16 are journey-agnostic infrastructure** — they should land once and
    serve every journey.
 3. **Idea 4 (progressive planning depth) must key on BOTH axes** — J1 stays shallow despite
    large size; J2 goes deep despite small size. Size-only keying reproduces today's mistakes in
    both directions.
-4. **J4 couples ideas 1 and 6**: the discovered pattern becomes a program-design artifact which
-   becomes the active injection payload for the repetition army. Procedure = context injection.
+4. **J4 couples ideas 1, 6, and 9**: the discovered pattern becomes a program-design artifact,
+   formalized as a procedure, which becomes the active injection payload for the repetition army.
+   Procedure = context injection.
 5. **J1 needs fan-out mechanics to survive empty-spawn**: wave boundaries, dependency receipts,
    and owned writes (already in the pipeline skill) must work when children start empty.
 

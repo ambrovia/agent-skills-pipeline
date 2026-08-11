@@ -62,23 +62,23 @@ complexity (ceremony complexity) — mapped against five archetypal journeys in 
 Care lanes and iteration effort vary by journey (see `journeys.md`): LGTM-lane for bug-swarms and
 refactor repetitions, heavy scrutiny for architectural decisions, an exploratory lane for POCs.
 
-8. **Care lanes** — review/iteration effort keyed to ambiguity, scope, and exposure:
+11. **Care lanes** — review/iteration effort keyed to ambiguity, scope, and exposure:
    LGTM-lane for peripheral work, heavy scrutiny for core/high-exposure changes. Replaces fixed
    iteration/review limits.
-9. **Delta-based iteration** — rounds and phase re-entries read what changed since X, never the
-   full briefing again. The `.pipeline` handoff files (the existing handoff substrate) gain
-   delta tracking.
-10. **Typed verdicts extension** — add the carry-forward middle class: soft objections surface
+12. **Delta-based iteration** — rounds and phase re-entries read what changed since X, never the
+    full briefing again. The `.pipeline` handoff files (the existing handoff substrate) gain
+    delta tracking.
+13. **Typed verdicts extension** — add the carry-forward middle class: soft objections surface
     at the final gate and spawn no round; orchestrator may not upgrade non-blockers to blockers.
-11. **Budget gate (feasibility-gated)** — park-and-escalate on runaway spend, if harnesses
+14. **Budget gate (feasibility-gated)** — park-and-escalate on runaway spend, if harnesses
     expose token usage to a system part. Investigate feasibility per host first.
 
 ## Group 4 — Governance & setup
 
-12. **Verify-in-build hooks as a setup concern** — repo-specific long-running checks wired via
+15. **Verify-in-build hooks as a setup concern** — repo-specific long-running checks wired via
     host hooks where supported (agents keep polling long scripts today); also the home of
     proportionality hooks.
-13. **Human-gate rebalance** — keep humans at contract/escalation gates (the original
+16. **Human-gate rebalance** — keep humans at contract/escalation gates (the original
     agent-pipeline idea), but tighten what has been delegated since quality suffered; gates get
     plain-language briefs so approval costs seconds, not reading sessions.
 
