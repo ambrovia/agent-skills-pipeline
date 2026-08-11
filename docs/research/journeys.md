@@ -2,7 +2,7 @@
 
 Date: 2026-08-10. Status: maintainer insight, recorded for reference. Splits the old single
 "proportionality" axis (solution-axes.md A4) into two orthogonal axes, defines the archetypal
-journeys through that space, and maps the 18 improvement ideas (work-groups.md) against them.
+journeys through that space, and maps the 19 improvement ideas (work-groups.md) against them.
 
 ## The two axes
 
@@ -51,9 +51,9 @@ decisions, not code; budget-gated; exits into J3/J2 once the decision is taken.
 Journeys compose: a WP can travel J5 → J3, or contain J4 inside a J3. The transition points are
 where the axes shift — and where gates belong.
 
-## Mapping: 18 ideas × 5 journeys
+## Mapping: 19 ideas × 5 journeys
 
-● = primary help, ○ = secondary, — = not relevant. Rows 4–5 and 10–12 are preliminary.
+● = primary help, ○ = secondary, — = not relevant. Rows 4–5, 10–12, 19 are preliminary.
 
 | # | Idea (work-groups.md) | J1 bugs | J2 arch | J3 feature | J4 refactor | J5 POC |
 |---|---|---|---|---|---|---|
@@ -75,13 +75,14 @@ where the axes shift — and where gates belong.
 | 16 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
 | 17 | Verify-in-build hooks | ● per-fix checks | ○ | ○ | ● conformance to procedure | ○ |
 | 18 | Human-gate rebalance | — | ● decision gates | ● concept/final | ○ pattern approval | ● the decide moment |
+| 19 | Pre-spawn check runs | ● per-fix pre-check | ○ | ● | ● conformance pre-check | ○ |
 
 ## Observations from the mapping
 
 1. **Ideas 1, 3, 9, 10, 11, 12, 13, 17 are the journey-shapers** — they differentiate most
    across journeys (fan-out vs sequential, slices vs monolith, probe vs build, procedure vs
    one-shot, LGTM vs scrutiny). These are where adaptivity becomes visible.
-2. **Ideas 2, 4, 5, 14, 15, 16, 18 are journey-agnostic infrastructure** — they should land
+2. **Ideas 2, 4, 5, 14, 15, 16, 18, 19 are journey-agnostic infrastructure** — they should land
    once and serve every journey.
 3. **Idea 6 (progressive planning depth) must key on BOTH axes** — J1 stays shallow despite
    large size; J2 goes deep despite small size. Size-only keying reproduces today's mistakes in

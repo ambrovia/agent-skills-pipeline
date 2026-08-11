@@ -90,6 +90,11 @@ refactor repetitions, heavy scrutiny for architectural decisions, an exploratory
 18. **Human-gate rebalance** — keep humans at contract/escalation gates (the original
     agent-pipeline idea), but tighten what has been delegated since quality suffered; gates get
     plain-language briefs so approval costs seconds, not reading sessions.
+19. **Pre-spawn check runs** (hook category, kin to item 17) — the mechanical checks a spawned
+    agent needs (lint, typecheck, tests, build) run *before* it spawns; results are injected
+    into its starting context. A reviewer judges results instead of calling lint itself.
+    Removes redundant per-agent check runs, guarantees verdicts rest on identical fresh
+    evidence, and pairs with item 4 (results become part of the state snapshot).
 
 ## Dropped / deferred
 
