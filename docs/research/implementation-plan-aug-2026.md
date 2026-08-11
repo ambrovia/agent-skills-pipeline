@@ -15,6 +15,7 @@ Everything we ship is one of these surfaces; each wave below names which it touc
 - `pipeline.config.example.yml` — the repo-specific config surface (profiles, rule slots)
 - `.pipeline/work/<id>/progress.json` conventions — recorded state (verdicts, counts, transitions)
 - `tools/session-lab/` — measurement harness (already built)
+- MCP/host tool (proposed) — pipeline-state snapshot (work-groups item 4); new surface, vehicle open
 
 ## Governing principles (from the evidence, apply to every change)
 

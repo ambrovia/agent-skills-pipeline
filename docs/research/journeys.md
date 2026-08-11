@@ -2,7 +2,7 @@
 
 Date: 2026-08-10. Status: maintainer insight, recorded for reference. Splits the old single
 "proportionality" axis (solution-axes.md A4) into two orthogonal axes, defines the archetypal
-journeys through that space, and maps the 16 improvement ideas (work-groups.md) against them.
+journeys through that space, and maps the 18 improvement ideas (work-groups.md) against them.
 
 ## The two axes
 
@@ -51,40 +51,42 @@ decisions, not code; budget-gated; exits into J3/J2 once the decision is taken.
 Journeys compose: a WP can travel J5 → J3, or contain J4 inside a J3. The transition points are
 where the axes shift — and where gates belong.
 
-## Mapping: 16 ideas × 5 journeys
+## Mapping: 18 ideas × 5 journeys
 
-● = primary help, ○ = secondary, — = not relevant. Rows 8–10 are preliminary assessments.
+● = primary help, ○ = secondary, — = not relevant. Rows 4–5 and 10–12 are preliminary.
 
 | # | Idea (work-groups.md) | J1 bugs | J2 arch | J3 feature | J4 refactor | J5 POC |
 |---|---|---|---|---|---|---|
 | 1 | Empty-context spawn + active injection | ● army | — | ○ build | ● repetition army (procedure = injection payload) | ○ probes |
 | 2 | Host capability tracking | ○ | — | ○ | ● fan-out mechanics | ○ |
 | 3 | Sequential-vs-parallel rule | ● | — | ○ | ● | — |
-| 4 | Progressive planning depth | ○ stays shallow | ● | ● | ● front-loaded | ● deliberately delayed until feasibility |
-| 5 | Refinement scaling for large WPs | — | ● | ○ | ● discovery phase | ● prototyping is the refinement |
-| 6 | Program design | — | ● | ● | ● the procedure | ○ only after the decision |
-| 7 | Tracer-bullet slices | ● each bug is a slice | — | ○ | ● each application | — |
-| 8 | Probe (hypothesis-driven) | — | ○ rule feasibility | ○ | ● pattern discovery is probing | ● the core mode |
-| 9 | Procedure design | — | — | ○ | ● discover → proceduralize → repeat | — |
-| 10 | Journey navigation (matrix) | ○ | ○ | ● | ● transitions | ● exit into J3/J2 |
-| 11 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory mode (probe) |
-| 12 | Delta-based iteration | ○ | ○ | ● | ● per-application deltas | ○ |
-| 13 | Typed verdicts extension | ○ | ● | ● | ○ | ● decision-gate clarity |
-| 14 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
-| 15 | Verify-in-build hooks | ● per-fix checks | ○ | ○ | ● conformance to procedure | ○ |
-| 16 | Human-gate rebalance | — | ● decision gates | ● concept/final | ○ pattern approval | ● the decide moment |
+| 4 | Pipeline-state snapshot tool | ● cheap fan-out state | ○ | ● phase transitions | ● repetition state | ○ |
+| 5 | Artifact layout challenge | ○ | ○ | ● | ● | ○ |
+| 6 | Progressive planning depth | ○ stays shallow | ● | ● | ● front-loaded | ● deliberately delayed until feasibility |
+| 7 | Refinement scaling for large WPs | — | ● | ○ | ● discovery phase | ● prototyping is the refinement |
+| 8 | Program design | — | ● | ● | ● the procedure | ○ only after the decision |
+| 9 | Tracer-bullet slices | ● each bug is a slice | — | ○ | ● each application | — |
+| 10 | Probe (hypothesis-driven) | — | ○ rule feasibility | ○ | ● pattern discovery is probing | ● the core mode |
+| 11 | Procedure design | — | — | ○ | ● discover → proceduralize → repeat | — |
+| 12 | Journey navigation (matrix) | ○ | ○ | ● | ● transitions | ● exit into J3/J2 |
+| 13 | Care lanes | ● LGTM lane | ● heavy scrutiny | ● standard | ● mixed: pattern vs repetitions | special: exploratory mode (probe) |
+| 14 | Delta-based iteration | ○ | ○ | ● | ● per-application deltas | ○ |
+| 15 | Typed verdicts extension | ○ | ● | ● | ○ | ● decision-gate clarity |
+| 16 | Budget gate | ○ | — | ○ | ○ | ● the circuit breaker |
+| 17 | Verify-in-build hooks | ● per-fix checks | ○ | ○ | ● conformance to procedure | ○ |
+| 18 | Human-gate rebalance | — | ● decision gates | ● concept/final | ○ pattern approval | ● the decide moment |
 
 ## Observations from the mapping
 
-1. **Ideas 1, 3, 7, 8, 9, 10, 11, 15 are the journey-shapers** — they differentiate most across
-   journeys (fan-out vs sequential, slices vs monolith, probe vs build, procedure vs one-shot,
-   LGTM vs scrutiny). These are where adaptivity becomes visible.
-2. **Ideas 2, 12, 13, 14, 16 are journey-agnostic infrastructure** — they should land once and
-   serve every journey.
-3. **Idea 4 (progressive planning depth) must key on BOTH axes** — J1 stays shallow despite
+1. **Ideas 1, 3, 9, 10, 11, 12, 13, 17 are the journey-shapers** — they differentiate most
+   across journeys (fan-out vs sequential, slices vs monolith, probe vs build, procedure vs
+   one-shot, LGTM vs scrutiny). These are where adaptivity becomes visible.
+2. **Ideas 2, 4, 5, 14, 15, 16, 18 are journey-agnostic infrastructure** — they should land
+   once and serve every journey.
+3. **Idea 6 (progressive planning depth) must key on BOTH axes** — J1 stays shallow despite
    large size; J2 goes deep despite small size. Size-only keying reproduces today's mistakes in
    both directions.
-4. **J4 couples ideas 1, 6, and 9**: the discovered pattern becomes a program-design artifact,
+4. **J4 couples ideas 1, 8, and 11**: the discovered pattern becomes a program-design artifact,
    formalized as a procedure, which becomes the active injection payload for the repetition army.
    Procedure = context injection.
 5. **J1 needs fan-out mechanics to survive empty-spawn**: wave boundaries, dependency receipts,
@@ -96,12 +98,12 @@ where the axes shift — and where gates belong.
   Hypothesis → cheapest experiment → verdict, producing decision records, not code. The deeper
   value: hypothesis-driven development is how great teams get **from the uncertain into the
   certain** — that movement is the capability to encode. Budget-gated, explicit exit on
-  decision-taken, POC promotion explicit. Folded into work-groups.md Group 2 item 8.
+  decision-taken, POC promotion explicit. Folded into work-groups.md Group 2 item 10.
 - **G2 — Journey navigation.** Direction: **not label classification.** Five labels are a
   starting vocabulary, not the mechanism — there are probably more; the real shape is a
   **matrix or graph of decisions taken along the way**, since how complex or hard something
   gets is often not knowable upfront. Whether this becomes its own package or folds into the
-  existing Group 2 items is open. Recorded in work-groups.md Group 2 item 10 + open decision 6.
+  existing Group 2 items is open. Recorded in work-groups.md Group 2 item 12 + open decision 6.
 - **G3 — Procedure artifact (J4).** Direction: **procedure design belongs in Group 2** as the
   repeatable counterpart of program design (reference implementation, per-unit steps, per-unit
   acceptance, exception rules; injection payload for repetition armies). Where it lives — own
