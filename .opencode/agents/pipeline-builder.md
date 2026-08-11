@@ -1,5 +1,6 @@
 ---
 description: "Implementation producer. Use to write tests and production code for an approved work package or to apply blocking review findings. Executes approved outcomes and contracts without redesigning scope."
+model: openrouter/qwen/qwen3.7-plus
 mode: subagent
 ---
 
