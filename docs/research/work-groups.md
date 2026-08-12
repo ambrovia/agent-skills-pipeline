@@ -81,16 +81,22 @@ refactor repetitions, heavy scrutiny for architectural decisions, an exploratory
     at the final gate and spawn no round; orchestrator may not upgrade non-blockers to blockers.
 16. **Budget gate (feasibility-gated)** — park-and-escalate on runaway spend, if harnesses
     expose token usage to a system part. Investigate feasibility per host first.
+17. **Loop continuity (durable agents within iterations)** — intended design: one builder and
+    one reviewer persist across the rounds of a single loop; observed reality: every round
+    re-spawns both sides, and one WP can rack up 20+ individual agents. Rule: freshness at
+    phase boundaries, continuity within loops. Where a host cannot keep agents alive, round
+    N+1 starts from round N's delta (item 14), not a cold reconstitution. Mechanical cap on
+    agents per loop; count tracked in session-lab.
 
 ## Group 4 — Governance & setup
 
-17. **Verify-in-build hooks as a setup concern** — repo-specific long-running checks wired via
+18. **Verify-in-build hooks as a setup concern** — repo-specific long-running checks wired via
     host hooks where supported (agents keep polling long scripts today); also the home of
     proportionality hooks.
-18. **Human-gate rebalance** — keep humans at contract/escalation gates (the original
+19. **Human-gate rebalance** — keep humans at contract/escalation gates (the original
     agent-pipeline idea), but tighten what has been delegated since quality suffered; gates get
     plain-language briefs so approval costs seconds, not reading sessions.
-19. **Pre-spawn check runs** (hook category, kin to item 17) — the mechanical checks a spawned
+20. **Pre-spawn check runs** (hook category, kin to item 18) — the mechanical checks a spawned
     agent needs (lint, typecheck, tests, build) run *before* it spawns; results are injected
     into its starting context. A reviewer judges results instead of calling lint itself.
     Removes redundant per-agent check runs, guarantees verdicts rest on identical fresh
