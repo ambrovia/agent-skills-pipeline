@@ -3,7 +3,8 @@
 Date: 2026-08-10. Status: agreed grouping of surviving ideas, maintainer-steered
 (see `solution-axes.md` for the axes and steering record, `token-levers-and-trend-mapping.md`
 for evidence). This is the memory of what remains after steering — not yet an implementation
-plan; open decisions at the bottom must be resolved first.
+plan; open decisions at the bottom must be resolved first. Attack order (no-brainer →
+experimental, by implementation phase) lives in `attack-order.md`.
 
 ## Group 0 — Measurement (runs alongside everything)
 

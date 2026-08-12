@@ -1,5 +1,9 @@
 # Implementation plan — introducing the measured priorities into the plugin
 
+Sequencing note (2026-08-10): the wave order below is re-sorted by confidence in
+`attack-order.md` (no-brainer → experimental). Wave contents remain valid; their order is
+superseded there.
+
 Date: 2026-08-10. Companion to `token-levers-and-trend-mapping.md` (evidence) and the revised
 priorities in `summary-agentic-trends-aug-2026.md`. Scope: the agent-skills-pipeline plugin itself
 (skills, personas, generated agents, hooks, config schema). Not a pipeline run — this repo ships
