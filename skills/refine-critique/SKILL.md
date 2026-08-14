@@ -9,7 +9,8 @@ user-invocable: true
 
 # Refine critique
 
-As a fresh reviewer, read `plan.md`, `requirements.md`, the strategic frame, and only relevant project
+As a fresh reviewer, start from the injected state snapshot when present; read `plan.md`,
+`requirements.md`, the strategic frame, and only relevant project
 truth. Check that value, success, scope, non-goals, noun definitions, guide routing, and every AC align.
 
 Block only when the requirement contradicts or fails to clarify an approved AC, silently expands scope,

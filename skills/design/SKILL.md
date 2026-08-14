@@ -14,7 +14,8 @@ technical implementation.
 
 ## Inputs and applicability
 
-Read `plan.md`, approved `requirements.md` when present, the design system at
+Start from the injected state snapshot when present; then read `plan.md`, approved `requirements.md`
+when present, the design system at
 `{{designSystem.path}}` with its tokens at `{{designSystem.tokens}}`, the applicable
 `pipeline.config.yml` rule slots (`{{rules.design-system}}`, `{{rules.frontend}}`, `{{rules.aesthetics}}`,
 `{{rules.visual}}` — skip undeclared slots), and the existing affected surface. Skip when there is no UI,

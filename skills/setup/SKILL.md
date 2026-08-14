@@ -10,7 +10,8 @@ user-invocable: true
 # Setup
 
 Configuration lives in `pipeline.config.yml` at the repository root — `verify`, `vcs`, `paths`,
-`designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, and the `rules` slots (`code`,
+`designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, optional `checks` and
+`hooks` wiring, and the `rules` slots (`code`,
 `testing`, `architecture`, `design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each
 pointing at a markdown file of binding project guidance. Start from `pipeline.config.example.yml`.
 
@@ -37,6 +38,10 @@ rule, or it is no longer applicable. Never promote a historical observation auto
 
 Configure worktree bootstrap, cleanup, and forbidden-artifact checks only from commands and hazards the
 repository already owns or the maintainer approves. Leave absent lifecycle settings unset; never guess.
+
+Confirm the host capability inventory (`docs/host-capabilities.md`) for the hosts the repository uses,
+and record newly observed capabilities or gaps there — pipeline mechanics pick the cheapest mechanic
+each host supports.
 
 Present evidence, proposed rule text, applicability, blocking force, and trade-offs. Ask the maintainer
 to approve or revise it. Write only approved rules and wire only real paths; `null` deliberately means

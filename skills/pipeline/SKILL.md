@@ -33,7 +33,10 @@ Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/app
 `architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
 from `/review`, persisted by the orchestrator because the reviewer is read-only), `retro.jsonl`
 (`/retro`), and `progress.json` recording phase, status, session starts, completed evaluation attempts,
-artifacts, approvals, and verdicts. `/ship` consolidates the folder before the PR.
+artifacts, approvals, verdicts, each round's `since` pointer — the commit or artifact hash it started
+from — and spawned-agent counts per loop. Artifact writes advance the delta pointer; rounds and
+re-entries read what changed since it, never the full briefing again. `/ship` consolidates the folder
+before the PR.
 
 Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
 the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
@@ -62,8 +65,20 @@ subagents, or the host's equivalent). Do not mode-switch the orchestrator into p
 builder work. Continuity lives in `.pipeline/` state — a cold spawn reconstitutes from the WP artifacts
 and produces the same result.
 
-Session reuse is an optimization only. Where the host keeps warm sessions, reuse a persona across its
-phases; where it does not, re-spawn each phase. Never gate a phase on reuse. Every assignment names the
+Every spawn carries a brief and nothing else: WP id, phase, role, the exact artifact reading list, the
+output contract, and — for retries — only the blocking findings plus what changed since. No conversation
+history, no re-narration of prior rounds. Order the brief stable content first, per-round content last,
+so prefix caches hit. Run `scripts/pipeline-snapshot.mjs` at run start and before every dispatch and
+inject its digest; re-entry after parking starts from the digest, not a folder scan. Where mechanics
+differ by host, pick the cheapest the host supports per `docs/host-capabilities.md`; record a missing
+capability as a gap rather than downgrading every host to it.
+
+Session reuse is an optimization only. Freshness belongs at phase boundaries, continuity within loops:
+where the host keeps warm sessions, reuse a persona across its phases and keep the same builder across
+its retry rounds and the same reviewer across its evaluations of one loop; where it does not, re-spawn,
+and the next round starts from the previous round's delta rather than a cold reconstitution. Never gate
+a phase on reuse. Count spawned agents per loop in `progress.json` — the budget is two, one builder and
+one reviewer; record every host-forced respawn beyond it with reason. Every assignment names the
 artifact to read and the output to write. Do not leak the expected verdict or prior diagnosis into a
 fresh review.
 
@@ -142,27 +157,33 @@ If an upstream amendment invalidates descendants, mark and replay them rather th
 receipts. Verify real cross-leaf seams.
 
 Resume an interrupted builder from its last task commit — assess the working tree and continue rather
-than restarting the phase. On repository/plan contradiction, return to the owning phase. Do not let the
-builder redesign or let the orchestrator create scope.
+than restarting the phase. Before a retry round, run the mechanical checks once and inject the results
+into the brief. On repository/plan contradiction, return to the owning phase. Do not let the builder
+redesign or let the orchestrator create scope.
 
 ### 5. Implementation review
 
-Before review, choose its runtime shape as deliberately as a build wave: one reviewer, sequential
-reviewers, or parallel reviewers. Default to one fresh reviewer over the complete integrated diff because
-one reviewer can follow behavior across seams. Split only when distinct risk areas justify independent
-attention. Split reviewers work independently; finish with one reviewer assessing the complete integrated
-change and combined findings.
+Before spawning the reviewer, run the mechanical checks once — `{{verify}}` or the configured
+`checks.preSpawn` — and inject the results with the snapshot digest; the reviewer judges them instead
+of re-running them. Before review, choose its runtime shape as deliberately as a build wave: one
+reviewer, sequential reviewers, or parallel reviewers. Default to one fresh reviewer over the complete
+integrated diff because one reviewer can follow behavior across seams. Split only when distinct risk
+areas justify independent attention. Split reviewers work independently; finish with one reviewer
+assessing the complete integrated change and combined findings.
 
-`DONE` requires every AC to pass and no blocking finding. Send only blocking findings to the builder, then
-run focused verification and fresh review. Count completed evaluations, not sessions or interrupted runs.
+`DONE` requires every AC to pass and no blocking finding. Send only blocking findings to the builder,
+then run focused verification and fresh review. Non-blocking findings never enter retry, and the
+orchestrator may not upgrade them to blocking — a new concern needs a new evaluation with new evidence.
+Count completed evaluations, not sessions or interrupted runs.
 Each retry must use a changed strategy. After three unsuccessful evaluations the orchestrator adjudicates:
 keep building with a changed strategy, or return to `/architecture` (and `/design` when the surface is
 implicated) with the findings as evidence, re-run its critique, and rebuild. Each adjudication resets the
 evaluation count. Adjudicate at most twice, then park as `awaiting-human-review` with the standing
 findings, both adjudications, and the decision needed.
 
-After `DONE`, summarize delivered outcomes, AC evidence, material trade-offs, and non-blocking limitations
-for final human approval. Park until approved; never auto-approve the built result.
+After `DONE`, summarize delivered outcomes, AC evidence, material trade-offs, and non-blocking
+limitations — including carried-forward defects and follow-ups from earlier rounds — for final human
+approval. Park until approved; never auto-approve the built result.
 
 ### 6. Retro and ship
 
