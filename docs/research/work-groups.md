@@ -66,6 +66,13 @@ complexity (ceremony complexity) — mapped against five archetypal journeys in 
     classification into five (or N) journey labels up front; it is a matrix/graph of decisions
     taken along the way, because how complex or hard something gets is often not knowable
     upfront. Position shifts as evidence arrives; transitions are decisions, not detections.
+21. **Concerns over ceremony** (maintainer steering) — audit every skill for file-shape formalism:
+    the essence of a skill is what must be thought about — concerns considered, decisions locked,
+    evidence produced — not what the output file looks like. Rewrite skills to prescribe the
+    thinking, not the document; artifact shape becomes "the smallest thing the next consumer
+    needs". Keep shape only where machines consume it (`progress.json` fields, verdict categories,
+    snapshot pointers): structure where machines read, freedom where thinking happens. Pairs with
+    6 (formality scales with the work) and informs 5 (layout follows access patterns).
 
 ## Group 3 — Adaptive care (judgement/iteration economics)
 
