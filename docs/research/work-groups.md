@@ -73,6 +73,11 @@ complexity (ceremony complexity) — mapped against five archetypal journeys in 
     needs". Keep shape only where machines consume it (`progress.json` fields, verdict categories,
     snapshot pointers): structure where machines read, freedom where thinking happens. Pairs with
     6 (formality scales with the work) and informs 5 (layout follows access patterns).
+22. **Progressive disclosure for planning artifacts** (Wave 3 residual) — line budgets for
+    long-lived planning artifacts (`architecture.md` first) with overflow pushed into linked
+    reference files; direct answer to the 260× re-read and the "architecture too long" founder
+    intervention in L1. Complements snapshot-first reads (item 4); open: thresholds, and whether
+    21's audit makes budgets unnecessary.
 
 ## Group 3 — Adaptive care (judgement/iteration economics)
 

@@ -1,6 +1,6 @@
 # Roadmap — pipeline rework
 
-Date: 2026-08-10. Status: maintainer-approved. Orders the 21 ideas (`work-groups.md`) on a
+Date: 2026-08-10. Status: maintainer-approved. Orders the 22 ideas (`work-groups.md`) on a
 spectrum from **no-brainer to experimental** into four implementation phases. Rule: ship the
 clear wins first; each phase's measurement (Group 0, session-lab before/after on real runs)
 buys the right to the next phase.
@@ -44,6 +44,7 @@ Goal: fix rigidity — planning depth, care, gates, and formality adapt to the w
 | 16 | Budget gate | Per-host feasibility investigation first |
 | 19 | Human-gate rebalance | Which delegations to tighten |
 | 21 | Concerns over ceremony | How much shape stays: machine contracts vs thinking artifacts; audit pass over every skill |
+| 22 | Progressive disclosure for planning artifacts | Line budgets + overflow files; thresholds; interplay with snapshot-first reads and idea 21 |
 
 (2 lands here with its full scope once the minimal inventory from Phase 1 exists.)
 
