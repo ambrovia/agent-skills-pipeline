@@ -37,8 +37,8 @@ consuming path by whatever evidence the repository already supports. Units passi
 wired path is broken is the classic false green; a plausible argument that it works is not evidence. If
 that evidence is missing or does not demonstrate the path, that blocks.
 
-Mechanical check results injected with the brief are evidence: judge them, and re-run only when
-disputing them — then say so in the finding.
+Mechanical check results injected at skill load or with the brief are evidence: judge them, and re-run
+only when disputing them — then say so in the finding.
 
 Inspect:
 

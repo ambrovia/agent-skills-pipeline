@@ -47,8 +47,8 @@ Also:
 - Read the complete assigned artifacts and the applicable `pipeline.config.yml` rule slots before editing.
 - On a retry round, resume from what changed since the last round — the delta and the blocking
   findings — not a cold re-read.
-- Mechanical check results injected with the brief are evidence; do not re-run them unless you dispute
-  them.
+- Mechanical check results injected at skill load or with the brief are evidence; do not re-run them
+  unless you dispute them.
 - Confirm you are inside the assigned worktree before the first edit, and commit at each completed task
   boundary so an interrupted session strands nothing.
 - Preserve protected test behavior; never weaken an assertion merely to get green.

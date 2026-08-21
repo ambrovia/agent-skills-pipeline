@@ -4,6 +4,10 @@ Date: 2026-08-10. Status: **proposal, awaiting maintainer approval.** Implements
 no-brainers from `roadmap.md` (ideas 1, 2, 4, 14, 15, 17, 18, 20) against the current tree.
 Organized by build cluster; each item names the exact files that change and what changes in them.
 
+Revised in PR review: idea 20 lands as a skill-load hook (`hooks/skill-load-inject`) that runs the
+checks and injects results, diff, and critiqued artifacts when a pipeline skill loads; orchestrator-
+driven injection remains the fallback for hosts without the event. Verified end-to-end on opencode.
+
 Design stance: file-backed `.pipeline/` state stays; the snapshot is a view over it (open
 decision 7 resolved for Phase 1 — the layout challenge, idea 5, stays in Phase 4). Every change
 is host-neutral or degrades gracefully where a host lacks the capability (idea 2's inventory

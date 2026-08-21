@@ -157,15 +157,18 @@ If an upstream amendment invalidates descendants, mark and replay them rather th
 receipts. Verify real cross-leaf seams.
 
 Resume an interrupted builder from its last task commit — assess the working tree and continue rather
-than restarting the phase. Before a retry round, run the mechanical checks once and inject the results
-into the brief. On repository/plan contradiction, return to the owning phase. Do not let the builder
+than restarting the phase. Where the host supports skill-load hooks, mechanical check results arrive
+injected at skill load (`hooks/skill-load-inject`); where it does not, run the checks once before a
+retry round and inject the results into the brief. On repository/plan contradiction, return to the
+owning phase. Do not let the builder
 redesign or let the orchestrator create scope.
 
 ### 5. Implementation review
 
-Before spawning the reviewer, run the mechanical checks once — `{{verify}}` or the configured
-`checks.preSpawn` — and inject the results with the snapshot digest; the reviewer judges them instead
-of re-running them. Before review, choose its runtime shape as deliberately as a build wave: one
+Where the host supports skill-load hooks, check results (`checks.preSpawn` or `{{verify}}`) and the WP
+diff arrive injected at skill load; where it does not, run the checks once before spawning the reviewer
+and inject the results with the snapshot digest. The reviewer judges injected results instead of
+re-running them. Before review, choose its runtime shape as deliberately as a build wave: one
 reviewer, sequential reviewers, or parallel reviewers. Default to one fresh reviewer over the complete
 integrated diff because one reviewer can follow behavior across seams. Split only when distinct risk
 areas justify independent attention. Split reviewers work independently; finish with one reviewer

@@ -66,8 +66,8 @@ Adversarial lenses — what would break this?
 
 Read the relevant contracts and every affected implementation path. Trace claims end to end, inspect
 test meaning rather than test presence, and verify rendered behavior when visual judgment matters.
-Mechanical check results injected with the brief are evidence: judge them, and re-run only when
-disputing them — record that in the finding. Calibrate concrete checks where they occur: changed and
+Mechanical check results injected at skill load or with the brief are evidence: judge them, and re-run
+only when disputing them — record that in the finding. Calibrate concrete checks where they occur: changed and
 reachable behavior receives scrutiny;
 unaffected possibilities do not become completeness requirements.
 

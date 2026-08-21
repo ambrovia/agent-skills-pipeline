@@ -19,10 +19,21 @@
  * Claude, which skips edits made inside a subagent — this can't tell whether an
  * edit came from the orchestrator or from the pipeline-builder. The nudge is best-effort
  * and may also fire inside a subagent.
+ *
+ * Also ports the skill-load injection hook: when a pipeline skill loads, fresh
+ * check results, the WP diff, and critiqued artifacts are appended to the skill
+ * tool's result (logic lives in hooks/skill-load-inject.mjs; see that guard).
  */
+
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 const THRESHOLD = 5;
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
+const SKILL_TOOL = /^skill$/i;
+const SKILL_NAME = /<skill_content name="([\w-]+)"/;
+const INJECT_HOOK = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "hooks", "skill-load-inject.mjs");
 const NO_PROGRESS = /\b(error|failed|failure|timed? out|exception|rejected|cannot|unable|no changes?|unchanged|not found|no match)\b/i;
 
 // sessionID -> count of edits since the last nudge. Module scope persists for
@@ -34,6 +45,19 @@ export const AgentPipeline = async () => {
   return {
     "tool.execute.after": async (input, output) => {
       try {
+        if (input && SKILL_TOOL.test(input.tool || "") && typeof output?.output === "string") {
+          const name = (output.output.slice(0, 500).match(SKILL_NAME) || [])[1];
+          if (name) {
+            const injected = spawnSync(process.execPath, [INJECT_HOOK, "opencode", name], {
+              cwd: process.cwd(), encoding: "utf8", timeout: 60_000,
+            });
+            if (injected.status === 0 && injected.stdout.trim()) {
+              output.output += `\n\n---\n${injected.stdout.trim()}`;
+            }
+          }
+          return;
+        }
+
         if (!input || !EDIT_TOOLS.test(input.tool || "")) return;
 
         const sid = input.sessionID || "default";
