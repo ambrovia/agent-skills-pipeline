@@ -13,12 +13,15 @@ Review the implementation deeply without expanding it.
 
 ## Read first
 
-Read `plan.md`, approved requirements/design/architecture when present, the `pipeline.config.yml` rule
+Start from the injected state snapshot when present; it orients the read, and the artifacts it points
+to are opened where the review needs them. Read `plan.md`, approved requirements/design/architecture
+when present, the `pipeline.config.yml` rule
 slots that apply to the change (`{{rules.code}}`, `{{rules.testing}}`, `{{rules.architecture}}`,
 `{{rules.design-system}}`, `{{rules.frontend}}`, `{{rules.visual}}`, `{{rules.security}}`,
 `{{rules.docs}}` — skip undeclared slots), the complete diff, every affected execution path, and relevant
 tests. For integrated builds, use task trees and receipts to locate work; verify claims from diffs and
-execution rather than receipt prose.
+execution rather than receipt prose. On a retry evaluation, read the previous `review.md` plus the diff
+since it; carry over unchanged `PASS` entries except where the delta touches them.
 
 ## Evaluate
 
@@ -33,6 +36,9 @@ output, whichever that plan named. Where no plan named one, confirm the change i
 consuming path by whatever evidence the repository already supports. Units passing in isolation while the
 wired path is broken is the classic false green; a plausible argument that it works is not evidence. If
 that evidence is missing or does not demonstrate the path, that blocks.
+
+Mechanical check results injected at skill load or with the brief are evidence: judge them, and re-run
+only when disputing them — then say so in the finding.
 
 Inspect:
 
@@ -53,8 +59,10 @@ rule, regression, or change-caused risk.
 
 - **BLOCKING:** failed AC, missing end-to-end evidence, material violation, or material scope excess;
   enters retry.
-- **NON-BLOCKING DEFECT:** concrete issue safe to defer; never changes verdict.
-- **FOLLOW-UP / NOTE:** outside current scope; never assigned automatically.
+- **NON-BLOCKING DEFECT:** concrete issue safe to defer; never changes verdict; carries forward to the
+  final human gate and spawns no round.
+- **FOLLOW-UP / NOTE:** outside current scope; never assigned automatically; carried forward to the
+  final gate, never into a round.
 
 Scope excess is a violated scope boundary, not a preference: a capability, abstraction, configuration
 surface, or subsystem nobody asked for blocks and comes out. Judge it by what the change adds, not by

@@ -14,7 +14,8 @@ Ship is the final mutation and verification boundary before human merge.
 
 ## Preconditions
 
-Confirm review verdict `DONE`, required human approval, intended diff, no unresolved blocking finding,
+Start from the injected state snapshot when present; then confirm review verdict `DONE`, required human
+approval, intended diff, no unresolved blocking finding,
 and no WP-ID leakage outside `.pipeline/**`. Stop rather than repairing product work in ship.
 
 ## Sequence

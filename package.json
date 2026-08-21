@@ -20,6 +20,7 @@
     "hooks/",
     "scripts/install-codex.sh",
     "scripts/install-opencode.sh",
+    "scripts/pipeline-snapshot.mjs",
     "pipeline.config.example.yml",
     "README.md",
     "LICENSE"
