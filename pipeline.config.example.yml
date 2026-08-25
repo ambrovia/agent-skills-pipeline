@@ -41,6 +41,28 @@ vcs: github
 #   cleanup: null
 #   forbiddenArtifacts: ["core", "**/*.tsbuildinfo"]
 
+# Mechanical checks run once before a reviewer or builder-retry spawn; the
+# results are injected into the spawn brief so agents judge them instead of
+# re-running them. Defaults to `verify` when absent — point it at a faster
+# subset (lint + typecheck) when the full gate is too slow per spawn.
+#
+# TRUST: where the skill-load hook is wired, this command is run by the hook
+# itself whenever /review, /write-code, or /write-tests loads — a hook runs
+# directly, so it is not covered by the host's tool-permission prompts. Point
+# it only at commands this repository owns, and treat an edit to this line the
+# way you would treat an edit to a CI workflow. Set PIPELINE_SKILL_INJECT=off
+# to disable injection entirely.
+# checks:
+#   preSpawn: "npm run lint && npm run typecheck"
+
+# Long-running checks wired into host hook events where supported, so agents
+# receive results instead of polling for them. Keys name the host events the
+# repository's tooling understands; configure only commands the repository
+# owns. Absent host support, the skills' run-once-and-wait rule is the
+# fallback.
+# hooks:
+#   postCommit: "npm test -- --affected"
+
 # Project rules — OPTIONAL files that let THIS repo steer specific skills without
 # forking them. Each key below is a fixed rule "slot" the skills know to look for;
 # point it at a markdown file of binding project guidance and the relevant skill

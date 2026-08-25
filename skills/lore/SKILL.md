@@ -1,6 +1,6 @@
 ---
 name: lore
-description: "Capture, scan, or index concise tribal knowledge about non-obvious cross-cutting decisions, constraints, workarounds, and gotchas. Use when rationale would otherwise be rediscovered; never use lore as a second requirements system."
+description: "Capture, scan, or index terse, currently actionable tribal knowledge about non-obvious cross-cutting constraints, workarounds, and gotchas. Use when missing context would cause a future mistake; never use lore as history, a changelog, or a second requirements system."
 argument-hint: "[file paths, 'scan' to find undocumented decisions, or 'index' to list all lore]"
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
@@ -9,24 +9,34 @@ user-invocable: true
 
 # Lore
 
-Lore preserves non-obvious rationale close to affected code. It explains existing constraints; it does
-not create requirements or duplicate architecture and project rules.
+Lore preserves non-obvious, currently useful context close to affected code. It prevents future mistakes;
+it does not record project history, create requirements, or duplicate architecture and project rules.
 
 ## Capture
 
-For requested files, add `@lore` only when a cross-cutting decision, workaround, hazard, or trade-off
-would otherwise be lost. Keep each annotation dated, tagged, and under six lines. Link to authoritative
-detail instead of copying it. Replace superseded lore in place and remove contradictions. Do not annotate
-obvious local behavior.
+Add `@lore` only when all are true:
+
+- current constraint, workaround, hazard, or trade-off affects future work
+- not obvious from nearby code or an authoritative source
+- omission would likely repeat a mistake or break an invariant
+
+Reject chronology: “X replaced Y,” “previously,” migration narrative, diff recap. Historical facts qualify
+only when they explain an active compatibility constraint or trap; write the present constraint, not its
+succession story. Delete stale lore. Link authoritative detail instead of copying it.
+
+Write telegraphic fragments: no full sentences, optional grammar, minimum words for unambiguous meaning.
+One line preferred; two only when a link or essential condition needs its own line. No preamble, background,
+or obvious local behavior.
 
 ## Scan
 
-Find candidate undocumented cross-cutting knowledge and present file/location, proposed annotation, and
-evidence. Obtain user approval before modifying code.
+Find candidates that pass the capture test. Present only location, terse proposed annotation, and evidence.
+Obtain user approval before modifying code.
 
 ## Index
 
-List current lore by kind and location, including contradictions or stale entries. Do not edit.
+List current lore by kind and location, including contradictions or stale entries. Terse entries; no
+conversational framing. Do not edit.
 
 Missing lore blocks a WP only when an approved non-obvious invariant would otherwise be lost after its
 temporary artifacts leave active context.

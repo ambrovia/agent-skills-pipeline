@@ -14,8 +14,9 @@ explain its ACs but may not add outcomes.
 
 ## Inputs and applicability
 
-Read `plan.md`, the track's strategic frame, the project truth under `{{paths.docs}}` it cites, and
-current behavior. Run only when the goal, impact, success boundary, out-of-scope line, or a load-bearing
+Start from the injected state snapshot when present; then read `plan.md`, the track's strategic frame,
+the project truth under `{{paths.docs}}` it cites, and current behavior. Run only when the goal, impact,
+success boundary, out-of-scope line, or a load-bearing
 WP-specific noun is unresolved. Otherwise record that refinement is unnecessary and stop.
 
 ## Produce `requirements.md`

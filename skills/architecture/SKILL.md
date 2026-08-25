@@ -14,7 +14,8 @@ approved requirements and design constrain the in-scope solution. Architecture m
 
 ## Understand and verify
 
-Read the approved artifacts, the `pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
+Start from the injected state snapshot when present; then read the approved artifacts, the
+`pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
 `{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source,
 current repository structure, and any `@lore` on the surfaces this change touches. Ask only questions that
 change a costly or cross-cutting decision.

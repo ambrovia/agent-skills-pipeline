@@ -28,7 +28,7 @@ matching row. If no tracker exists, append free text — `/compound` clusters it
 Observe only. Do not diagnose beyond evidence, fix code or prompts, assign follow-up work, inflate one
 event into a pattern, or duplicate an existing observation without new evidence.
 
-Retro is the final mutable pipeline observation phase and must complete before ship's final attestation.
+Retro is the final mutable pipeline observation phase and must complete before ship runs.
 
 ## Target
 
