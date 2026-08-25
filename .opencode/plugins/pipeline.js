@@ -26,14 +26,24 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const THRESHOLD = 5;
 const EDIT_TOOLS = /^(edit|write|patch|multiedit|notebookedit)$/i;
 const SKILL_TOOL = /^skill$/i;
+// opencode reports no skill name on the tool input, so it is read back out of
+// the rendered skill result — the only handle available. Fails closed.
 const SKILL_NAME = /<skill_content name="([\w-]+)"/;
-const INJECT_HOOK = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "hooks", "skill-load-inject.mjs");
+const PLUGIN_DIR = dirname(fileURLToPath(import.meta.url));
+// Repo and npm layouts keep the hook under hooks/; a project install has only
+// .opencode/, so install-opencode.sh drops it in .opencode/pipeline/ — beside
+// plugins/ rather than inside it, since opencode loads plugins/ as modules.
+const INJECT_HOOK = [
+  join(PLUGIN_DIR, "..", "..", "hooks", "skill-load-inject.mjs"),
+  join(PLUGIN_DIR, "..", "pipeline", "skill-load-inject.mjs"),
+].find((path) => existsSync(path));
 const NO_PROGRESS = /\b(error|failed|failure|timed? out|exception|rejected|cannot|unable|no changes?|unchanged|not found|no match)\b/i;
 
 // sessionID -> count of edits since the last nudge. Module scope persists for
@@ -45,7 +55,7 @@ export const AgentPipeline = async () => {
   return {
     "tool.execute.after": async (input, output) => {
       try {
-        if (input && SKILL_TOOL.test(input.tool || "") && typeof output?.output === "string") {
+        if (INJECT_HOOK && input && SKILL_TOOL.test(input.tool || "") && typeof output?.output === "string") {
           const name = (output.output.slice(0, 500).match(SKILL_NAME) || [])[1];
           if (name) {
             const injected = spawnSync(process.execPath, [INJECT_HOOK, "opencode", name], {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -13,7 +13,7 @@ function git(repo, ...args) {
   return result.stdout.trim();
 }
 
-function fixture({ verify = 'echo CHECKS-GREEN', status = 'in-progress' } = {}) {
+function fixture({ verify = 'echo CHECKS-GREEN', status = 'in-progress', since: sinceOverride, config } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'pipeline-inject-'));
   git(root, 'init', '-q');
   writeFileSync(join(root, 'file.txt'), 'one\n');
@@ -27,8 +27,10 @@ function fixture({ verify = 'echo CHECKS-GREEN', status = 'in-progress' } = {}) 
   writeFileSync(join(wp, 'plan.md'), '# Demo fix\n\nOutcomes...\n');
   writeFileSync(join(wp, 'requirements.md'), 'REQ-MARKER value and scope\n');
   writeFileSync(join(wp, 'architecture.md'), 'ARCH-MARKER contracts and tasks\n');
-  writeFileSync(join(wp, 'progress.json'), JSON.stringify({ phase: 'review', status, since }));
-  writeFileSync(join(root, 'pipeline.config.yml'), `verify: "${verify}"\n`);
+  writeFileSync(join(wp, 'progress.json'), JSON.stringify({
+    phase: 'review', status, since: sinceOverride ?? since,
+  }));
+  writeFileSync(join(root, 'pipeline.config.yml'), config ?? `verify: "${verify}"\n`);
   return { root, since, wp };
 }
 
@@ -56,7 +58,7 @@ test('review skill gets state, fresh check results, and the diff', () => {
   const context = claudeContext(result);
   assert.match(context, /skill: review, wp: demo/);
   assert.match(context, /title: Demo fix/);
-  assert.match(context, /## checks — echo CHECKS-GREEN \(exit 0\)/);
+  assert.match(context, /## checks — echo CHECKS-GREEN \(exit 0, tree [0-9a-f]+\+dirty\)/);
   assert.match(context, /CHECKS-GREEN/);
   assert.match(context, new RegExp(`## diff since ${since.slice(0, 7)}|## diff since ${since}`));
   assert.match(context, /\+two/);
@@ -75,8 +77,48 @@ test('architecture-critique gets the critiqued artifacts with paths', () => {
   const context = claudeContext(result);
   assert.match(context, /ARCH-MARKER/);
   assert.match(context, /# Demo fix/);
-  assert.match(context, /\.pipeline\/work\/demo\/architecture\.md/);
+  assert.match(context, /\.pipeline\/work\/demo\/architecture\.md — already in context, do not re-read/);
   assert.doesNotMatch(context, /REQ-MARKER/);
+});
+
+test('build skills are told their checks predate the session edits', () => {
+  const { root } = fixture();
+  const context = claudeContext(run(root, 'claude', skillPayload('write-code')));
+  assert.match(context, /baseline, ran before this session's edits/);
+  assert.doesNotMatch(context, /## diff/);
+});
+
+test('checks.preSpawn overrides verify and keeps a quoted #', () => {
+  const { root } = fixture({
+    config: 'verify: "echo FULL-GATE"\nchecks:\n  preSpawn: "echo FAST#TAG"\n',
+  });
+  const context = claudeContext(run(root, 'claude', skillPayload('review')));
+  assert.match(context, /## checks — echo FAST#TAG/);
+  assert.match(context, /FAST#TAG/);
+  assert.doesNotMatch(context, /FULL-GATE/);
+});
+
+test('a flag-shaped since is never handed to git', () => {
+  const { root } = fixture({ since: '--stat' });
+  const context = claudeContext(run(root, 'claude', skillPayload('review')));
+  assert.doesNotMatch(context, /## diff/);
+});
+
+test('the work package with the newest progress.json wins', () => {
+  const { root, wp } = fixture();
+  // Created second, so its *directory* mtime is the newer one — but its state
+  // is older, and directory mtimes do not move on an in-place progress write.
+  const stale = join(root, '.pipeline', 'work', 'stale');
+  mkdirSync(stale, { recursive: true });
+  writeFileSync(join(stale, 'plan.md'), '# Stale package\n');
+  writeFileSync(join(stale, 'progress.json'), JSON.stringify({ phase: 'build', status: 'in-progress' }));
+  const long_ago = Date.now() / 1000 - 600;
+  utimesSync(join(stale, 'progress.json'), long_ago, long_ago);
+  assert.ok(statSync(stale).mtimeMs >= statSync(wp).mtimeMs, 'fixture must give the stale WP the newer dir mtime');
+
+  const context = claudeContext(run(root, 'claude', skillPayload('review')));
+  assert.match(context, /wp: demo/);
+  assert.doesNotMatch(context, /wp: stale/);
 });
 
 test('non-pipeline skills get no injection', () => {

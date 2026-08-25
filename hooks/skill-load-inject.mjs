@@ -12,10 +12,16 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
+const PLUGIN_ROOT = join(HOOK_DIR, '..');
+// Project installers drop the snapshot next to this hook rather than under scripts/.
+const SNAPSHOT_CANDIDATES = [
+  join(PLUGIN_ROOT, 'scripts', 'pipeline-snapshot.mjs'),
+  join(HOOK_DIR, 'pipeline-snapshot.mjs'),
+];
 const SKILL_TOOL = /^skill$/i;
-const MAX_LINES = Number(process.env.PIPELINE_INJECT_MAX_LINES ?? 300);
-const CHECK_TIMEOUT_MS = Number(process.env.PIPELINE_CHECK_TIMEOUT_MS ?? 45_000);
+const MAX_LINES = positiveInt(process.env.PIPELINE_INJECT_MAX_LINES, 300);
+const CHECK_TIMEOUT_MS = positiveInt(process.env.PIPELINE_CHECK_TIMEOUT_MS, 45_000);
 
 const DIGEST_SKILLS = new Set([
   'refine', 'design', 'architecture', 'ship', 'review', 'write-code', 'write-tests',
@@ -24,12 +30,17 @@ const DIGEST_SKILLS = new Set([
 
 const EXTRA = {
   review: { checks: true, diff: true },
-  'write-code': { checks: true },
-  'write-tests': { checks: true },
+  'write-code': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
+  'write-tests': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
   'refine-critique': { artifacts: ['plan.md', 'requirements.md'] },
   'architecture-critique': { artifacts: ['plan.md', 'architecture.md'] },
   'design-critique': { artifacts: ['plan.md', 'design/approved.md'] },
 };
+
+function positiveInt(raw, fallback) {
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
 
 function pick(payload, keys) {
   for (const key of keys) if (payload?.[key] !== undefined) return payload[key];
@@ -49,6 +60,14 @@ function normalizeSkill(raw) {
   return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase();
 }
 
+// Minimal scalar read: a quoted value keeps every character (commands contain
+// '#'), an unquoted one stops at the comment marker.
+function scalar(raw) {
+  const match = raw.trim().match(/^(?:"([^"]*)"|'([^']*)'|([^#]*?))\s*(?:#.*)?$/);
+  if (!match) return null;
+  return (match[1] ?? match[2] ?? match[3] ?? '').trim() || null;
+}
+
 function readConfig(root) {
   let verify = null;
   let preSpawn = null;
@@ -57,10 +76,10 @@ function readConfig(root) {
     for (const line of readFileSync(join(root, 'pipeline.config.yml'), 'utf8').split('\n')) {
       if (/^checks:\s*$/.test(line)) { inChecks = true; continue; }
       if (inChecks && /^\S/.test(line)) inChecks = false;
-      let match = line.match(/^verify:\s*"?([^"#]+)"?\s*$/);
-      if (match) verify = match[1].trim();
-      match = line.match(/^\s+preSpawn:\s*"?([^"#]+)"?\s*$/);
-      if (match && inChecks) preSpawn = match[1].trim();
+      let match = line.match(/^verify:\s*(.*)$/);
+      if (match) verify = scalar(match[1]);
+      match = line.match(/^\s+preSpawn:\s*(.*)$/);
+      if (match && inChecks) preSpawn = scalar(match[1]);
     }
   } catch { /* no config — checks skipped */ }
   return { verify, preSpawn };
@@ -76,15 +95,27 @@ function findActiveWp(root) {
   }
   const active = [];
   for (const name of entries) {
+    const dir = join(workRoot, name);
     let progress = null;
-    try { progress = JSON.parse(readFileSync(join(workRoot, name, 'progress.json'), 'utf8')); } catch { /* absent */ }
+    try { progress = JSON.parse(readFileSync(join(dir, 'progress.json'), 'utf8')); } catch { /* absent */ }
     const status = String(progress?.status ?? '');
     if (status === 'done') continue;
-    active.push({ name, mtime: statSync(join(workRoot, name)).mtimeMs });
+    active.push({ name, mtime: touchedAt(dir) });
   }
   if (active.length === 0) return null;
   active.sort((a, b) => b.mtime - a.mtime);
   return active[0].name;
+}
+
+// State age is progress.json's mtime. A directory's mtime only moves when
+// entries are added or removed — an in-place progress write never registers,
+// while this hook's own checks-latest.log write does — so it is the fallback
+// for a work package that has no progress file yet, not the primary signal.
+function touchedAt(dir) {
+  for (const path of [join(dir, 'progress.json'), dir]) {
+    try { return statSync(path).mtimeMs; } catch { /* absent */ }
+  }
+  return 0;
 }
 
 function cap(text, label) {
@@ -94,10 +125,22 @@ function cap(text, label) {
 }
 
 function digest(root, wpId) {
-  const result = spawnSync(process.execPath, [join(PLUGIN_ROOT, 'scripts', 'pipeline-snapshot.mjs'), wpId], {
+  const script = SNAPSHOT_CANDIDATES.find((path) => existsSync(path));
+  if (!script) return null;
+  const result = spawnSync(process.execPath, [script, wpId], {
     cwd: root, encoding: 'utf8', timeout: 10_000,
   });
   return result.status === 0 ? result.stdout.trim() : null;
+}
+
+// Stamps check results against the tree they ran on, so an agent can tell
+// whether a green predates its own edits.
+function treeState(root) {
+  const head = spawnSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf8', timeout: 5_000 });
+  if (head.status !== 0) return null;
+  const dirty = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', timeout: 10_000 });
+  const suffix = dirty.status === 0 && (dirty.stdout ?? '').trim() !== '' ? '+dirty' : '';
+  return `${head.stdout.trim()}${suffix}`;
 }
 
 function runChecks(root, command, wpDir) {
@@ -121,8 +164,8 @@ function runChecks(root, command, wpDir) {
 }
 
 function diffSince(root, since) {
-  if (!/^[\w.-]{1,64}$/.test(since)) return null;
-  const result = spawnSync('git', ['diff', since], {
+  if (!/^[\w.][\w.-]{0,63}$/.test(since)) return null;
+  const result = spawnSync('git', ['diff', since, '--'], {
     cwd: root, encoding: 'utf8', timeout: 15_000, maxBuffer: 4 * 1024 * 1024,
   });
   if (result.status !== 0) return null;
@@ -130,7 +173,7 @@ function diffSince(root, since) {
   if (diff === '') return { text: '(no changes)', lines: 0 };
   const lines = diff.split('\n').length;
   if (lines <= MAX_LINES) return { text: diff, lines };
-  const stat = spawnSync('git', ['diff', '--stat', since], { cwd: root, encoding: 'utf8', timeout: 15_000 });
+  const stat = spawnSync('git', ['diff', '--stat', since, '--'], { cwd: root, encoding: 'utf8', timeout: 15_000 });
   return {
     text: `${(stat.stdout ?? '').trim()}\n… [diff too large to inject — run: git diff ${since}]`,
     lines,
@@ -158,9 +201,12 @@ function buildInjection(format) {
     if (command) {
       const outcome = runChecks(root, command, wpDir);
       if (outcome) {
-        const staleness = outcome.stale ? ' — STALE cache, live run timed out' : '';
+        const staleness = outcome.stale ? ', STALE cache, live run timed out' : '';
         const exit = outcome.exit === null ? '?' : outcome.exit;
-        sections.push(`## checks — ${command} (exit ${exit}${staleness})`, cap(outcome.text, 'rerun the check command'));
+        const tree = treeState(root);
+        const marks = [`exit ${exit}`, tree ? `tree ${tree}` : null, extra.checksNote ?? null]
+          .filter(Boolean).join(', ');
+        sections.push(`## checks — ${command} (${marks}${staleness})`, cap(outcome.text, 'rerun the check command'));
       }
     }
   }
@@ -178,7 +224,10 @@ function buildInjection(format) {
     const path = join(wpDir, artifact);
     if (!existsSync(path)) continue;
     try {
-      sections.push(`## ${artifact} (.pipeline/work/${wpId}/${artifact})`, cap(readFileSync(path, 'utf8').trim(), path));
+      sections.push(
+        `## ${artifact} (.pipeline/work/${wpId}/${artifact} — already in context, do not re-read)`,
+        cap(readFileSync(path, 'utf8').trim(), path),
+      );
     } catch { /* unreadable artifact — skip */ }
   }
 
