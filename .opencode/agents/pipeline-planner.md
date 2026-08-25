@@ -1,5 +1,6 @@
 ---
 description: "Pre-implementation producer for requirement clarification, UI/UX decisions, and technical architecture. Use only when the selected phase requires planning; do not use for formal critique, implementation, or scope creation."
+model: openrouter/qwen/qwen3.8-max
 mode: subagent
 tools:
   edit: false

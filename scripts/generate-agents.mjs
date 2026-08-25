@@ -60,11 +60,15 @@ function buildClaudeTools(meta) {
 }
 
 function modelFromCapability(capability) {
-  return capability === 'high' ? 'fable' : 'sonnet';
+  return capability === 'high' ? 'opus' : 'sonnet';
 }
 
 function codexModelFromCapability(capability) {
   return capability === 'high' ? 'gpt-5.6-sol' : 'gpt-5.6-terra';
+}
+
+function opencodeModelFromCapability(capability) {
+  return capability === 'high' ? 'openrouter/qwen/qwen3.8-max' : 'openrouter/qwen/qwen3.7-plus';
 }
 
 function yamlQuote(s) {
@@ -106,6 +110,7 @@ function generateOpencode(meta, body) {
   const fmLines = [
     '---',
     `description: "${yamlQuote(meta.description)}"`,
+    `model: ${opencodeModelFromCapability(meta.capability)}`,
     'mode: subagent',
   ];
 

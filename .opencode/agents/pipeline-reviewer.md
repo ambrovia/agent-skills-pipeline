@@ -1,5 +1,6 @@
 ---
 description: "Independent read-only evaluator for requirements, design, architecture, and implemented code. Use when a pipeline critique or review gate requests evaluation. Produces evidence-backed findings only; never authors or repairs the evaluated work."
+model: openrouter/qwen/qwen3.8-max
 mode: subagent
 tools:
   write: false
