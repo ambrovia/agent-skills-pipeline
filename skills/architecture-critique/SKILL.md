@@ -9,9 +9,10 @@ user-invocable: true
 
 # Architecture critique
 
-Review as a fresh evaluator, starting from the injected state snapshot when present. Read the approved
-plan, requirements, design when applicable, architecture,
-feasibility evidence, and the `pipeline.config.yml` rule slots `/architecture` works under
+Review as a fresh evaluator, starting from the injected state snapshot when present; artifacts
+injected in full are already in context and are not re-read. Read the approved plan, requirements,
+design when applicable, architecture, feasibility evidence, and the `pipeline.config.yml` rule slots
+`/architecture` works under
 (`{{rules.architecture}}`, `{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared
 slots). Fact-audit every load-bearing claim about existing code or precedent: independently locate it and
 cite `file:line` (or mark `UNVERIFIED`). Do the same against current official sources for external claims.

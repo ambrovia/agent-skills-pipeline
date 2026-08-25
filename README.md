@@ -30,7 +30,7 @@ work package ──▶ design ──▶ critique ──▶ build (TDD) ──▶
 | [`personas/`](personas/) | Persona source of truth; [`scripts/generate-agents.mjs`](scripts/generate-agents.mjs) renders every host format below |
 | [`agents/`](agents/) | Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` personas (generated) |
 | [`agents-cursor/`](agents-cursor/) | Cursor-format personas (`model: inherit`, generated) |
-| [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
+| [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards and skill-load evidence injection (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
 | [`.claude-plugin/`](.claude-plugin/) | Claude Code plugin + marketplace |
 | [`.cursor-plugin/`](.cursor-plugin/) | Cursor plugin + Team Marketplace |
 | [`.codex-plugin/`](.codex-plugin/) | Codex plugin (+ [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)) |
@@ -153,6 +153,20 @@ The **engineering tier** is load-bearing and is chosen by customer, not by aspir
 | `critical` | Large-company, regulated, contractual, or high-consequence customers | Adds the rigor actually demanded by that context, such as compliance evidence, audit trails, rollback procedures, stronger operational controls, and exhaustive failure handling. |
 
 Do not choose `critical` merely because software is deployed or stores real user data. Feature flags, audit systems, elaborate observability, formal rollback machinery, exhaustive fallbacks, and speculative abstractions require a concrete customer, regulatory, contractual, or blast-radius need. At every tier, build only what the current acceptance criteria and known risks require. `/work-planning` re-confirms the tier on every run; downstream phases trust it as set.
+
+### Injected evidence at skill load
+
+Where the host supports skill-load hooks ([`hooks/skill-load-inject.mjs`](hooks/skill-load-inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
+
+**This runs `checks.preSpawn` (or `verify`) as a shell command.** A hook executes directly, so it is not covered by the host's tool-permission prompts: whatever that line contains runs when a pipeline skill loads. Point it only at commands the repository owns, and review changes to it as you would a CI workflow.
+
+| Env var | Default | Effect |
+|---|---|---|
+| `PIPELINE_SKILL_INJECT` | unset | `off` disables injection entirely — no check run, no diff, no digest |
+| `PIPELINE_CHECK_TIMEOUT_MS` | `45000` | check-command timeout; on timeout the last cached result is injected, marked `STALE` |
+| `PIPELINE_INJECT_MAX_LINES` | `300` | per-section truncation for checks, diff, and injected artifacts |
+
+Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a skill load never breaks on this hook. See [`docs/host-capabilities.md`](docs/host-capabilities.md) for per-host support.
 
 ### Steer skills with project rules
 

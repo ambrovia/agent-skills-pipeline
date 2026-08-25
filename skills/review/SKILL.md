@@ -15,10 +15,10 @@ Review the implementation deeply without expanding it.
 
 Start from the injected state snapshot when present; it orients the read, and the artifacts it points
 to are opened where the review needs them. Read `plan.md`, approved requirements/design/architecture
-when present, the `pipeline.config.yml` rule
-slots that apply to the change (`{{rules.code}}`, `{{rules.testing}}`, `{{rules.architecture}}`,
-`{{rules.design-system}}`, `{{rules.frontend}}`, `{{rules.visual}}`, `{{rules.security}}`,
-`{{rules.docs}}` — skip undeclared slots), the complete diff, every affected execution path, and relevant
+when present, the `pipeline.config.yml` rule slots that apply to the change (`{{rules.code}}`,
+`{{rules.testing}}`, `{{rules.architecture}}`, `{{rules.design-system}}`, `{{rules.frontend}}`,
+`{{rules.visual}}`, `{{rules.security}}`, `{{rules.docs}}` — skip undeclared slots), the complete
+diff, every affected execution path, and relevant
 tests. For integrated builds, use task trees and receipts to locate work; verify claims from diffs and
 execution rather than receipt prose. On a retry evaluation, read the previous `review.md` plus the diff
 since it; carry over unchanged `PASS` entries except where the delta touches them.

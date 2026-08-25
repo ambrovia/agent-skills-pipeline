@@ -9,11 +9,13 @@ user-invocable: true
 
 # Write tests
 
-Read approved artifacts, `{{rules.testing}}` from `pipeline.config.yml`, and the existing tests under
-`{{paths.tests}}`. Write the failing test before the code that satisfies it — a test written afterwards
-records what was built, not what was required. An AC proven instead by static, rendered, or recorded
-manual evidence must be named as such by `architecture.md` or `{{rules.testing}}`; that exception is not
-chosen at build time. Prefer existing test lanes and focused behavioral assertions.
+Start from the injected state snapshot when present; then read approved artifacts, `{{rules.testing}}`
+from `pipeline.config.yml`, and the existing tests under `{{paths.tests}}`. Mechanical check results
+injected at skill load are the pre-change baseline — read the suite's starting state from them rather
+than re-running it. Write the failing test before the code that satisfies it — a test written
+afterwards records what was built, not what was required. An AC proven instead by static, rendered, or
+recorded manual evidence must be named as such by `architecture.md` or `{{rules.testing}}`; that
+exception is not chosen at build time. Prefer existing test lanes and focused behavioral assertions.
 
 Produce the end-to-end evidence named in `architecture.md` alongside the per-AC evidence. Use the lane it
 names; do not build a parallel harness, and do not upgrade a named manual check into new automation.

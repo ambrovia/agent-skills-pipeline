@@ -68,10 +68,11 @@ and produces the same result.
 Every spawn carries a brief and nothing else: WP id, phase, role, the exact artifact reading list, the
 output contract, and — for retries — only the blocking findings plus what changed since. No conversation
 history, no re-narration of prior rounds. Order the brief stable content first, per-round content last,
-so prefix caches hit. Run `scripts/pipeline-snapshot.mjs` at run start and before every dispatch and
+so prefix caches hit. Run the bundled snapshot resolved from the plugin install path
+(`node <plugin-root>/scripts/pipeline-snapshot.mjs <id>`) at run start and before every dispatch and
 inject its digest; re-entry after parking starts from the digest, not a folder scan. Where mechanics
-differ by host, pick the cheapest the host supports per `docs/host-capabilities.md`; record a missing
-capability as a gap rather than downgrading every host to it.
+differ by host, pick the cheapest the host supports per `<plugin-root>/docs/host-capabilities.md`;
+record a missing capability as a gap rather than downgrading every host to it.
 
 Session reuse is an optimization only. Freshness belongs at phase boundaries, continuity within loops:
 where the host keeps warm sessions, reuse a persona across its phases and keep the same builder across
@@ -160,8 +161,7 @@ Resume an interrupted builder from its last task commit — assess the working t
 than restarting the phase. Where the host supports skill-load hooks, mechanical check results arrive
 injected at skill load (`hooks/skill-load-inject`); where it does not, run the checks once before a
 retry round and inject the results into the brief. On repository/plan contradiction, return to the
-owning phase. Do not let the builder
-redesign or let the orchestrator create scope.
+owning phase. Do not let the builder redesign or let the orchestrator create scope.
 
 ### 5. Implementation review
 

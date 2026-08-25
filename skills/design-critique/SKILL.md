@@ -9,9 +9,10 @@ user-invocable: true
 
 # Design critique
 
-Review as a fresh evaluator, starting from the injected state snapshot when present. Read the plan,
-approved requirements, design artifact, the design system at
-`{{designSystem.path}}` with `{{designSystem.tokens}}`, the applicable `pipeline.config.yml` rule slots
+Review as a fresh evaluator, starting from the injected state snapshot when present; artifacts
+injected in full are already in context and are not re-read. Read the plan, approved requirements,
+design artifact, the design system at `{{designSystem.path}}` with `{{designSystem.tokens}}`, the
+applicable `pipeline.config.yml` rule slots
 (`{{rules.design-system}}`, `{{rules.frontend}}`, `{{rules.aesthetics}}`, `{{rules.visual}}` — skip
 undeclared slots), and the existing affected surface. Inspect rendered output when visual judgment
 matters; do not infer visual quality from source alone.

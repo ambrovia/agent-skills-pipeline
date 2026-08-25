@@ -14,6 +14,11 @@ capability is confirmed or lost.
 | skill-load injection hook | wired (PostToolUse Skill matcher) — unverified | silent (hook output contract broken) | wired — unverified | unknown | unknown | yes — verified end-to-end: plugin tool hook appends checks/diff/artifacts to the skill result |
 | token-usage exposure | unknown | unknown | unknown | unknown | unknown | unknown |
 
+The skill-load hook runs `checks.preSpawn` (or `verify`) from `pipeline.config.yml` as a shell
+command. Hooks execute directly rather than through the host's tool layer, so that command is not
+covered by tool-permission prompts on any host in this table — it is a repository-trust boundary, not
+a per-call one. `PIPELINE_SKILL_INJECT=off` disables injection wherever it is wired.
+
 Evidence: `hooks/hooks.json` and `hooks/cursor-hooks.json` (hook envelopes), the `@lore` in
 `hooks/session-start.sh` (Codex SessionStart), the open-decision record in
 `docs/research/work-groups.md` (Claude empty spawn, codex fork mode), and the 2026-08-21 headless
