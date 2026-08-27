@@ -198,7 +198,7 @@ This is how one repo makes `/review` enforce its own reuse-before-build rule, or
 
 ## The skills
 
-`refine` · `design` · `architecture` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
+`refine` · `program-design` · `design` · `architecture` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 
