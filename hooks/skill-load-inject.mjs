@@ -25,16 +25,14 @@ const CHECK_TIMEOUT_MS = positiveInt(process.env.PIPELINE_CHECK_TIMEOUT_MS, 45_0
 
 const DIGEST_SKILLS = new Set([
   'refine', 'design', 'architecture', 'ship', 'review', 'write-code', 'write-tests',
-  'refine-critique', 'architecture-critique', 'design-critique',
+  'architecture-critique',
 ]);
 
 const EXTRA = {
   review: { checks: true, diff: true },
   'write-code': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
   'write-tests': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
-  'refine-critique': { artifacts: ['plan.md', 'requirements.md'] },
   'architecture-critique': { artifacts: ['plan.md', 'architecture.md'] },
-  'design-critique': { artifacts: ['plan.md', 'design/approved.md'] },
 };
 
 function positiveInt(raw, fallback) {

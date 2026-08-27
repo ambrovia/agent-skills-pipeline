@@ -176,7 +176,7 @@ The skills are deliberately generic — repo-specific knowledge (test layout, wh
 rules:
   code: .pipeline/rules/typescript.md       # → write-code, architecture, architecture-critique, review
   testing: .pipeline/rules/testing.md       # → write-tests, architecture, architecture-critique, review, pipeline
-  design-system: .pipeline/rules/design.md  # → design, design-critique, write-code, review
+  design-system: .pipeline/rules/design.md  # → design, write-code, review
   security: .pipeline/rules/security.md     # → architecture, architecture-critique, write-code, review
 ```
 
@@ -187,10 +187,10 @@ Rule files live under `.pipeline/rules/` so every host reads the same ones — n
 | `code` | write-code, architecture, architecture-critique, review | language / type / style conventions |
 | `testing` | write-tests, architecture, architecture-critique, review, pipeline | what counts as a test, layout, lanes/fixtures |
 | `architecture` | architecture, architecture-critique, write-code, review | architecture invariants & conventions |
-| `design-system` | design, design-critique, write-code, review | component budget, tokens, reuse-before-build, promotion |
-| `frontend` | design, design-critique, write-code, review | client / UI conventions |
-| `visual` | design, design-critique, review | visual fidelity / regression policy |
-| `aesthetics` | design, design-critique | aesthetic quality bar |
+| `design-system` | design, write-code, review | component budget, tokens, reuse-before-build, promotion |
+| `frontend` | design, write-code, review | client / UI conventions |
+| `visual` | design, review | visual fidelity / regression policy |
+| `aesthetics` | design | aesthetic quality bar |
 | `security` | architecture, architecture-critique, write-code, review | security policy / threat model |
 | `docs` | write-docs, review | documentation voice & conventions |
 
@@ -198,7 +198,7 @@ This is how one repo makes `/review` enforce its own reuse-before-build rule, or
 
 ## The skills
 
-`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
+`refine` · `design` · `architecture` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 

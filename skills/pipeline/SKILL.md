@@ -111,11 +111,7 @@ descendants without attempting their phases.
 ### 2. Requirement clarification when needed
 
 Run `/refine` only when the plan's pre-build trigger exists or a load-bearing requirement remains
-ambiguous. If it runs, send `requirements.md` to a fresh `/refine-critique` reviewer.
-
-Only `BLOCKING` findings return to the planner. Each retry states the failed authority, evidence, and a
-changed strategy; cap at three attempts, then block. Scores, warnings, and suggestions never trigger a
-retry.
+ambiguous.
 
 When refinement materially interprets value, scope, or a load-bearing noun, summarize the plan diff and
 requirements in plain language for maintainer approval. Park as `awaiting-human-review` if approval is
@@ -127,8 +123,8 @@ Run `/design` only for a UI decision not already determined by an approved patte
 system is configured. Run `/architecture` for the technical decisions needed by the WP; a trivial change
 may produce a correspondingly small plan.
 
-Use fresh `/design-critique` and `/architecture-critique` reviewers for artifacts that exist. Retry only
-blocking findings, with the same three-attempt discipline, completing each loop before the concept gate.
+Use a fresh `/architecture-critique` reviewer when architecture exists. Retry only blocking findings,
+with the same three-attempt discipline, completing each loop before the concept gate.
 Non-blocking defects and notes are retained for visibility but are not assigned automatically.
 
 The concept gate is mandatory: no build starts until the maintainer approves the design and architecture
