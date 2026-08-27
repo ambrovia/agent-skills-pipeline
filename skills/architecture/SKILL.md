@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: "Produce the technical plan for an approved work package. Use when implementation needs contracts, cross-cutting decisions, feasibility evidence, ownership, or ordered tasks. Define necessary decisions without transcribing local implementation."
+description: "Restate an agreed plan in technical terms — contracts, types, schemas, dependency order — for a builder. Use only where scope and complexity make those definitions necessary. Never decides how the program works; that is the plan's job."
 phase: 3
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
@@ -9,12 +9,26 @@ user-invocable: true
 
 # Architecture
 
-Write `.pipeline/work/<id>/architecture.md` as the durable technical handoff. `plan.md` owns outcomes;
-approved requirements and design constrain the in-scope solution. Architecture must not create scope.
+Write `.pipeline/work/<id>/architecture.md` as the durable technical handoff. `plan.md` owns what is
+wanted and how the program works; approved design constrains the surface. Architecture must not create
+scope.
+
+**Run only where the definitions are genuinely necessary** — where scope and complexity mean a builder
+cannot proceed without contracts, types, schemas, or an explicit dependency order. Most items do not
+need this, and producing it anyway is how plans became unreadable.
+
+This is the *technical interpretation* of a plan that already exists: the plan says how the program
+works in plain words, and this says the same thing in the vocabulary a builder needs. If you find
+yourself deciding how the program works, stop — that decision belongs in the plan, with the
+maintainer.
+
+Unlike the plan, this artifact has no line budget. Its job is completeness for a builder rather than
+readability for a decision. It must still be navigable: a builder who cannot find the contract they
+need is in the same position as one who has none.
 
 ## Understand and verify
 
-Start from the injected state snapshot when present; then read the approved artifacts, the
+Start from the injected state, then read `plan.md`, approved design when present, the
 `pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
 `{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source,
 current repository structure, and any `@lore` on the surfaces this change touches. Ask only questions that
