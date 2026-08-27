@@ -46,13 +46,19 @@ talked down. If what comes back is not good, the problem is usually the plan or 
 them — fix that and try again rather than accepting a bad answer.
 
 **Their taste is only what they tell you here.** As in `/refine`: when the approach question is
-unanswered for this item, ask. Never import it from another item.
+unanswered for this item, ask. Never import it from another item, another conversation, or a standing
+rule written for a different question.
 
-**Stop at confirmation.**
+**Stop at confirmation.** Reflect back how you understood it and get agreement — and do not treat
+that agreement as permission to start building. Knowing how the thing should work is the most
+tempting possible moment to start making it.
 
 ## What to write
 
-Into `plan.md`, in plain language:
+Into the `## How it works` section of `.pipeline/work/<id>/plan.md`, in plain language. Write only
+that section — `/refine` owns `## What we need`, and either interview may run without the other. The
+whole plan is budgeted at 50–100 lines, so this is roughly half of that; this half sprawls most
+easily, because explaining how something works invites explaining everything about it.
 
 - how the program works — the path through it, in the order things happen;
 - why it works that way, and what was rejected;

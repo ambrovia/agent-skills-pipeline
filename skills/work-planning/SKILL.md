@@ -64,8 +64,9 @@ them, and being wrong here costs nothing.
 | ambiguity | how clear is the topic? | established context · new context, little knowledge · we do not yet know what we want |
 | exposure | how far does it reach? | internal detail · user-facing surface · public contract |
 
-`engineering.tier` is not estimated here — it comes from `pipeline.config.yml` and describes the
-product, not the item. Record a reason for any item-level override.
+`engineering.tier` is not estimated here and is not set per item. It comes from
+`pipeline.config.yml`, describes the product rather than the work, and changes when the product's
+maturity changes — a maintainer decision, not a registration one.
 
 ## Seed the plan
 

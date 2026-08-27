@@ -21,8 +21,8 @@ Ambiguity decides. Run when the goal, the boundary, the beneficiary, or a load-b
 unresolved. Skip when the seed already answers those — a bugfix in an established context needs no
 interview, and running one anyway is the ceremony this pipeline is trying to stop charging for.
 
-Read the seed in `plan.md`, the track's strategic frame, the project truth under `{{paths.docs}}` it
-cites, and enough current behavior to ask informed questions.
+Read the seed in `.pipeline/work/<id>/plan.md`, the track's strategic frame, the project truth under
+`{{paths.docs}}` it cites, and enough current behavior to ask informed questions.
 
 ## How to interview
 
@@ -39,15 +39,17 @@ this item's plan does not say, ask. Do not infer it from another item's plan, an
 or a standing rule that was written for a different question. Taste differs by topic and changes over
 time; an answer carried in from elsewhere is your own taste wearing a citation.
 
-Standing rules under `{{rules}}` still apply as conventions — they are not answers to questions the
-maintainer has not been asked.
+Standing rules configured in `pipeline.config.yml` still apply as conventions — they are not answers
+to questions the maintainer has not been asked.
 
 **Stop at confirmation.** End the interview by reflecting back what you understood and getting
 agreement. Do not treat agreement as permission to start building.
 
 ## What to write
 
-Into `plan.md`, in plain language the maintainer would recognise as their own:
+Into the `## What we need` section of `.pipeline/work/<id>/plan.md`, in plain language the maintainer
+would recognise as their own. Write only that section — `/program-design` owns `## How it works`, and
+either interview may run without the other.
 
 - what they need and why it matters, and who it is for;
 - what success looks like, concretely enough to tell later whether it happened;
@@ -55,14 +57,14 @@ Into `plan.md`, in plain language the maintainer would recognise as their own:
 - any load-bearing noun: what it means here, and which readings were rejected;
 - their answers on how things should be done, wherever they gave one.
 
-Keep the whole plan inside its budget. Length is not thoroughness — a plan nobody reads cannot
-represent anyone.
+The whole plan is budgeted at 50–100 lines, so this is roughly half of that. Length is not
+thoroughness — a plan nobody reads cannot represent anyone.
 
 ## Boundaries
 
 Record a newly discovered outcome as a **proposed amendment** and let the maintainer decide; do not
-absorb it into scope. Work that is genuinely out of scope becomes a new item with its own reason,
-never growth of this one.
+absorb it into scope. Work that is genuinely separate is written down as a proposed item for them to
+register — you do not create items, and this one does not grow to swallow them.
 
 Do not design the UI, choose an architecture, or write tests or code here.
 

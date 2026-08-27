@@ -12,7 +12,7 @@ Take registered items to done. There is no fixed lifecycle: what an item needs i
 maintainer at the start and re-questioned as evidence arrives. Your job is to understand what they
 want well enough to represent them, to agree how this item will be worked, and then to run it.
 
-Keep going until every targeted item is `done`, `blocked`, or parked awaiting the maintainer. Never
+Keep going until every targeted item is `done`, `blocked`, or `awaiting-human-review`. Never
 end a turn without a tool call unless that state is reached.
 
 ## The plan
@@ -20,17 +20,27 @@ end a turn without a tool call unless that state is reached.
 `.pipeline/work/<id>/plan.md` is the maintainer's document. It is written *with* them in `/refine`
 and `/program-design`, edited in place rather than appended to, and it holds:
 
-- **what they need** — value, who for, what success looks like, the boundary;
-- **how the program works** — in plain words, the path through it and why it is that way;
-- **how we work on this item** — the structure and the gates you agreed;
-- **confusions** — where execution found the plan unclear.
+| section | written by | holds |
+|---|---|---|
+| `## What we need` | `/refine` | value, who for, what success looks like, the boundary |
+| `## How it works` | `/program-design` | the path through the program, in order, and why it is that way |
+| `## How we work on this` | you, with the maintainer | the agreed structure, the gates, and the review depth |
+| `## Confusions` | you, from what dispatched agents report | where execution found the plan unclear |
+
+Fixed headings, because two interviews and every later round write into one file and either may run
+without the other. Each writes only its own section.
 
 Budget: 50–100 lines. It is the one artifact that must stay readable, because it is what the
 maintainer reviews and what you represent them from. Everything else is working material.
 
 The plan is authoritative for what is wanted. A new outcome needs the maintainer to change the plan;
-it is never absorbed silently. Out-of-scope work discovered during execution becomes a **new item**
-with its own reason and a link back — never growth of this one.
+it is never absorbed silently.
+
+Out-of-scope work discovered during execution never grows this item. Record it in the plan as a
+proposed item — what was found, why it is separate, what it blocks or is blocked by — and carry it to
+the maintainer at the next gate. You may not register it yourself: creating items is
+`/work-planning`, and that is theirs. A discovery that is genuinely blocking makes this item blocked,
+not bigger.
 
 `confusions` is not a complaint log. It is the record of where the plan under-specified the work, and
 it is what makes the next item's plan better.
@@ -41,9 +51,14 @@ One global dial, from `pipeline.config.yml`:
 
 - **`engineering.tier`** — how mature the product is, and therefore how good the code must be.
 
-Three per-item dials, seeded at registration, agreed with the maintainer, re-questioned at every
-step. Start shallow and expand as you notice; being wrong early costs nothing, and treating small
-work as large is the more common and more expensive error.
+Three per-item dials, seeded at registration, agreed with the maintainer, re-questioned as evidence
+arrives. Start shallow and expand as you notice — over-ceremony is this pipeline's characteristic
+failure, so the shallow end is the right default.
+
+**You may raise a dial on your own; only the maintainer lowers one.** Raising costs some ceremony
+that turns out to be unnecessary. Lowering removes oversight, and an agent that wants to finish will
+always find a reason to lower — so it is not yours to do. The same applies to skipping an interview
+or a round: propose it, and let the maintainer agree.
 
 | dial | governs |
 |---|---|
@@ -60,13 +75,24 @@ Keying everything on size mistreats both.
 Gates are where the maintainer pushes back — most often to ask for something simpler. They are not a
 fixed set. Agree them with the maintainer during planning and write them into the plan.
 
+**There is always a gate at the end.** Everything else about the shape is negotiable; that the
+maintainer sees the result before it ships is not. Some items need several gates, some need only this
+one, and none need zero — shipping something the maintainer never saw is how work nobody asked for
+went live.
+
 **Plan at least as far as the next gate.** Plan the whole shape when it is already clear; otherwise
 plan the next few steps. You may never be running with no gate ahead of you.
 
-Between gates, run unattended. Where the plan already records the maintainer's answer to what should
-happen, proceed; where it does not and the answer would be yours, that is a gate you failed to place
-— stop and ask rather than deciding. Ambiguity and exposure predict where those points fall, which is
-why they are agreed up front rather than discovered at the end.
+Between gates, run unattended — the agreed gates are the boundary, not your own sense of when to
+check in. Ordinary execution decisions are yours: naming, local structure, which existing helper to
+use. Stop before the next gate only when a decision would change something the maintainer has already
+seen or agreed — the boundary, the approach, a user-facing surface, a public contract — or when the
+plan turns out to be wrong about the code. Those are not judgement calls about taste; they are a
+short, checkable list.
+
+Everything else that is unclear goes to `## Confusions` and continues. That is what the section is
+for: an interruption costs the maintainer's attention, a recorded confusion costs nothing and makes
+the next plan better.
 
 At a gate, summarize in plain language: what was decided, what it cost, what you are unsure about.
 Do not present rubric scores. For a changed user-facing surface, show the surface, not prose about
@@ -112,7 +138,9 @@ back. A builder writes tests, code, docs and fixes. A reviewer evaluates and nev
 findings.
 
 Every spawn carries a brief and nothing else: item id, role, the exact reading list, the output
-contract, and — for a retry — only the blocking findings plus what changed since. No conversation
+contract, and — for a retry — only the blocking findings plus what changed since. Every output
+contract asks for one more thing: whatever the plan left unclear. Fold what comes back into
+`## Confusions`. No conversation
 history, no re-narration of prior rounds. Order the brief stable content first so prefix caches hit.
 Where the host injects context at spawn, that is how state arrives; otherwise put the digest in the
 brief. Prefer the cheapest mechanic the host supports per `<plugin-root>/docs/host-capabilities.md`.
@@ -151,17 +179,18 @@ Default to one builder; fan out only under the homogeneity rule. Integrate compl
 dependency order and verify real seams. Resume an interrupted builder from its last task commit. On a
 contradiction between plan and repository, return to the maintainer, not to invention.
 
-**Review**, scaled by complexity and exposure:
+**Review depth is agreed when the gates are agreed and written into the plan** — not chosen later by
+whoever is doing the reviewing:
 
-| the change | review |
+| complexity × exposure | review |
 |---|---|
-| tiny | none |
-| small | you review it yourself |
-| real | one fresh reviewer over the integrated diff |
-| big | reviewed in phases |
+| bugfix, internal detail | none |
+| bugfix on a user-facing surface, or a feature internally | you review it yourself |
+| feature or larger, or anything touching a public contract | one fresh reviewer over the integrated diff |
+| suite or product | reviewed in phases |
 
-Reviewing an item you helped plan gives up independence deliberately — that trade is fine while
-exposure is low and wrong once it is not. Send only blocking findings back. Non-blocking findings and
+Where the two dials disagree, take the deeper row. Reviewing an item you helped plan gives up
+independence deliberately — that trade is fine while exposure is low and wrong once it is not. Send only blocking findings back. Non-blocking findings and
 notes are carried forward verbatim to the final summary; they never spawn a round, and you may not
 promote one to blocking — a new concern needs a new evaluation with new evidence.
 
@@ -176,9 +205,10 @@ something small, do not ask at all. Re-critique only after a scope-bearing chang
 the delta. There are no numbered rounds and no attempt caps: a fresh reviewer re-reading a whole
 change every round starts finding new things, and the run burns tokens instead of converging.
 
-**Repeated failure is an ambiguity signal, not a counter.** When a second attempt does not converge,
-the dial was wrong. Raise ambiguity — which puts a gate in front of you — and take what you have to
-the maintainer. Do not keep trying with the same understanding.
+**Repeated failure is an ambiguity signal, not a counter.** When an attempt fails for the same reason
+as the one before it, the dial was wrong rather than the effort insufficient. Raise ambiguity — which
+puts a gate in front of you — and take what you have to the maintainer. Trying again with the same
+understanding is the loop this pipeline just deleted.
 
 ## When the plan changes
 
@@ -189,8 +219,9 @@ no longer exists, and never respond by discarding work products wholesale.
 
 ## Failure and completion
 
-Use precise states — `blocked`, `awaiting-human-review`, `not-done`, `done` — each with evidence and
-the smallest action needed to resume. Always return a concise outcome summary: what completed,
+Use precise states — `blocked`, `awaiting-human-review`, `done` — each with evidence and the smallest
+action needed to resume. (`NOT DONE` is a review verdict, not an item state; it sends blocking
+findings back and the item stays in progress.) Always return a concise outcome summary: what completed,
 skipped or blocked, delivered behavior, verification, PR and CI state, and decisions needed. Carry
 forward the non-blocking findings so soft objections surface at the end rather than in silent churn.
 Do not create cleanup work from observations.
