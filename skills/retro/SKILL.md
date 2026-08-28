@@ -1,10 +1,9 @@
 ---
 name: retro
 description: "Record concrete successes and friction after an item, session, or pipeline run. Observe from artifacts and trajectories without fixing, assigning work, or changing process."
-phase: 6
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Retro

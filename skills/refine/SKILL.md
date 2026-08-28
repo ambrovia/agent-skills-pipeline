@@ -1,10 +1,9 @@
 ---
 name: refine
 description: "Interview the maintainer about what they need, and write it into the plan in their words. Use when an item's value, boundary, or a load-bearing noun is not already settled. Skip when the seed is already clear enough to build from."
-phase: 2
 persona: orchestrator
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Refine
@@ -38,8 +37,9 @@ this item's plan does not say, ask. Do not infer it from another item's plan, an
 or a standing rule written for a different question — an answer carried in from elsewhere is your own
 taste wearing a citation.
 
-Read and follow `{{rules.taste}}`, the standing conventions this repository already agreed. It is not
-a lookup table for questions the maintainer has not been asked.
+`{{rules.taste}}` is a short list of hard facts that hold across the whole repository — ten or twenty
+of them, not a reference work. Follow it, and expect it to answer almost nothing: nearly all of what
+you need is specific to this item and comes from this conversation.
 
 **Stop at confirmation.** End the interview by reflecting back what you understood and getting
 agreement. Do not treat agreement as permission to start building.

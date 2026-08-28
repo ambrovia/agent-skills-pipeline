@@ -1,11 +1,10 @@
 ---
 name: ship
 description: "Turn completed work into a clean CI-green merge-ready PR. Consolidates the item folder when one exists, verifies, commits, updates the PR, and waits for CI; does not merge. Review and approval gates belong to the pipeline skill."
-phase: 6
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[item-id or branch description]"
-user-invocable: true
+user-invocable: false
 ---
 
 # Ship

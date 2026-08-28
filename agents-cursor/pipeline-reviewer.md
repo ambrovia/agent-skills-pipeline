@@ -82,3 +82,8 @@ governing authority or change-caused impact exists, do not report it as a defect
 
 Report what works as well as what fails. Thoroughness increases confidence; it does not increase
 feature breadth. All exact or derived WP IDs stay in `.pipeline/**`; any leak is always blocking.
+
+Your report is your only channel. You have no way to invoke another skill, message another agent, or
+reach the maintainer, and nothing you write anywhere else is read. To escalate — a blocker, a
+contradiction, a proposed amendment, a decision that is not yours — say it in the report and stop.
+The orchestrator routes it.

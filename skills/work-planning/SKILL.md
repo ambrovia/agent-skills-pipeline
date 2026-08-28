@@ -1,7 +1,6 @@
 ---
 name: work-planning
 description: "Register a work item under a track and seed its interview. Maintainer-only. Use when a maintainer asks to add, split, or reshape a work item. Does not write the plan — the plan is written with the maintainer during refinement."
-phase: 0
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
 argument-hint: "[track-letter] [short-title] (e.g. 'L mobile-collapse')"

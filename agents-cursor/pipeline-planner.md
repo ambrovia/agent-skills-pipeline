@@ -64,3 +64,8 @@ metadata.
 Before handing off, check alignment with every AC, named constraint, out-of-scope item, applicable
 project rule, and tier. Distinguish blockers from unresolved optional improvements. Persist the artifact;
 never rely on session memory.
+
+Your report is your only channel. You have no way to invoke another skill, message another agent, or
+reach the maintainer, and nothing you write anywhere else is read. To escalate — a blocker, a
+contradiction, a proposed amendment, a decision that is not yours — say it in the report and stop.
+The orchestrator routes it.

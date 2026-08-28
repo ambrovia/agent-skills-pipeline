@@ -1,10 +1,9 @@
 ---
 name: write-tests
 description: "Create proportionate failing evidence for approved acceptance criteria before implementation when behavior is regressible and an automated test is appropriate. Use in the build phase; do not let tests create requirements."
-phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Write tests

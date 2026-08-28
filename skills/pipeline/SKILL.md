@@ -99,9 +99,10 @@ Each item lives in `.pipeline/work/<id>/`; its track registry and dependency gra
 `paths`, `designSystem`, `engineering.tier`, optional `worktree` and `checks` settings, and the
 `rules` slots, whose files live under `.pipeline/rules/` and are read-only to every phase.
 
-`progress.json` holds what machines read: phase, status, the dials, agreed gates and which have been
+`progress.json` holds what machines read: status, the dials, the agreed gates and which have been
 passed, verdicts, the artifact registry — what exists for this item, where, and what each is for —
-and each round's `since` pointer. Artifact writes advance the delta pointer; re-entries read what
+and the `since` pointer each attempt started from. Whoever first needs it creates it; there is no
+separate setup step. Artifact writes advance the delta pointer; re-entries read what
 changed since it, never the whole briefing again. Written state must let a cold agent resume without
 session memory.
 

@@ -1,10 +1,9 @@
 ---
 name: program-design
 description: "Interview the maintainer about how the program should work, and write it into the plan in plain words. Use when the approach is not obvious. Produces the how-it-works half of the plan — no contracts, types, or schemas."
-phase: 2
 persona: orchestrator
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Program design
@@ -38,9 +37,9 @@ talked down. If what comes back is not good, the problem is usually the plan or 
 them — fix that and try again rather than accepting a bad answer.
 
 **Their taste is only what they tell you here.** As in `/refine`: when the approach question is
-unanswered for this item, ask. Never import it from another item, another conversation, or a standing
-rule written for a different question. `{{rules.taste}}` applies as convention and answers nothing
-that was not already agreed.
+unanswered for this item, ask. Never import it from another item or another conversation.
+`{{rules.taste}}` holds a handful of repository-wide facts; assume the answer you need is not in
+there.
 
 **Stop at confirmation.** Reflect back how you understood it and get agreement. Do not treat that
 agreement as permission to start building.

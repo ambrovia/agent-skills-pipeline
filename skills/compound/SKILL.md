@@ -23,7 +23,9 @@ Classify patterns as emerging, confirmed, contradicted, or resolved. Report each
 - expected benefit, regression risk, and how to validate it.
 
 Recurring `divergence` observations propose an amendment to the `taste` rule slot rather than a skill
-change; quote the corrections it would have prevented. Never propose one from a single correction.
+change; quote the corrections it would have prevented. Never propose one from a single correction,
+and propose one only when it holds across the repository — per-item preferences belong in per-item
+plans, and the slot stays short enough to read.
 
 Propose; never apply. Do not delete history, convert anecdotes into mandates, or bundle unrelated
 changes. Update tracker state and retain contradiction

@@ -1,10 +1,9 @@
 ---
 name: architecture
 description: "Restate an agreed plan in technical terms — contracts, types, schemas, dependency order — for a builder. Use only where scope and complexity make those definitions necessary. Never decides how the program works; that is the plan's job."
-phase: 3
 persona: pipeline-planner
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Architecture

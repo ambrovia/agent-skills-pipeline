@@ -1,10 +1,9 @@
 ---
 name: write-code
 description: "Implement an agreed item or its assigned technical leaf with the smallest clear solution that satisfies its evidence and contracts. Use after the plan is agreed and verification targets are known."
-phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Write code

@@ -1,10 +1,9 @@
 ---
 name: architecture-critique
 description: "Read-only critique of architecture.md against the plan. Checks alignment, necessary contracts, feasibility, simplicity and readability. Requested when worth challenging, never scheduled; reports blockers without scoring or rewriting."
-phase: 3
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Architecture critique

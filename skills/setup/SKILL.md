@@ -18,9 +18,10 @@ pointing at a markdown file of binding project guidance. Start from `pipeline.co
 Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at that path. Rule files are maintainer-authored and committed; a
 pipeline run may not edit them.
 
-`taste` holds standing conventions for how this repository likes things done — the maintainer's
-voice, not a derived best practice. Seed it from what they tell you, never from what the codebase
-implies. Empty is a good starting state.
+`taste` holds the handful of hard facts about how this repository likes things done — ten or twenty
+lines, in the maintainer's voice, not derived best practice. Nearly all taste is decided per item
+during refinement; only what holds everywhere belongs here. Seed it from what the maintainer tells
+you, never from what the codebase implies. Empty is a good starting state.
 
 When `pipeline.config.yml` does not exist yet, propose the slots most repositories need rather than only the ones asked for: `code`,
 `testing`, and `security` at minimum, plus `design-system` and `frontend` wherever a UI exists. Reason

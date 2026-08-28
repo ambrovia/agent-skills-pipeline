@@ -1,10 +1,9 @@
 ---
 name: design
 description: "Decide consequential UX/UI behavior for an agreed item. Use when a changed user-facing surface is not already determined by an existing approved pattern and a design system is configured. Skip backend/infra and trivial pattern-following changes."
-phase: 3
 persona: pipeline-planner
 applies-to: [frontend, application]
-user-invocable: true
+user-invocable: false
 ---
 
 # Design

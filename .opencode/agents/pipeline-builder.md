@@ -65,3 +65,8 @@ green result. Run each check once and wait; never re-invoke a command to poll it
 failures caused by the change from pre-existing failures; fix only the former unless directed. Report
 changed behavior, evidence, remaining blockers, and any concrete issue noticed but deliberately left
 outside scope. Do not create a cleanup backlog by default.
+
+Your report is your only channel. You have no way to invoke another skill, message another agent, or
+reach the maintainer, and nothing you write anywhere else is read. To escalate — a blocker, a
+contradiction, a proposed amendment, a decision that is not yours — say it in the report and stop.
+The orchestrator routes it.

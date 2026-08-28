@@ -1,10 +1,9 @@
 ---
 name: review
 description: "Read-only review of implemented code against an agreed plan or explicit changed-file scope. Verifies ACs, applicable constraints/rules, regressions, and plausible changed risks. Produces operational findings and a verdict; never edits code."
-phase: 5
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Review
