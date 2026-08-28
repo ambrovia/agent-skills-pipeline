@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
-const hook = resolve(new URL('..', import.meta.url).pathname, 'hooks/skill-load-inject.mjs');
+const hook = resolve(new URL('..', import.meta.url).pathname, 'hooks/inject.mjs');
 
 function git(repo, ...args) {
   const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -36,9 +36,7 @@ function fixture({ verify = 'echo CHECKS-GREEN', status = 'in-progress', since: 
 
 function run(root, format, payload, env = {}) {
   const args = [hook, format];
-  const input = format === 'opencode' || format === 'codex'
-    ? undefined
-    : JSON.stringify(payload);
+  const input = format === 'opencode' ? undefined : JSON.stringify(payload);
   if (format === 'opencode') args.push(payload);
   return spawnSync(process.execPath, args, {
     cwd: root, input, encoding: 'utf8', env: { ...process.env, ...env },
@@ -46,6 +44,7 @@ function run(root, format, payload, env = {}) {
 }
 
 const skillPayload = (skill) => ({ tool_name: 'Skill', tool_input: { skill } });
+const spawnPayload = (agentType) => ({ hook_event_name: 'SubagentStart', agent_type: agentType });
 
 function claudeContext(result) {
   return JSON.parse(result.stdout).hookSpecificOutput.additionalContext;
@@ -56,7 +55,7 @@ test('review skill gets state, fresh check results, and the diff', () => {
   const result = run(root, 'claude', skillPayload('review'));
   assert.equal(result.status, 0);
   const context = claudeContext(result);
-  assert.match(context, /skill: review, wp: demo/);
+  assert.match(context, /skill: review, item: demo/);
   assert.match(context, /title: Demo fix/);
   assert.match(context, /## checks — echo CHECKS-GREEN \(exit 0, tree [0-9a-f]+\+dirty\)/);
   assert.match(context, /CHECKS-GREEN/);
@@ -104,7 +103,7 @@ test('a flag-shaped since is never handed to git', () => {
   assert.doesNotMatch(context, /## diff/);
 });
 
-test('the work package with the newest progress.json wins', () => {
+test('the item with the newest progress.json wins', () => {
   const { root, wp } = fixture();
   // Created second, so its *directory* mtime is the newer one — but its state
   // is older, and directory mtimes do not move on an in-place progress write.
@@ -117,7 +116,7 @@ test('the work package with the newest progress.json wins', () => {
   assert.ok(statSync(stale).mtimeMs >= statSync(wp).mtimeMs, 'fixture must give the stale WP the newer dir mtime');
 
   const context = claudeContext(run(root, 'claude', skillPayload('review')));
-  assert.match(context, /wp: demo/);
+  assert.match(context, /item: demo/);
   assert.doesNotMatch(context, /wp: stale/);
 });
 
@@ -127,13 +126,13 @@ test('non-pipeline skills get no injection', () => {
   assert.equal(result.stdout, '');
 });
 
-test('no active work package means silence', () => {
+test('no active item means silence', () => {
   const root = mkdtempSync(join(tmpdir(), 'pipeline-inject-empty-'));
   const result = run(root, 'claude', skillPayload('review'));
   assert.equal(result.stdout, '');
 });
 
-test('done work packages are not injected', () => {
+test('done items are not injected', () => {
   const { root } = fixture({ status: 'done' });
   const result = run(root, 'claude', skillPayload('review'));
   assert.equal(result.stdout, '');
@@ -152,15 +151,27 @@ test('opencode format prints plain text', () => {
   const { root } = fixture();
   const result = run(root, 'opencode', 'review');
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /skill: review, wp: demo/);
+  assert.match(result.stdout, /skill: review, item: demo/);
   assert.match(result.stdout, /CHECKS-GREEN/);
   assert.doesNotMatch(result.stdout, /hookSpecificOutput/);
 });
 
-test('codex stays silent until its hook contract supports injection', () => {
+test('codex gets plain text, never JSON-leading, and always exits 0', () => {
   const { root } = fixture();
-  const result = run(root, 'codex', 'review');
-  assert.equal(result.stdout, '');
+  const result = run(root, 'codex', spawnPayload('pipeline-reviewer'));
+  assert.equal(result.status, 0);
+  // Codex discards stdout that looks like JSON but does not match its schema,
+  // and discards everything on a non-zero exit.
+  assert.ok(!result.stdout.trimStart().startsWith('{'));
+  assert.ok(!result.stdout.trimStart().startsWith('['));
+  assert.match(result.stdout, /agent: pipeline-reviewer, item: demo/);
+});
+
+test('codex output is held to a tighter budget than other hosts', () => {
+  const { root } = fixture({ verify: 'seq 1 400' });
+  const codex = run(root, 'codex', spawnPayload('pipeline-reviewer')).stdout;
+  const claude = claudeContext(run(root, 'claude', spawnPayload('pipeline-reviewer')));
+  assert.ok(codex.split('\n').length < claude.split('\n').length);
 });
 
 test('kill switch disables injection', () => {
@@ -176,4 +187,34 @@ test('malformed payload never breaks the load', () => {
   });
   assert.equal(result.status, 0);
   assert.equal(result.stdout, '');
+});
+
+test('SubagentStart injects into a spawned reviewer, with checks and the diff', () => {
+  const { root, since } = fixture();
+  const result = run(root, 'claude', spawnPayload('pipeline-reviewer'));
+  assert.equal(result.status, 0);
+  const context = claudeContext(result);
+  assert.match(context, /agent: pipeline-reviewer, item: demo/);
+  assert.match(context, /CHECKS-GREEN/);
+  assert.match(context, new RegExp(`## diff since ${since.slice(0, 7)}|## diff since ${since}`));
+});
+
+test('SubagentStart names its own event in the envelope', () => {
+  const { root } = fixture();
+  const envelope = JSON.parse(run(root, 'claude', spawnPayload('pipeline-builder')).stdout);
+  assert.equal(envelope.hookSpecificOutput.hookEventName, 'SubagentStart');
+});
+
+test('a builder gets checks but not the diff it is about to change', () => {
+  const { root } = fixture();
+  const context = claudeContext(run(root, 'claude', spawnPayload('pipeline-builder')));
+  assert.match(context, /predate|baseline/i);
+  assert.doesNotMatch(context, /## diff since/);
+});
+
+test('an unknown agent type injects nothing', () => {
+  const { root } = fixture();
+  const result = run(root, 'claude', spawnPayload('some-other-agent'));
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout.trim(), '');
 });

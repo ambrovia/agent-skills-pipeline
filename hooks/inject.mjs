@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-// Skill-load injection — when a pipeline skill loads, inject fresh mechanical
-// check results, the WP diff, and the critiqued artifacts, so agents start
-// with evidence instead of spending round trips fetching it.
-// Usage: skill-load-inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
-// Envelope formats read the tool payload on stdin; opencode takes the skill
-// name as an argument and prints plain text. Guard discipline: a skill load
-// must never break — every failure degrades to silence.
+// Spawn/skill injection — put fresh state, mechanical check results, the item
+// diff and critiqued artifacts into an agent's context at the moment it starts,
+// so it begins with evidence instead of spending round trips fetching it.
+//
+// Primary event is SubagentStart: it exists on claude and codex, and it injects
+// into the SUBAGENT's context rather than the parent's (verified on both,
+// 2026-08-27). Skill load is a claude-only supplement — codex has no skill
+// lifecycle event at all.
+//
+// Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
+// Envelope formats read the event payload on stdin; opencode takes the skill
+// name as an argument. Guard discipline: a spawn must never break — every
+// failure degrades to silence, and the process always exits 0 (a non-zero exit
+// makes codex discard the output entirely).
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -21,6 +28,9 @@ const SNAPSHOT_CANDIDATES = [
 ];
 const SKILL_TOOL = /^skill$/i;
 const MAX_LINES = positiveInt(process.env.PIPELINE_INJECT_MAX_LINES, 300);
+// Codex truncates injected context hard at ~1k tokens and spills past 2.5k, so
+// it gets pointers where other hosts can take contents.
+const CODEX_MAX_LINES = positiveInt(process.env.PIPELINE_INJECT_MAX_LINES, 60);
 const CHECK_TIMEOUT_MS = positiveInt(process.env.PIPELINE_CHECK_TIMEOUT_MS, 45_000);
 
 const DIGEST_SKILLS = new Set([
@@ -28,12 +38,22 @@ const DIGEST_SKILLS = new Set([
   'architecture-critique',
 ]);
 
+// SubagentStart: what each role needs waiting for it when it wakes up.
+const AGENT_EXTRA = {
+  'pipeline-reviewer': { checks: true, diff: true },
+  'pipeline-builder': { checks: true, checksNote: 'baseline, ran before this agent started' },
+  'pipeline-planner': {},
+};
+
 const EXTRA = {
   review: { checks: true, diff: true },
   'write-code': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
   'write-tests': { checks: true, checksNote: 'baseline, ran before this session\'s edits' },
   'architecture-critique': { artifacts: ['plan.md', 'architecture.md'] },
 };
+
+let lastEvent = 'skill';
+let maxLines = MAX_LINES;
 
 function positiveInt(raw, fallback) {
   const value = Number(raw);
@@ -45,13 +65,25 @@ function pick(payload, keys) {
   return undefined;
 }
 
-function skillName(format) {
-  if (format === 'opencode') return normalizeSkill(process.argv[3] ?? '');
+// -> { kind: 'agent'|'skill', name } | null
+function resolveTarget(format) {
+  if (format === 'opencode') {
+    const name = normalizeSkill(process.argv[3] ?? '');
+    return name ? { kind: 'skill', name } : null;
+  }
   const payload = JSON.parse(readFileSync(0, 'utf8'));
+  const event = String(pick(payload, ['hook_event_name', 'hookEventName', 'event']) ?? '');
+
+  if (/^subagentstart$/i.test(event)) {
+    const name = String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? '').toLowerCase();
+    return name ? { kind: 'agent', name } : null;
+  }
+
   const tool = String(pick(payload, ['tool_name', 'toolName', 'tool']) ?? '');
-  if (!SKILL_TOOL.test(tool)) return '';
+  if (!SKILL_TOOL.test(tool)) return null;
   const input = pick(payload, ['tool_input', 'toolInput', 'parameters', 'input']) ?? {};
-  return normalizeSkill(String(pick(input, ['skill', 'name', 'command']) ?? ''));
+  const name = normalizeSkill(String(pick(input, ['skill', 'name', 'command']) ?? ''));
+  return name ? { kind: 'skill', name } : null;
 }
 
 function normalizeSkill(raw) {
@@ -118,8 +150,8 @@ function touchedAt(dir) {
 
 function cap(text, label) {
   const lines = text.split('\n');
-  if (lines.length <= MAX_LINES) return text;
-  return `${lines.slice(0, MAX_LINES).join('\n')}\n… [truncated — full: ${label}]`;
+  if (lines.length <= maxLines) return text;
+  return `${lines.slice(0, maxLines).join('\n')}\n… [truncated — full: ${label}]`;
 }
 
 function digest(root, wpId) {
@@ -170,7 +202,7 @@ function diffSince(root, since) {
   const diff = (result.stdout ?? '').trim();
   if (diff === '') return { text: '(no changes)', lines: 0 };
   const lines = diff.split('\n').length;
-  if (lines <= MAX_LINES) return { text: diff, lines };
+  if (lines <= maxLines) return { text: diff, lines };
   const stat = spawnSync('git', ['diff', '--stat', since, '--'], { cwd: root, encoding: 'utf8', timeout: 15_000 });
   return {
     text: `${(stat.stdout ?? '').trim()}\n… [diff too large to inject — run: git diff ${since}]`,
@@ -180,15 +212,25 @@ function diffSince(root, since) {
 
 function buildInjection(format) {
   if (process.env.PIPELINE_SKILL_INJECT === 'off') return null;
-  const skill = skillName(format);
-  if (!DIGEST_SKILLS.has(skill)) return null;
+  const target = resolveTarget(format);
+  if (!target) return null;
+
+  let extra;
+  if (target.kind === 'agent') {
+    extra = AGENT_EXTRA[target.name];
+    if (!extra) return null;
+  } else {
+    if (!DIGEST_SKILLS.has(target.name)) return null;
+    extra = EXTRA[target.name] ?? {};
+  }
 
   const root = process.cwd();
   const wpId = findActiveWp(root);
   if (!wpId) return null;
   const wpDir = join(root, '.pipeline', 'work', wpId);
-  const extra = EXTRA[skill] ?? {};
-  const sections = [`[pipeline injection — skill: ${skill}, wp: ${wpId}]`];
+  lastEvent = target.kind;
+  // No leading bracket: codex discards stdout that looks like JSON but is not.
+  const sections = [`pipeline injection — ${target.kind}: ${target.name}, item: ${wpId}`];
 
   const state = digest(root, wpId);
   if (state) sections.push('## state', state);
@@ -232,23 +274,26 @@ function buildInjection(format) {
   return sections.length > 1 ? sections.join('\n\n') : null;
 }
 
-function formatMessage(format, message) {
+function formatMessage(format, event, message) {
   if (format === 'cursor') return { additional_context: message };
   if (format === 'gemini') return { hookSpecificOutput: { additionalContext: message } };
   if (format === 'copilot') return { additionalContext: message };
-  return { hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: message } };
+  return { hookSpecificOutput: { hookEventName: event, additionalContext: message } };
 }
 
 function main() {
   const format = process.argv[2] ?? 'claude';
-  if (format === 'codex') return;
+  if (format === 'codex') maxLines = CODEX_MAX_LINES;
   const message = buildInjection(format);
   if (!message) return;
-  if (format === 'opencode') {
+  // Codex and opencode take plain text. Never lead with `{` or `[` on codex: a
+  // JSON-looking payload that fails its schema is discarded, output and all.
+  if (format === 'opencode' || format === 'codex') {
     process.stdout.write(`${message}\n`);
     return;
   }
-  process.stdout.write(`${JSON.stringify(formatMessage(format, message))}\n`);
+  const event = lastEvent === 'agent' ? 'SubagentStart' : 'PostToolUse';
+  process.stdout.write(`${JSON.stringify(formatMessage(format, event, message))}\n`);
 }
 
 try {

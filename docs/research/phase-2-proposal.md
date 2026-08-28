@@ -308,9 +308,10 @@ One PR into `rework/agent-skills`, ordered so each commit stands alone:
 
 ## Open items
 
-1. **The `progress.json` artifact-registry schema.** Agreed in principle — the registry is what
-   makes the snapshot adaptive — but the concrete shape is not designed. It has to describe an
-   item's negotiated structure without becoming a second requirements system.
+1. ~~**The `progress.json` artifact-registry schema.**~~ Resolved in commit 7: `progress.json.artifacts`
+   maps path to role (`{"notes/approach.md": "the approach"}`), with array forms accepted and the
+   conventional names kept as a fallback for items that never recorded one. No schema beyond that —
+   the registry says where things are, not what they must contain.
 
 ## Exit evidence
 

@@ -25,7 +25,6 @@ function run(root, ...args) {
 
 const FULL = {
   'plan.md': '# Fix login race condition\n\nOutcomes...\n',
-  'requirements.md': 'value and scope\n',
   'architecture.md': 'contracts and tasks\n',
   'review.md': 'findings\n\nVerdict: NOT DONE\n',
   'progress.json': JSON.stringify({
@@ -48,14 +47,13 @@ test('full fixture produces the digest', () => {
   const result = run(root, 'demo');
   assert.equal(result.status, 0);
   for (const line of [
-    'wp: demo',
+    'item: demo',
     'title: Fix login race condition',
     'phase: build',
     'status: in-progress',
-    'review attempt 2: DONE',
+    'review: DONE',
     'open-blocking: 1',
     'agents: builder 2, reviewer 1',
-    'requirements.md — requirements',
     'architecture.md — architecture',
     'review.md — review findings',
     'delta: since a1b2c3d',
@@ -65,12 +63,12 @@ test('full fixture produces the digest', () => {
   }
 });
 
-test('auto-discovers a single work package', () => {
+test('auto-discovers a single item', () => {
   const root = fixtureRoot();
   makeWp(root, 'solo', { 'plan.md': '# Solo\n' });
   const result = run(root);
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /^wp: solo$/m);
+  assert.match(result.stdout, /^item: solo$/m);
   assert.match(result.stdout, /^title: Solo$/m);
 });
 
@@ -84,7 +82,7 @@ test('ambiguous discovery lists candidates and fails', () => {
   assert.match(result.stderr, /two/);
 });
 
-test('unknown work package id fails cleanly', () => {
+test('unknown item id fails cleanly', () => {
   const root = fixtureRoot();
   makeWp(root, 'demo', { 'plan.md': '# Demo\n' });
   const result = run(root, 'missing');
@@ -107,7 +105,7 @@ test('malformed progress.json does not break the digest', () => {
   makeWp(root, 'broken', { 'plan.md': '# Broken\n', 'progress.json': 'not json' });
   const result = run(root, 'broken');
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /^wp: broken$/m);
+  assert.match(result.stdout, /^item: broken$/m);
 });
 
 test('falls back to review.md for the latest verdict', () => {
@@ -122,9 +120,49 @@ test('falls back to review.md for the latest verdict', () => {
   assert.doesNotMatch(result.stdout, /Verdict: NOT DONE/);
 });
 
-test('no work packages fails cleanly', () => {
+test('no items fails cleanly', () => {
   const root = fixtureRoot();
   const result = run(root);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /no work packages/);
+  assert.match(result.stderr, /no items/);
+});
+
+test('artifacts come from the progress.json registry, not a fixed list', () => {
+  const root = fixtureRoot();
+  makeWp(root, 'demo', {
+    'plan.md': '# Demo\n',
+    'notes/approach.md': 'whatever this item decided to call it\n',
+    'progress.json': JSON.stringify({
+      status: 'in-progress',
+      artifacts: { 'notes/approach.md': 'the approach', 'plan.md': 'the plan' },
+    }),
+  });
+  const out = run(root).stdout;
+  assert.match(out, /notes\/approach\.md — the approach/);
+  assert.match(out, /plan\.md — the plan/);
+});
+
+test('an item with no registry still gets the conventional artifacts', () => {
+  const root = fixtureRoot();
+  makeWp(root, 'demo', {
+    'plan.md': '# Demo\n',
+    'progress.json': JSON.stringify({ status: 'in-progress' }),
+  });
+  assert.match(run(root).stdout, /plan\.md —/);
+});
+
+test('dials and gates reach the digest', () => {
+  const root = fixtureRoot();
+  makeWp(root, 'demo', {
+    'plan.md': '# Demo\n',
+    'progress.json': JSON.stringify({
+      status: 'in-progress',
+      dials: { complexity: 'feature', ambiguity: 'established', exposure: 'internal' },
+      gates: [{ name: 'approach agreed', passed: true }, { name: 'final', passed: false }],
+    }),
+  });
+  const out = run(root).stdout;
+  assert.match(out, /dials: complexity feature, ambiguity established, exposure internal/);
+  assert.match(out, /approach agreed — passed/);
+  assert.match(out, /final — open/);
 });

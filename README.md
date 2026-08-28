@@ -156,7 +156,7 @@ Do not choose `critical` merely because software is deployed or stores real user
 
 ### Injected evidence at skill load
 
-Where the host supports skill-load hooks ([`hooks/skill-load-inject.mjs`](hooks/skill-load-inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
+Where the host supports skill-load hooks ([`hooks/inject.mjs`](hooks/inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
 
 **This runs `checks.preSpawn` (or `verify`) as a shell command.** A hook executes directly, so it is not covered by the host's tool-permission prompts: whatever that line contains runs when a pipeline skill loads. Point it only at commands the repository owns, and review changes to it as you would a CI workflow.
 

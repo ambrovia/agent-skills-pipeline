@@ -68,11 +68,11 @@ mkdir -p "$SKILLS_DIR" "$AGENTS_DIR" "$HOOKS_DIR"
 cp -R "$SRC/skills/." "$SKILLS_DIR/"
 cp "$SRC/agents-cursor/"*.md "$AGENTS_DIR/"
 cp "$SRC/hooks/session-start.sh" "$SRC/hooks/edit-streak.sh" "$SRC/hooks/thrash-detector.mjs" \
-   "$SRC/hooks/skill-load-inject.mjs" "$HOOKS_DIR/"
-# skill-load-inject shells out to the snapshot; keep it beside the hook.
+   "$SRC/hooks/inject.mjs" "$HOOKS_DIR/"
+# inject shells out to the snapshot; keep it beside the hook.
 cp "$SRC/scripts/pipeline-snapshot.mjs" "$HOOKS_DIR/"
 chmod +x "$HOOKS_DIR/session-start.sh" "$HOOKS_DIR/edit-streak.sh" "$HOOKS_DIR/thrash-detector.mjs" \
-          "$HOOKS_DIR/skill-load-inject.mjs"
+          "$HOOKS_DIR/inject.mjs"
 
 cat > "$HOOKS_FILE" <<'EOF'
 {
@@ -92,7 +92,7 @@ cat > "$HOOKS_FILE" <<'EOF'
       },
       {
         "matcher": "Skill|skill",
-        "command": "node .cursor/hooks/skill-load-inject.mjs cursor"
+        "command": "node .cursor/hooks/inject.mjs cursor"
       }
     ]
   }
