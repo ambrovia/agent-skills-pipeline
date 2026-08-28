@@ -15,16 +15,13 @@ scope.
 
 **Run only where the definitions are genuinely necessary** — where scope and complexity mean a builder
 cannot proceed without contracts, types, schemas, or an explicit dependency order. Most items do not
-need this, and producing it anyway is how plans became unreadable.
+need this.
 
-This is the *technical interpretation* of a plan that already exists: the plan says how the program
-works in plain words, and this says the same thing in the vocabulary a builder needs. If you find
-yourself deciding how the program works, stop — that decision belongs in the plan, with the
-maintainer.
+This is the *technical interpretation* of a plan that already exists: the same thing the plan says in
+plain words, in the vocabulary a builder needs. If you find yourself deciding how the program works,
+stop — that decision belongs in the plan, with the maintainer.
 
-Unlike the plan, this artifact has no line budget. Its job is completeness for a builder rather than
-readability for a decision. It must still be navigable: a builder who cannot find the contract they
-need is in the same position as one who has none.
+No line budget here, but stay navigable.
 
 ## Understand and verify
 

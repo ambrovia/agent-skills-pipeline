@@ -11,8 +11,7 @@ user-invocable: true
 
 Critique is requested when something is worth challenging, not scheduled. On a re-request after a
 scope-bearing change, read only the delta and carry unchanged judgements forward. There are no
-numbered rounds and no attempt caps — re-reading a whole plan every round is how a reviewer starts
-finding new things instead of converging.
+numbered rounds and no attempt caps.
 
 Review as a fresh evaluator, starting from the injected state; artifacts injected in full are already
 in context and are not re-read. Read `plan.md`, approved design when applicable, architecture,
@@ -38,10 +37,8 @@ Check that the plan:
   no mechanism beyond what the ACs, applicable rules, and named change-caused risks require;
 - says the same thing as the plan rather than a different thing: where the technical vocabulary has
   quietly decided how the program works, that decision escaped the maintainer and must go back;
-- can actually be read. Judge it as a tired builder would — invented abstraction, ceremony that serves
-  the document rather than its reader, restated obviousness, and prose that cannot be followed all
-  count. An architecture nobody can read cannot be reviewed, and unreviewable plans are how work
-  nobody needed gets approved.
+- can actually be read. Judge it as a tired builder would: invented abstraction, ceremony serving the
+  document rather than its reader, restated obviousness, prose that cannot be followed.
 
 Block only when implementation would require product or structural invention, an approved requirement
 is unaddressed, a claimed contract is infeasible, a binding rule is violated, a load-bearing factual

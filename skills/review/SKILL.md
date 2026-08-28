@@ -11,11 +11,9 @@ user-invocable: true
 
 Review the implementation without expanding it.
 
-**Depth is assigned, not chosen.** Complexity and exposure set how much review a change gets, and the
-orchestrator has already decided: a tiny change gets none, a small one it reviews itself, a real one
-gets one fresh reviewer over the integrated diff, a big one is reviewed in phases. Match the depth you
-were asked for. Do not expand a small review into a full audit because you can, and do not shorten a
-phased one because the code looks fine.
+**Depth is assigned, not chosen.** Complexity and exposure set it and the orchestrator has already
+decided. Match the depth you were asked for: do not expand a small review into an audit, and do not
+shorten a phased one because the code looks fine.
 
 ## Read first
 

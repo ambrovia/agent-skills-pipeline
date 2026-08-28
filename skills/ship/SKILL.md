@@ -22,23 +22,14 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
 1. When an item ran, reduce `.pipeline/work/<id>/` to **exactly one file: `plan.md`**. Everything
    else is working material and does not survive the merge — `design/`, `architecture.md`,
    `feasibility.md`, `probes/`, `receipts/`, `integration.json`, `review.md`, `checks-latest.log`,
-   and `progress.json`, whose only job was to run the item that just finished.
+   `progress.json`. Delete the plan's `## Confusions` section too; `/retro` has already read it.
 
-   Delete the plan's `## Confusions` section too. It is working material that happened to live in
-   the plan; `/retro` has already read it, and it has no reader after that.
+   **Do not otherwise rewrite `plan.md`.** It is the maintainer's document and what they approved;
+   never fold an as-built architecture into it.
 
-   Kept prose that nobody will read again is not a record, it is context every future agent pays to
-   skim. One readable document per item is the whole archive.
-
-   **Do not otherwise rewrite `plan.md`.** It is the maintainer's document, it is what they approved,
-   and it is held to a length that makes it readable. Folding an as-built architecture into it would
-   destroy both properties.
-
-   Two things must escape the folder before it is emptied, because they have readers elsewhere:
+   Two things escape the folder before it is emptied:
 
    - **`retro.jsonl` appends to `.pipeline/retro.jsonl`**, the cross-item archive `/compound` reads.
-     Per-item logs exist so parallel runs do not collide during a run; once the item is finished,
-     that reason is gone and the observations belong where patterns are actually found.
    - **Durable knowledge goes to `@lore`**, next to the code it concerns — an accepted limitation, a
      residual risk, a non-obvious constraint the next person will trip over. A deferral recorded only
      in a deleted artifact is a deferral nobody will ever act on.

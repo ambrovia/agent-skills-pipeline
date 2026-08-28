@@ -19,11 +19,9 @@ Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at t
 host-neutral, so every tool reads the same rules. Rule files are maintainer-authored and committed; a
 pipeline run may not edit them.
 
-`taste` is unlike the others: it holds standing conventions for how this repository likes things
-done, and it is the maintainer's voice rather than a derived best practice. Seed it from what they
-tell you, never from what the codebase implies — an inferred convention is exactly the substitution
-the interview exists to prevent. Empty is a good starting state; it fills through `/retro` and
-`/compound` as real divergences appear.
+`taste` holds standing conventions for how this repository likes things done — the maintainer's
+voice, not a derived best practice. Seed it from what they tell you, never from what the codebase
+implies. Empty is a good starting state; it fills through `/retro` and `/compound`.
 
 On a first run, propose the slots most repositories need rather than only the ones asked for: `code`,
 `testing`, and `security` at minimum, plus `design-system` and `frontend` wherever a UI exists. Reason

@@ -9,21 +9,13 @@ user-invocable: true
 
 # Program design
 
-Work out with the maintainer how the thing actually works — what happens, in what order, and why it
-is done that way rather than another way. Like `/refine`, this is a conversation you conduct
-yourself, not work you hand to an agent.
+Work out with the maintainer how the thing actually works — what happens, in what order, and why
+that way rather than another. Like `/refine`, this is a conversation you conduct yourself.
 
 Its output is the second half of `plan.md`: an explanation someone could read once and understand.
 
-## Why this exists separately
-
-Architecture answers a different question and answers it in a different language. Contracts, types,
-schemas and flows are a technical *interpretation* of a decision — useful once the decision is made,
-and unreadable as a way of making it. Plans written in that vocabulary cannot be reviewed by the
-person whose judgement matters most.
-
-So: plain words first. If a sentence here could not be said out loud to someone who knows the domain
-but not the codebase, it belongs in `/architecture`, not in this plan.
+Plain words only. If a sentence could not be said out loud to someone who knows the domain but not
+the codebase, it belongs in `/architecture`, not here.
 
 ## When it runs
 
@@ -50,16 +42,14 @@ unanswered for this item, ask. Never import it from another item, another conver
 rule written for a different question. `{{rules.taste}}` applies as convention and answers nothing
 that was not already agreed.
 
-**Stop at confirmation.** Reflect back how you understood it and get agreement — and do not treat
-that agreement as permission to start building. Knowing how the thing should work is the most
-tempting possible moment to start making it.
+**Stop at confirmation.** Reflect back how you understood it and get agreement. Do not treat that
+agreement as permission to start building.
 
 ## What to write
 
 Into the `## How it works` section of `.pipeline/work/<id>/plan.md`, in plain language. Write only
-that section — `/refine` owns `## What we need`, and either interview may run without the other. The
-whole plan is budgeted at 50–100 lines, so this is roughly half of that; this half sprawls most
-easily, because explaining how something works invites explaining everything about it.
+that section; `/refine` owns `## What we need`. The whole plan is budgeted at 50–100 lines; this is
+roughly half, and it is the half that sprawls.
 
 - how the program works — the path through it, in the order things happen;
 - why it works that way, and what was rejected;

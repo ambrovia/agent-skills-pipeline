@@ -41,9 +41,7 @@ conversational framing. Do not edit.
 Missing lore blocks an item only when a non-obvious invariant would otherwise be lost as its working
 material is deleted at ship.
 
-Length is the whole discipline. An entry that has grown into a paragraph has stopped being lore and
-become documentation nobody asked for — cut it back to the constraint, or move it somewhere that
-wants prose.
+Cut any entry that has grown into a paragraph back to the constraint.
 
 ## Target
 
