@@ -26,9 +26,10 @@ to start from and nothing that pre-empts it.
 ## Before registering
 
 Confirm the pipeline is configured before registering work against it: `pipeline.config.yml` exists
-with `verify`, `paths`, `vcs` and `engineering.tier` set, and every rule slot it declares pointing at
-a file that is present. If the config is missing, or a slot this work will depend on is empty with no
-comment saying that is deliberate, say so and offer `/setup` first.
+with `verify`, `paths`, `vcs` and `engineering.tier` set, and every rule slot it declares points at a
+file that is present. An omitted or null slot is a valid answer — skills skip absent slots. Offer
+`/setup` when the config is missing, when a declared slot points at nothing, or when this work plainly
+turns on a convention the repository has never written down.
 
 Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`,
 and enough source to understand the existing capability. Ask only questions whose answers would
