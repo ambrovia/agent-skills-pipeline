@@ -39,8 +39,9 @@ this item's plan does not say, ask. Do not infer it from another item's plan, an
 or a standing rule that was written for a different question. Taste differs by topic and changes over
 time; an answer carried in from elsewhere is your own taste wearing a citation.
 
-Standing rules configured in `pipeline.config.yml` still apply as conventions — they are not answers
-to questions the maintainer has not been asked.
+`{{rules.taste}}` holds the standing conventions this repository already agreed. Read it, and follow
+it — but it is not a lookup table for questions the maintainer has not been asked. Stretching a
+convention to cover a new question is the same substitution by another route.
 
 **Stop at confirmation.** End the interview by reflecting back what you understood and getting
 agreement. Do not treat agreement as permission to start building.

@@ -47,7 +47,8 @@ them — fix that and try again rather than accepting a bad answer.
 
 **Their taste is only what they tell you here.** As in `/refine`: when the approach question is
 unanswered for this item, ask. Never import it from another item, another conversation, or a standing
-rule written for a different question.
+rule written for a different question. `{{rules.taste}}` applies as convention and answers nothing
+that was not already agreed.
 
 **Stop at confirmation.** Reflect back how you understood it and get agreement — and do not treat
 that agreement as permission to start building. Knowing how the thing should work is the most

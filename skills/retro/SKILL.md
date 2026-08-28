@@ -13,9 +13,16 @@ Read available progress state, plan/coordination artifacts, VCS history, verific
 lore, and session trajectories. Append terse JSONL observations to `.pipeline/work/<id>/retro.jsonl` —
 one log per work package, never a shared file, so parallel runs append without conflicting.
 
-Each entry records date, scope/WP where permitted, source, kind (`success` or `friction`), concrete
-observation, evidence, and optional related known pattern. One observation per line. Record what worked
-so later cleanup does not remove it.
+Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, or
+`divergence`), concrete observation, evidence, and optional related known pattern. One observation per
+line. Record what worked so later cleanup does not remove it.
+
+A `divergence` entry records a place where what the agent chose was not what the maintainer wanted —
+read them out of the plan's `## Confusions` section, the gate discussions, and anything the maintainer
+asked to be changed or simplified. Record the choice, what they wanted instead, and where the plan was
+silent. These are the raw material for the `taste` rule slot: a divergence that keeps recurring is a
+standing convention nobody has written down yet. Record it as an observation — do not write the rule
+yourself, and do not treat one maintainer correction as a convention.
 
 Close each work package with one `cost` entry: phases run, critique and review rounds, retry attempts,
 and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was

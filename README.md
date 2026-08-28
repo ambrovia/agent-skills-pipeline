@@ -187,6 +187,7 @@ Rule files live under `.pipeline/rules/` so every host reads the same ones — n
 | `code` | write-code, architecture, architecture-critique, review | language / type / style conventions |
 | `testing` | write-tests, architecture, architecture-critique, review, pipeline | what counts as a test, layout, lanes/fixtures |
 | `architecture` | architecture, architecture-critique, write-code, review | architecture invariants & conventions |
+| `taste` | refine, program-design, pipeline | standing conventions for how this repo likes things done |
 | `design-system` | design, write-code, review | component budget, tokens, reuse-before-build, promotion |
 | `frontend` | design, write-code, review | client / UI conventions |
 | `visual` | design, review | visual fidelity / regression policy |

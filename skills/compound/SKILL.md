@@ -22,6 +22,12 @@ Classify patterns as emerging, confirmed, contradicted, or resolved. For each co
 - one smallest proposed process/skill change;
 - expected benefit, regression risk, and how to validate it.
 
+Recurring `divergence` observations are a distinct case: when the same kind of maintainer correction
+appears across items, the proposal is an amendment to the `taste` rule slot rather than a skill
+change. Quote the corrections it would have prevented. A convention becomes standing because the
+maintainer approves it, never because a run inferred it — and never from a single correction, which
+is a preference on one item rather than a rule about the repository.
+
 Propose; never apply. Do not delete history, convert anecdotes into mandates, bundle unrelated changes,
 or optimize a metric without checking downstream quality. Update tracker state and retain contradiction
 and resolution evidence. Human approval is required before any policy mutation.
