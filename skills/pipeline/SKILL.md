@@ -26,17 +26,19 @@ and `/program-design`, edited in place rather than appended to, and it holds:
 | `## How it works` | `/program-design` | the path through the program, in order, and why it is that way |
 | `## How we work on this` | you, with the maintainer | the agreed structure, the gates, and the review depth |
 | `## Confusions` | you, from what dispatched agents report | where execution found the plan unclear |
+| `## Proposed items` | you | separate work found along the way, for the maintainer to register |
 
-Fixed headings; each writer touches only its own section. Budget: 50–100 lines. Everything else is
-working material.
+`/work-planning` creates the file with all five headings and its seed under the first. Each writer
+touches only its own section. The whole file is 50–100 lines; the first two sections carry most of
+it. Everything else is working material.
 
 The plan is authoritative for what is wanted. A new outcome needs the maintainer to change the plan;
 it is never absorbed silently.
 
-Out-of-scope work discovered during execution never grows this item. Record it in the plan as a
-proposed item — what was found, why it is separate, what it blocks — and carry it to the maintainer at
-the next gate. You may not register it yourself. A discovery that genuinely blocks makes this item
-blocked, not bigger.
+Out-of-scope work discovered during execution never grows this item. Record it under
+`## Proposed items` — what was found, why it is separate, what it blocks — and raise it at the next
+gate. Registering items is `/work-planning`, which only the maintainer invokes. A discovery that
+genuinely blocks makes this item blocked, not bigger.
 
 `## Confusions` records where the plan under-specified the work. It is not a complaint log.
 
@@ -49,14 +51,14 @@ One global dial, from `pipeline.config.yml`:
 Three per-item dials, seeded at registration, agreed with the maintainer, re-questioned as evidence
 arrives. Start shallow and expand as you notice.
 
-**You may raise a dial on your own; only the maintainer lowers one.** An agent that wants to finish
-will always find a reason to lower. Skipping an interview or a round is proposed, not decided.
+**You may raise a dial on your own; only the maintainer lowers one.** Skipping an interview or a
+round is likewise proposed, not decided.
 
 | dial | governs |
 |---|---|
 | **complexity** — bugfix · feature · suite · product | orchestration: how work is broken down, how many agents, how waves and slices are staged |
 | **ambiguity** — established context · new context · not yet knowing what we want | ceremony: how much interview, whether design and architecture rounds run at all |
-| **exposure** — internal detail · user-facing surface · public contract | scrutiny: how independent review is, how deep it goes, whether critique runs |
+| **exposure** — internal detail · user-facing surface · public contract | scrutiny: how independent review is and how deep it goes |
 
 They are independent. A hundred bugs: high complexity, near-zero ambiguity — almost no ceremony,
 heavy fan-out. A governance rule: low complexity, high ambiguity — heavy interview, tiny build.
@@ -66,11 +68,12 @@ heavy fan-out. A governance rule: low complexity, high ambiguity — heavy inter
 Gates are where the maintainer pushes back — most often to ask for something simpler. They are not a
 fixed set. Agree them with the maintainer during planning and write them into the plan.
 
-**There is always a gate at the end.** The rest of the shape is negotiable; the maintainer seeing
-the result before it ships is not. Some items need several gates, some only this one, none zero.
+**There is always a gate before shipping.** The rest of the shape is negotiable; the maintainer
+seeing the result before it ships is not. Some items need several gates, some only that one.
 
-**Plan at least as far as the next gate.** Plan the whole shape when it is already clear; otherwise
-plan the next few steps. You may never be running with no gate ahead of you.
+**Never work past the next agreed gate.** Plan the whole shape when it is already clear; otherwise
+agree the next few steps and stop at the gate that ends them, even if the work beyond it looks
+obvious.
 
 Between gates, run unattended — the agreed gates are the boundary, not your own sense of when to
 check in. Ordinary execution decisions are yours: naming, local structure, which existing helper to
@@ -81,9 +84,9 @@ plan turns out to be wrong about the code.
 Everything else that is unclear goes to `## Confusions` and continues.
 
 At a gate, summarize in plain language: what was decided, what it cost, what you are unsure about.
-Do not present rubric scores. For a changed user-facing surface, show the surface, not prose about
-it. If the maintainer is unavailable, park as `awaiting-human-review` — absence is not approval and
-not failure.
+For a changed user-facing surface, show the surface, not prose about it. Then wait. If the answer
+does not come within the session, park as `awaiting-human-review`; that is a normal resting state,
+not a failure, and a later turn resumes from it.
 
 Once something is presented, it is still. Do not revise or re-critique the presented artifacts while
 parked or after approval. A later revision returns to the gate only when it materially changes what
@@ -102,8 +105,7 @@ and each round's `since` pointer. Artifact writes advance the delta pointer; re-
 changed since it, never the whole briefing again. Written state must let a cold agent resume without
 session memory.
 
-The markdown is not schema-bound. Structure is agreed per item and recorded in the plan; the registry
-is how tooling finds it. Never read or mutate another item's folder except a declared dependency.
+Structure is agreed per item and recorded in the plan; the registry is how tooling finds it. Never read or mutate another item's folder except a declared dependency.
 
 ## Isolation
 
@@ -119,24 +121,22 @@ is how tooling finds it. Never read or mutate another item's folder except a dec
 
 ## Roles and dispatch
 
-You conduct the interviews yourself; delegating them defeats their purpose, which is that *you* can
-later act for the maintainer.
+Conduct the interviews yourself; they are how you learn enough to act for the maintainer later.
 
-Everything else is dispatched, and **subagents exist for context hygiene, not role separation**. A
-planner reads widely and reports back. A builder writes tests, code, docs and fixes. A reviewer
-evaluates and never repairs its own findings.
+Everything else is dispatched. **Spawn a subagent to keep work out of your context, not because a
+task feels like someone else's job** — a planner reads widely and reports back, a builder writes
+tests, code, docs and fixes, a reviewer evaluates and never repairs its own findings.
 
 Every spawn carries a brief and nothing else: item id, role, the exact reading list, the output
 contract, and — for a retry — only the blocking findings plus what changed since. No conversation
-history, no re-narration of prior rounds. Every output contract also asks for whatever the plan left
-unclear; fold that into `## Confusions`. Order the brief stable content first so prefix caches hit.
+history, no re-narration of earlier attempts. Every output contract also asks for whatever the plan
+left unclear; fold that into `## Confusions`. Order the brief stable content first.
 Where the host injects context at spawn, that is how state arrives; otherwise put the digest in the
 brief. Prefer the cheapest injection mechanic the host supports; record a missing capability as a gap
 rather than downgrading every host to it.
 
 **Fan out only for homogeneous work** — the same thing done many times, sharing one topic and
-context. Unrelated topics returning at random make you incoherent; you work best focused or fully
-offloaded. Run anything heterogeneous sequentially. Parallel leaves need isolated worktrees,
+context. Run anything heterogeneous sequentially. Parallel leaves need isolated worktrees,
 explicit owned writes, dependency receipts, and focused verification; without per-writer isolation,
 run them sequentially regardless.
 
@@ -177,8 +177,7 @@ reviews:
 | feature or larger, or anything touching a public contract | one fresh reviewer over the integrated diff |
 | suite or product | reviewed in phases |
 
-Where the dials disagree, take the deeper row. Reviewing an item you helped plan gives up
-independence deliberately: fine while exposure is low, wrong once it is not. Send only blocking findings back. Non-blocking findings and
+Where the dials disagree, take the deeper row. Send only blocking findings back. Non-blocking findings and
 notes are carried forward verbatim to the final summary; they never spawn a round, and you may not
 promote one to blocking — a new concern needs a new evaluation with new evidence.
 
@@ -188,13 +187,13 @@ re-enters ship. Stop at a CI-green merge-ready PR; a human merges.
 
 ## Critique
 
-Critique is requested, not scheduled. Ask for one when something is worth challenging — and for
-something small, do not ask at all. Re-critique only after a scope-bearing change, and then only over
-the delta. There are no numbered rounds and no attempt caps.
+Spawn a critique — `/architecture-critique` for architecture, a fresh reviewer for code — when a
+decision is worth challenging. Skip it for low-exposure work. After a scope-bearing change, re-spawn
+one over the delta alone; leave everything it already judged as judged.
 
-**Repeated failure is an ambiguity signal, not a counter.** When an attempt fails for the same reason
-as the one before it, raise ambiguity — which puts a gate in front of you — and take what you have to
-the maintainer. Never try again with the same understanding.
+**When an attempt fails for the same reason as the one before it, stop attempting.** Raise ambiguity,
+add a gate to the plan, and take what you have to the maintainer. Never try again with the same
+understanding.
 
 ## When the plan changes
 
@@ -205,12 +204,10 @@ no longer exists, and never respond by discarding work products wholesale.
 
 ## Failure and completion
 
-Use precise states — `blocked`, `awaiting-human-review`, `done` — each with evidence and the smallest
-action needed to resume. (`NOT DONE` is a review verdict, not an item state; it sends blocking
-findings back and the item stays in progress.) Always return a concise outcome summary: what completed,
+Use precise states — `in-progress`, `blocked`, `awaiting-human-review`, `done` — each with evidence
+and the smallest action needed to resume. Always return a concise outcome summary: what completed,
 skipped or blocked, delivered behavior, verification, PR and CI state, and decisions needed. Carry
-forward the non-blocking findings so soft objections surface at the end rather than in silent churn.
-Do not create cleanup work from observations.
+forward the non-blocking findings. Do not create cleanup work from observations.
 
 After several completed items, `/compound` may analyze accumulated retros and propose changes for
 maintainer approval. It never mutates pipeline policy automatically.

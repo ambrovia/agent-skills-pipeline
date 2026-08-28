@@ -48,8 +48,8 @@ agreement as permission to start building.
 ## What to write
 
 Into the `## How it works` section of `.pipeline/work/<id>/plan.md`, in plain language. Write only
-that section; `/refine` owns `## What we need`. The whole plan is budgeted at 50–100 lines; this is
-roughly half, and it is the half that sprawls.
+that section; `/refine` owns `## What we need`. The whole plan is budgeted at 50–100 lines. Explain
+the path through the program, not everything true about it.
 
 - how the program works — the path through it, in the order things happen;
 - why it works that way, and what was rejected;

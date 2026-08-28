@@ -15,13 +15,12 @@ Configuration lives in `pipeline.config.yml` at the repository root — `verify`
 `testing`, `architecture`, `design-system`, `frontend`, `visual`, `aesthetics`, `security`, `docs`), each
 pointing at a markdown file of binding project guidance. Start from `pipeline.config.example.yml`.
 
-Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at that path. The location is
-host-neutral, so every tool reads the same rules. Rule files are maintainer-authored and committed; a
+Write approved rule files to `.pipeline/rules/<slot>.md` and point the slot at that path. Rule files are maintainer-authored and committed; a
 pipeline run may not edit them.
 
 `taste` holds standing conventions for how this repository likes things done — the maintainer's
 voice, not a derived best practice. Seed it from what they tell you, never from what the codebase
-implies. Empty is a good starting state; it fills through `/retro` and `/compound`.
+implies. Empty is a good starting state.
 
 On a first run, propose the slots most repositories need rather than only the ones asked for: `code`,
 `testing`, and `security` at minimum, plus `design-system` and `frontend` wherever a UI exists. Reason

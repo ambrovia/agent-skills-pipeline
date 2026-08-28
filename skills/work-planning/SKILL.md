@@ -55,8 +55,7 @@ the observable change, then register the work that acts on it.
 ## Estimate the dials
 
 The three per-item dials start here and are re-questioned throughout the run. Estimate them with the
-maintainer, default to the shallow end, and record them as provisional — refinement will correct
-them, and being wrong here costs nothing.
+maintainer, default to the shallow end, and record them as provisional.
 
 | dial | ask | shallow ← → deep |
 |---|---|---|
@@ -64,16 +63,17 @@ them, and being wrong here costs nothing.
 | ambiguity | how clear is the topic? | established context · new context, little knowledge · we do not yet know what we want |
 | exposure | how far does it reach? | internal detail · user-facing surface · public contract |
 
-`engineering.tier` is not estimated here and is not set per item. It comes from
-`pipeline.config.yml`, describes the product rather than the work, and changes when the product's
-maturity changes — a maintainer decision, not a registration one.
+`engineering.tier` comes from `pipeline.config.yml` and applies to every item in the repository.
 
 ## Seed the plan
 
-Create `.pipeline/work/<id>/plan.md` holding only the seed:
+Create `.pipeline/work/<id>/plan.md` with the five headings the run will fill, and write the seed
+under the first:
 
 ```markdown
 # <ID> — <Title>
+
+## What we need
 
 **Why this exists.** <Who benefits, what improves, the cost of not doing it.>
 
@@ -84,11 +84,19 @@ Create `.pipeline/work/<id>/plan.md` holding only the seed:
 **Depends on.** <Item IDs with one-sentence blocker reasons, or None.>
 
 **Dials (provisional).** complexity: … · ambiguity: … · exposure: …
+
+## How it works
+
+## How we work on this
+
+## Confusions
+
+## Proposed items
 ```
 
-That is the whole seed. No outcomes, no acceptance criteria, no validation scenarios, no phase plan —
-those come out of the interview, written into this same file. Keep it short; a seed longer than the
-plan it precedes has pre-empted the conversation it exists to start.
+Leave the four empty headings empty; refinement, program design and the run fill them. Write no
+acceptance criteria and no plan for which phases will run — those come out of the interview. Keep the
+seed short.
 
 ## Register
 

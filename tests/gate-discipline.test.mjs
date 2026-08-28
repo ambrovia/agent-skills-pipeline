@@ -17,6 +17,10 @@ test('presented artifacts are not revised or re-critiqued while parked or after 
   );
 });
 
-test('the agent may never run with no gate ahead of it', () => {
-  assert.match(pipeline, /plan at least as far as the next gate/i);
+test('the agent may never work past the next agreed gate', () => {
+  assert.match(pipeline, /never work past the next agreed gate/i);
+});
+
+test('shipping always passes a maintainer gate', () => {
+  assert.match(pipeline, /there is always a gate before shipping/i);
 });

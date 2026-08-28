@@ -11,9 +11,9 @@ user-invocable: true
 
 Review the implementation without expanding it.
 
-**Depth is assigned, not chosen.** Complexity and exposure set it and the orchestrator has already
-decided. Match the depth you were asked for: do not expand a small review into an audit, and do not
-shorten a phased one because the code looks fine.
+**Depth is assigned, not chosen.** The plan's `## How we work on this` names the review depth for
+this item, and the brief repeats it. Match it: do not widen a narrow review into a full audit, and do
+not shorten a phased one because the code looks fine. If no depth is named, ask before reviewing.
 
 ## Read first
 
@@ -64,9 +64,9 @@ rule, regression, or change-caused risk.
 - **BLOCKING:** failed AC, missing end-to-end evidence, material violation, or material scope excess;
   enters retry.
 - **NON-BLOCKING DEFECT:** concrete issue safe to defer; never changes verdict; carries forward to the
-  final maintainer gate and spawns no round.
-- **FOLLOW-UP / NOTE:** outside current scope; never assigned automatically; carried forward to the
-  final gate, never into a round.
+  final maintainer gate; never sent back for rework.
+- **FOLLOW-UP / NOTE:** outside current scope; carried forward to the final gate, never sent back for
+  rework.
 
 Scope excess is a violated scope boundary, not a preference: a capability, abstraction, configuration
 surface, or subsystem nobody asked for blocks and comes out. Judge it by what the change adds, not by

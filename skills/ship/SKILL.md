@@ -22,17 +22,16 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
 1. When an item ran, reduce `.pipeline/work/<id>/` to **exactly one file: `plan.md`**. Everything
    else is working material and does not survive the merge — `design/`, `architecture.md`,
    `feasibility.md`, `probes/`, `receipts/`, `integration.json`, `review.md`, `checks-latest.log`,
-   `progress.json`. Delete the plan's `## Confusions` section too; `/retro` has already read it.
+   `progress.json`. Delete the plan's `## Confusions` and `## Proposed items` sections too, once
+   `/retro` has recorded the first and the maintainer has seen the second.
 
-   **Do not otherwise rewrite `plan.md`.** It is the maintainer's document and what they approved;
-   never fold an as-built architecture into it.
+   **Do not otherwise rewrite `plan.md`.** Never fold an as-built architecture into it.
 
-   Two things escape the folder before it is emptied:
+   Move these out before deleting anything:
 
-   - **`retro.jsonl` appends to `.pipeline/retro.jsonl`**, the cross-item archive `/compound` reads.
-   - **Durable knowledge goes to `@lore`**, next to the code it concerns — an accepted limitation, a
-     residual risk, a non-obvious constraint the next person will trip over. A deferral recorded only
-     in a deleted artifact is a deferral nobody will ever act on.
+   - **`retro.jsonl`** — append it to `.pipeline/retro.jsonl`.
+   - **Durable knowledge** — write it as `@lore` next to the code it concerns: an accepted
+     limitation, a residual risk, a non-obvious constraint the next person will trip over.
 2. Ensure the retro (when an item ran) and every intended change are present. Stage deliberately —
    inspect the worktree, commit intended changes with domain-based messages, revert unintended ones, and
    never stage the whole tree blindly. Never put an item ID in branch, commit, or PR metadata.
@@ -46,11 +45,11 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
    Otherwise push and open or update a non-draft PR using `{{vcs}}`. Summarize outcome, evidence, and
    known non-blocking limitations without internal item identifiers.
 7. Wait for required CI. If CI fails, diagnose from the failing check's log, return to the owning phase,
-   and re-enter ship with a changed strategy; any mutation repeats verification from step 3. After three
+   and re-enter ship with a changed strategy; any mutation repeats verification from step 5. After three
    failed attempts, stop and record the work blocked.
 
-Stop at a CI-green merge-ready PR. A human decides whether to merge. Tagging and releases run only when
-explicitly requested and configured; they are not part of ordinary ship completion.
+Stop at a CI-green merge-ready PR. A human decides whether to merge. Tag or release only when
+explicitly requested and configured.
 
 ## Target
 

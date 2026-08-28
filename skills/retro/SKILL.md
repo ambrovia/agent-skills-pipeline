@@ -11,12 +11,11 @@ user-invocable: true
 
 Read available progress state, plan/coordination artifacts, VCS history, verification/review output,
 lore, and session trajectories. Append terse JSONL observations to `.pipeline/work/<id>/retro.jsonl` —
-one log per item, never a shared file, so parallel runs append without conflicting. At ship it is
-appended to the cross-item archive `.pipeline/retro.jsonl` and the item's copy is deleted — write
-every observation as though the item folder will not exist.
+one log per item, never a shared file. At ship it is appended to the cross-item archive
+`.pipeline/retro.jsonl` and the item's copy is deleted — write every observation as though the item
+folder will not exist.
 
-Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, or
-`divergence`), concrete observation, evidence, and optional related known pattern. One observation per
+Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, `divergence`, or `cost`), concrete observation, evidence, and optional related known pattern. One observation per
 line. Record what worked so later cleanup does not remove it.
 
 A `divergence` entry records where the agent's choice was not what the maintainer wanted — read them
@@ -25,8 +24,7 @@ simplified. Record the choice, what they wanted instead, and where the plan was 
 the `taste` rule yourself, and never treat one correction as a convention.
 
 Close each item with one `cost` entry: what ran, how many critiques and reviews, how much was
-re-done, and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was
-proportionate is only visible in aggregate, and `/compound` cannot see it otherwise.
+re-done, and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was proportionate is only visible in aggregate.
 
 Check `.pipeline/compound-candidates.md` before writing a new free-text observation: reuse the matching
 candidate's identifier when the same behavior recurs, and only write free text for friction with no

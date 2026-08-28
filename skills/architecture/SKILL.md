@@ -21,11 +21,11 @@ This is the *technical interpretation* of a plan that already exists: the same t
 plain words, in the vocabulary a builder needs. If you find yourself deciding how the program works,
 stop — that decision belongs in the plan, with the maintainer.
 
-No line budget here, but stay navigable.
+Keep it navigable — a builder must be able to find the contract they need.
 
 ## Understand and verify
 
-Start from the injected state, then read `plan.md`, approved design when present, the
+Start from the injected state when present, then read `plan.md`, approved design when present, the
 `pipeline.config.yml` rule slots that apply (`{{rules.architecture}}`,
 `{{rules.code}}`, `{{rules.testing}}`, `{{rules.security}}` — skip undeclared slots), relevant source,
 current repository structure, and any `@lore` on the surfaces this change touches. Ask only questions that
@@ -46,7 +46,7 @@ where the real number has to appear. If reconciliation requires a new outcome or
 propose a plan amendment and stop. If it invalidates approved design, return an explicit design-change
 proposal.
 
-## Write the plan
+## Write `architecture.md`
 
 Include what a cold builder needs:
 
@@ -71,8 +71,7 @@ Include what a cold builder needs:
 Lock irreversible, public, cross-cutting, compatibility-sensitive, or expensive choices. Leave naming
 inside a local function, helper layout, and other reversible details to the builder. Prefer one technical
 task. Split only at a real dependency or safe parallel boundary; add an integration task only for a real
-cross-leaf seam. The orchestrator decides at runtime whether those leaves run sequential or parallel and
-how many builder subagents to spawn.
+cross-leaf seam. Do not specify parallelism or agent counts here; those are chosen at runtime.
 
 For migrations, renames, shared files, protected tests, or concurrency, state the concrete invariant and
 name the affected sites — source, fixtures, tests — with the step each one needs. Do not add a mechanism,
@@ -81,7 +80,7 @@ configured rule, or plausible change-caused risk — tier sets rigor, not ambiti
 
 ## Done
 
-The plan is implementable without product or structural invention, remains proportionate to the tier,
+`architecture.md` is implementable without product or structural invention, stays proportionate to the tier,
 names reliable verification, and traces every obligation to an approved authority. Update `plan.md` only
 through an approved amendment.
 

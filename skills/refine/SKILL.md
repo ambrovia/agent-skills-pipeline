@@ -55,7 +55,8 @@ would recognise as their own. Write only that section; `/program-design` owns `#
 - any load-bearing noun: what it means here, and which readings were rejected;
 - their answers on how things should be done, wherever they gave one.
 
-The whole plan is budgeted at 50–100 lines; this is roughly half. Length is not thoroughness.
+The whole plan is budgeted at 50–100 lines, and this section carries much of it. Stop when the
+maintainer would recognise their own intent, not when the topic is exhausted.
 
 ## Boundaries
 
