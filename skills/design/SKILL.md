@@ -1,10 +1,9 @@
 ---
 name: design
-description: "Decide consequential UX/UI behavior for an approved work package. Use when a changed user-facing surface is not already determined by an existing approved pattern and a design system is configured. Skip backend/infra and trivial pattern-following changes."
-phase: 3
+description: "Decide consequential UX/UI behavior for an agreed item. Use when a changed user-facing surface is not already determined by an existing approved pattern and a design system is configured. Skip backend/infra and trivial pattern-following changes."
 persona: pipeline-planner
 applies-to: [frontend, application]
-user-invocable: true
+user-invocable: false
 ---
 
 # Design
@@ -14,7 +13,7 @@ technical implementation.
 
 ## Inputs and applicability
 
-Read `plan.md`, approved `requirements.md` when present, the design system at
+Start from the injected state when present, then read `plan.md`, the design system at
 `{{designSystem.path}}` with its tokens at `{{designSystem.tokens}}`, the applicable
 `pipeline.config.yml` rule slots (`{{rules.design-system}}`, `{{rules.frontend}}`, `{{rules.aesthetics}}`,
 `{{rules.visual}}` — skip undeclared slots), and the existing affected surface. Skip when there is no UI,

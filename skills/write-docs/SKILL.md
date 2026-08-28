@@ -1,10 +1,9 @@
 ---
 name: write-docs
 description: "Write or review user-facing documentation when it is an explicit deliverable or when an implementation makes authoritative documentation false. Preserve project voice and factual accuracy; use reading-funnel craft proportionately to page type."
-phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
-user-invocable: true
+user-invocable: false
 ---
 
 # Write docs

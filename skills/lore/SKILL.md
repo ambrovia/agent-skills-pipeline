@@ -35,11 +35,14 @@ Obtain user approval before modifying code.
 
 ## Index
 
-List current lore by kind and location, including contradictions or stale entries. Terse entries; no
-conversational framing. Do not edit.
+List current lore by kind — constraint, workaround, hazard, trade-off — and location, including contradictions, stale entries, and any that have
+grown past a line or two. Terse entries; no conversational framing. Do not edit — report.
 
-Missing lore blocks a WP only when an approved non-obvious invariant would otherwise be lost after its
-temporary artifacts leave active context.
+Missing lore blocks an item only when a non-obvious invariant would otherwise be lost as its working
+material is deleted at ship.
+
+When capturing or revising an entry, cut anything that has grown into a paragraph back to the
+constraint.
 
 ## Target
 
