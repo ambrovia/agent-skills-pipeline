@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Read-only review of implemented code against an approved work package or explicit changed-file scope. Verifies ACs, applicable constraints/rules, regressions, and plausible changed risks. Produces operational findings and a verdict; never edits code."
+description: "Read-only review of implemented code against an agreed plan or explicit changed-file scope. Verifies ACs, applicable constraints/rules, regressions, and plausible changed risks. Produces operational findings and a verdict; never edits code."
 phase: 5
 persona: pipeline-reviewer
 applies-to: [frontend, backend, application, framework, infra]
@@ -9,13 +9,17 @@ user-invocable: true
 
 # Review
 
-Review the implementation deeply without expanding it.
+Review the implementation without expanding it.
+
+**Depth is assigned, not chosen.** The plan's `## How we work on this` names the review depth for
+this item, and the brief repeats it. Match it: do not widen a narrow review into a full audit, and do
+not shorten a phased one because the code looks fine. If no depth is named, ask before reviewing.
 
 ## Read first
 
 Start from the injected state snapshot when present; it orients the read, and the artifacts it points
-to are opened where the review needs them. Read `plan.md`, approved requirements/design/architecture
-when present, the `pipeline.config.yml` rule slots that apply to the change (`{{rules.code}}`,
+to are opened where the review needs them. Read `plan.md`, approved design and architecture when
+present, the `pipeline.config.yml` rule slots that apply to the change (`{{rules.code}}`,
 `{{rules.testing}}`, `{{rules.architecture}}`, `{{rules.design-system}}`, `{{rules.frontend}}`,
 `{{rules.visual}}`, `{{rules.security}}`, `{{rules.docs}}` — skip undeclared slots), the complete
 diff, every affected execution path, and relevant
@@ -50,7 +54,7 @@ Inspect:
 - work delivered beyond approved scope — unrequested capability, speculative abstraction, unnecessary
   complexity, or unrelated edits introduced by this change;
 - affected authoritative documentation made false;
-- exact or derived WP-ID leakage outside `.pipeline/**`.
+- exact or derived item-ID leakage outside `.pipeline/**`.
 
 ## Findings and verdict
 
@@ -60,17 +64,17 @@ rule, regression, or change-caused risk.
 - **BLOCKING:** failed AC, missing end-to-end evidence, material violation, or material scope excess;
   enters retry.
 - **NON-BLOCKING DEFECT:** concrete issue safe to defer; never changes verdict; carries forward to the
-  final human gate and spawns no round.
-- **FOLLOW-UP / NOTE:** outside current scope; never assigned automatically; carried forward to the
-  final gate, never into a round.
+  final maintainer gate; never sent back for rework.
+- **FOLLOW-UP / NOTE:** outside current scope; carried forward to the final gate, never sent back for
+  rework.
 
 Scope excess is a violated scope boundary, not a preference: a capability, abstraction, configuration
 surface, or subsystem nobody asked for blocks and comes out. Judge it by what the change adds, not by
 style — local verbosity is a non-blocking defect.
 
 Return `DONE` only when all ACs pass and no blocking finding remains; otherwise `NOT DONE`. Write the
-findings, AC table, and verdict to `.pipeline/work/<id>/review.md` when the run persists state, or return
-them for the orchestrator to persist. Send only blocking findings to the builder. Report positive evidence
+findings, AC table, and verdict to `.pipeline/work/<id>/review.md` when that folder exists; otherwise
+return them to whoever asked. Send only blocking findings to the builder. Report positive evidence
 too. Never edit code or turn optional hardening, polish, adjacent cleanup, or personal preference into a
 finding.
 

@@ -1,16 +1,19 @@
 #!/usr/bin/env node
-// Pipeline-state snapshot — one-call digest of a work package's current state.
-// Usage: node scripts/pipeline-snapshot.mjs [wp-id]   (run from the repo root)
-// A read-only view over the file-backed state in .pipeline/work/<id>/: phase,
-// status, verdicts, open items, artifact pointers, delta pointer, next action.
+// Pipeline-state snapshot — one-call digest of an item's current state.
+// Usage: node scripts/pipeline-snapshot.mjs [item-id]   (run from the repo root)
+// A read-only view over the file-backed state in .pipeline/work/<id>/: dials,
+// status, gates, verdicts, artifact pointers, delta pointer, next action.
 // Replaces the folder scan an agent otherwise needs to get up to speed.
+//
+// Artifacts come from progress.json's `artifacts` registry, because structure is
+// agreed per item and this tool cannot know it in advance. The conventional
+// names below are only a fallback for items that never recorded a registry.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const ARTIFACTS = [
-  ['plan.md', 'plan'],
-  ['requirements.md', 'requirements'],
+const FALLBACK_ARTIFACTS = [
+  ['plan.md', 'the plan — what is wanted, how it works, how we work on it'],
   ['design/approved.md', 'approved design'],
   ['architecture.md', 'architecture'],
   ['feasibility.md', 'feasibility'],
@@ -18,6 +21,22 @@ const ARTIFACTS = [
   ['retro.jsonl', 'retro'],
   ['progress.json', 'state'],
 ];
+
+// registry -> [path, role][]; accepts {path: role}, [{path, role}], or ["path"].
+function artifactList(progress) {
+  const registry = progress.artifacts;
+  if (registry && !Array.isArray(registry) && typeof registry === 'object') {
+    return Object.entries(registry).map(([path, role]) => [path, String(role ?? '')]);
+  }
+  if (Array.isArray(registry) && registry.length > 0) {
+    return registry
+      .map((entry) => (typeof entry === 'string'
+        ? [entry, '']
+        : [entry?.path, String(entry?.role ?? entry?.for ?? '')]))
+      .filter(([path]) => typeof path === 'string' && path);
+  }
+  return FALLBACK_ARTIFACTS;
+}
 
 function readJson(path) {
   try {
@@ -41,9 +60,9 @@ function fail(message) {
   process.exit(1);
 }
 
-function resolveWp(workRoot, id) {
+function resolveItem(workRoot, id) {
   if (id) {
-    if (!existsSync(join(workRoot, id))) fail(`no work package "${id}" under .pipeline/work/`);
+    if (!existsSync(join(workRoot, id))) fail(`no item "${id}" under .pipeline/work/`);
     return id;
   }
   let entries = [];
@@ -52,8 +71,8 @@ function resolveWp(workRoot, id) {
   } catch {
     /* no .pipeline/work yet */
   }
-  if (entries.length === 0) fail('no work packages under .pipeline/work/');
-  if (entries.length > 1) fail(`multiple work packages — pass one of: ${entries.join(', ')}`);
+  if (entries.length === 0) fail('no items under .pipeline/work/');
+  if (entries.length > 1) fail(`multiple items — pass one of: ${entries.join(', ')}`);
   return entries[0];
 }
 
@@ -62,7 +81,7 @@ function verdictLines(progress, dir) {
   const lines = Array.isArray(evaluations)
     ? evaluations
       .filter((entry) => entry && typeof entry === 'object' && entry.verdict)
-      .map((entry) => `  ${entry.phase ?? 'review'} attempt ${entry.attempt ?? '?'}: ${entry.verdict}`)
+      .map((entry) => `  ${entry.phase ?? 'review'}: ${entry.verdict}`)
     : [];
   if (lines.length > 0) return lines;
   const review = readText(join(dir, 'review.md'));
@@ -73,12 +92,24 @@ function verdictLines(progress, dir) {
 function digest(workRoot, id) {
   const dir = join(workRoot, id);
   const progress = readJson(join(dir, 'progress.json')) ?? {};
-  const lines = [`wp: ${id}`];
+  const lines = [`item: ${id}`];
 
   const heading = (readText(join(dir, 'plan.md')) ?? '').split('\n').find((line) => /^#\s+/.test(line));
   if (heading) lines.push(`title: ${heading.replace(/^#\s+/, '').trim()}`);
   if (progress.phase) lines.push(`phase: ${progress.phase}`);
   if (progress.status) lines.push(`status: ${progress.status}`);
+
+  const dials = progress.dials;
+  if (dials && typeof dials === 'object') {
+    lines.push(`dials: ${Object.entries(dials).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+  }
+
+  const gates = progress.gates;
+  if (Array.isArray(gates) && gates.length > 0) {
+    lines.push('gates:', ...gates.map((gate) => (typeof gate === 'string'
+      ? `  ${gate}`
+      : `  ${gate?.name ?? 'gate'} — ${gate?.passed ? 'passed' : 'open'}`)));
+  }
 
   const verdicts = verdictLines(progress, dir);
   if (verdicts.length > 0) lines.push('verdicts:', ...verdicts);
@@ -89,8 +120,10 @@ function digest(workRoot, id) {
     lines.push(`agents: ${Object.entries(agents).map(([role, count]) => `${role} ${count}`).join(', ')}`);
   }
 
-  const present = ARTIFACTS.filter(([path]) => existsSync(join(dir, path)));
-  if (present.length > 0) lines.push('artifacts:', ...present.map(([path, role]) => `  ${path} — ${role}`));
+  const present = artifactList(progress).filter(([path]) => existsSync(join(dir, path)));
+  if (present.length > 0) {
+    lines.push('artifacts:', ...present.map(([path, role]) => (role ? `  ${path} — ${role}` : `  ${path}`)));
+  }
 
   const since = progress.since ?? progress.delta;
   if (since) lines.push(`delta: since ${since}`);
@@ -101,5 +134,5 @@ function digest(workRoot, id) {
 }
 
 const workRoot = join(process.cwd(), '.pipeline', 'work');
-const id = resolveWp(workRoot, process.argv[2]);
+const id = resolveItem(workRoot, process.argv[2]);
 process.stdout.write(`${digest(workRoot, id)}\n`);

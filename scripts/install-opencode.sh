@@ -72,7 +72,7 @@ echo "  ✓ plugin   → $PLUGINS_DIR/pipeline.js"
 # 4. Helpers the plugin shells out to. Not in plugins/ — opencode imports every
 #    module there, and these are executables with their own entry points.
 mkdir -p "$HELPERS_DIR"
-cp "$SRC/hooks/skill-load-inject.mjs" "$SRC/scripts/pipeline-snapshot.mjs" "$HELPERS_DIR/"
+cp "$SRC/hooks/inject.mjs" "$SRC/scripts/pipeline-snapshot.mjs" "$HELPERS_DIR/"
 echo "  ✓ helpers  → $HELPERS_DIR"
 
 # 5. Session-start guidance — an idempotent managed block in AGENTS.md.

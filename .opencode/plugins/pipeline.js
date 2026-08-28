@@ -22,7 +22,7 @@
  *
  * Also ports the skill-load injection hook: when a pipeline skill loads, fresh
  * check results, the WP diff, and critiqued artifacts are appended to the skill
- * tool's result (logic lives in hooks/skill-load-inject.mjs; see that guard).
+ * tool's result (logic lives in hooks/inject.mjs; see that guard).
  */
 
 import { spawnSync } from "node:child_process";
@@ -41,8 +41,8 @@ const PLUGIN_DIR = dirname(fileURLToPath(import.meta.url));
 // .opencode/, so install-opencode.sh drops it in .opencode/pipeline/ — beside
 // plugins/ rather than inside it, since opencode loads plugins/ as modules.
 const INJECT_HOOK = [
-  join(PLUGIN_DIR, "..", "..", "hooks", "skill-load-inject.mjs"),
-  join(PLUGIN_DIR, "..", "pipeline", "skill-load-inject.mjs"),
+  join(PLUGIN_DIR, "..", "..", "hooks", "inject.mjs"),
+  join(PLUGIN_DIR, "..", "pipeline", "inject.mjs"),
 ].find((path) => existsSync(path));
 const NO_PROGRESS = /\b(error|failed|failure|timed? out|exception|rejected|cannot|unable|no changes?|unchanged|not found|no match)\b/i;
 

@@ -1,6 +1,6 @@
 ---
 name: pipeline
-description: "Orchestrate one or more already-approved work packages end to end through applicable planning, independent critique, implementation, review, human approval, retro, and a CI-green PR. Never creates scope."
+description: "Drive one or more registered work items to a CI-green PR, through whatever shape each one actually needs. Runs the interviews itself, agrees the structure and gates with the maintainer, and dispatches the rest. Never creates scope."
 persona: orchestrator
 applies-to: [frontend, backend, application, framework, infra]
 user-invocable: true
@@ -8,203 +8,210 @@ user-invocable: true
 
 # Pipeline
 
-Drive approved WPs through a fixed lifecycle while running only phases whose triggers exist. The
-orchestrator coordinates producers, reviewers, state, and human gates; it does not plan, implement, or
-review their work itself.
+Take registered items to done. There is no fixed lifecycle: what an item needs is decided with the
+maintainer at the start and re-questioned as evidence arrives. Your job is to understand what they
+want well enough to represent them, to agree how this item will be worked, and then to run it.
 
-Keep going until every targeted WP is `done`, `blocked`, or parked awaiting a human. Never end a turn
-without a tool call unless that terminal state is reached. Never stop after planning — critique, build,
-review, and ship still owe work.
+Keep going until every targeted item is `done`, `blocked`, or `awaiting-human-review`. Never
+end a turn without a tool call unless that state is reached.
 
-## Authority and state
+## The plan
 
-`plan.md` owns required outcomes, ACs, tier, scope, and intent. `requirements.md`, approved design, and
-`architecture.md` constrain their phase within that scope. Tests and findings are evidence. New outcomes
-require a maintainer-approved plan amendment or another WP.
+`.pipeline/work/<id>/plan.md` is the maintainer's document. It is written *with* them in `/refine`
+and `/program-design`, edited in place rather than appended to, and it holds:
 
-Each WP lives under `.pipeline/work/<id>/`; its track registry/dependency graph lives in
-`.pipeline/<track>.md`. Repository-specific behavior comes from `pipeline.config.yml` — `verify`,
-`vcs`, `paths`, `designSystem`, `engineering.tier`, optional `worktree` lifecycle settings, and the
-`rules` slots, whose files live under `.pipeline/rules/` and are read-only to every pipeline phase.
-Written state must let a cold agent resume without session memory. Never read or mutate another WP's
-folder except its declared coordination dependency.
+| section | written by | holds |
+|---|---|---|
+| `## What we need` | `/refine` | value, who for, what success looks like, the boundary |
+| `## How it works` | `/program-design` | the path through the program, in order, and why it is that way |
+| `## How we work on this` | you, with the maintainer | the agreed structure, the gates, and the review depth |
+| `## Confusions` | you, from what dispatched agents report | where execution found the plan unclear |
+| `## Proposed items` | you | separate work found along the way, for the maintainer to register |
 
-Phase artifacts inside the WP folder: `requirements.md` (`/refine`), `design/approved.md` (`/design`),
-`architecture.md` plus `feasibility.md` (`/architecture`), `review.md` (findings, AC table, and verdict
-from `/review`, persisted by the orchestrator because the reviewer is read-only), `retro.jsonl`
-(`/retro`), and `progress.json` recording phase, status, session starts, completed evaluation attempts,
-artifacts, approvals, verdicts, each round's `since` pointer — the commit or artifact hash it started
-from — and spawned-agent counts per loop. Artifact writes advance the delta pointer; rounds and
-re-entries read what changed since it, never the full briefing again. `/ship` consolidates the folder
-before the PR.
+`/work-planning` creates the file with all five headings and its seed under the first. Each writer
+touches only its own section. The whole file is 50–100 lines; the first two sections carry most of
+it. Everything else is working material.
 
-Exact and derived WP IDs remain inside `.pipeline/**`. Derive worktree, branch, commit, and PR names from
-the domain title. Before reading the WP, enter or create the correct isolated worktree using the project's
-configured workflow, cut from the current remote default branch rather than a local checkout that may be
-stale — a stale base hides registered work and reintroduces reverted code. Confirm the repository and
-worktree before writing. Run configured bootstrap only when the worktree is new or stale, and never reuse
-a development server from another checkout. Run configured contamination and cleanup checks before
-commit or removal; never invent cleanup commands. Preserve an unrelated dirty tree and stop if safe
-isolation or required bootstrap is impossible.
+The plan is authoritative for what is wanted. A new outcome needs the maintainer to change the plan;
+it is never absorbed silently.
 
-`/work-planning` is maintainer-only. If the strategic frame, plan, ACs, tier, or dependencies are missing
-or contradictory, record a precise blocked state and park.
+Out-of-scope work discovered during execution never grows this item. Record it under
+`## Proposed items` — what was found, why it is separate, what it blocks — and raise it at the next
+gate. Registering items is `/work-planning`, which only the maintainer invokes. A discovery that
+genuinely blocks makes this item blocked, not bigger.
 
-## Roles
+`## Confusions` records where the plan under-specified the work. It is not a complaint log.
 
-- The planner produces requirements, design, and architecture.
-- The reviewer is a fresh read-only evaluator and never repairs its own findings.
-- The builder writes tests, code, docs, and blocking fixes.
-- The orchestrator assigns phases, persists state, summarizes gates, enforces transitions, and decides
-  how work is dispatched to subagents.
+## The dials
 
-## Spawn and scheduling
+One global dial, from `pipeline.config.yml`:
 
-Spawn each persona as a **subagent in the host tool** (Claude Code agents, Cursor/Codex/Gemini/Copilot
-subagents, or the host's equivalent). Do not mode-switch the orchestrator into planner, reviewer, or
-builder work. Continuity lives in `.pipeline/` state — a cold spawn reconstitutes from the WP artifacts
-and produces the same result.
+- **`engineering.tier`** — how mature the product is, and therefore how good the code must be.
 
-Every spawn carries a brief and nothing else: WP id, phase, role, the exact artifact reading list, the
-output contract, and — for retries — only the blocking findings plus what changed since. No conversation
-history, no re-narration of prior rounds. Order the brief stable content first, per-round content last,
-so prefix caches hit. Run the bundled snapshot resolved from the plugin install path
-(`node <plugin-root>/scripts/pipeline-snapshot.mjs <id>`) at run start and before every dispatch and
-inject its digest; re-entry after parking starts from the digest, not a folder scan. Where mechanics
-differ by host, pick the cheapest the host supports per `<plugin-root>/docs/host-capabilities.md`;
-record a missing capability as a gap rather than downgrading every host to it.
+Three per-item dials, seeded at registration, agreed with the maintainer, re-questioned as evidence
+arrives. Start shallow and expand as you notice.
 
-Session reuse is an optimization only. Freshness belongs at phase boundaries, continuity within loops:
-where the host keeps warm sessions, reuse a persona across its phases and keep the same builder across
-its retry rounds and the same reviewer across its evaluations of one loop; where it does not, re-spawn,
-and the next round starts from the previous round's delta rather than a cold reconstitution. Never gate
-a phase on reuse. Count spawned agents per loop in `progress.json` — the budget is two, one builder and
-one reviewer; record every host-forced respawn beyond it with reason. Every assignment names the
-artifact to read and the output to write. Do not leak the expected verdict or prior diagnosis into a
-fresh review.
+**You may raise a dial on your own; only the maintainer lowers one.** Skipping an interview or a
+round is likewise proposed, not decided.
 
-**The orchestrator owns runtime shape.** Before each phase (and before each build wave), decide:
+| dial | governs |
+|---|---|
+| **complexity** — bugfix · feature · suite · product | orchestration: how the work is broken into pieces, how many agents run, and in what order |
+| **ambiguity** — established context · new context · not yet knowing what we want | ceremony: how much interview, whether design and architecture rounds run at all |
+| **exposure** — internal detail · user-facing surface · public contract | scrutiny: how independent review is and how deep it goes |
 
-- **sequential vs parallel** — run one subagent at a time, or fan out independent units together;
-- **how many subagents** — usually one planner or one reviewer per phase; for build, one builder by
-  default, more only when architecture names independently owned leaves whose parallel rationale still
-  holds;
-- **wave boundaries** — start dependants only after their dependency receipts are accepted.
+They are independent. A hundred bugs: high complexity, near-zero ambiguity — almost no ceremony,
+heavy fan-out. A governance rule: low complexity, high ambiguity — heavy interview, tiny build.
 
-Prefer sequential when ownership overlaps, contracts are unsettled, isolation is unavailable, or the
-extra fan-out would not shorten the critical path. Prefer parallel only for truly independent leaves
-with explicit write ownership and bootstrapped isolation. Architecture proposes split boundaries;
-the orchestrator chooses the live schedule and may collapse a planned parallel split back to sequential
-when reality no longer supports it.
+## Gates
 
-## Lifecycle
+Gates are where the maintainer pushes back — most often to ask for something simpler. They are not a
+fixed set. Agree them with the maintainer during planning and write them into the plan.
 
-Each skill's frontmatter `phase` names the section it belongs to; `phase: 0` runs before a pipeline run.
+**There is always a gate before shipping.** The rest of the shape is negotiable; the maintainer
+seeing the result before it ships is not. Some items need several gates, some only that one.
 
-### 1. Preflight
+**Never work past the next agreed gate.** Plan the whole shape when it is already clear; otherwise
+agree the next few steps and stop at the gate that ends them, even if the work beyond it looks
+obvious.
 
-Resolve target WPs and dependency order. Confirm registry entries, valid plan sections, stable strategic
-frame, tier, `pipeline.config.yml` with the rule files its slots name actually present, isolated
-bootstrapped worktree, and clean ownership boundary. Skip a WP already done. A blocked dependency blocks
-descendants without attempting their phases.
+Between gates, run unattended — the agreed gates are the boundary, not your own sense of when to
+check in. Ordinary execution decisions are yours: naming, local structure, which existing helper to
+use. Stop before the next gate only when a decision would change something the maintainer has already
+seen or agreed — the boundary, the approach, a user-facing surface, a public contract — or when the
+plan turns out to be wrong about the code.
 
-### 2. Requirement clarification when needed
+Everything else that is unclear goes to `## Confusions` and continues.
 
-Run `/refine` only when the plan's pre-build trigger exists or a load-bearing requirement remains
-ambiguous. If it runs, send `requirements.md` to a fresh `/refine-critique` reviewer.
+At a gate, summarize in plain language: what was decided, what it cost, what you are unsure about.
+For a changed user-facing surface, show the surface, not prose about it. Then wait. If the answer
+does not come within the session, park as `awaiting-human-review`; that is a normal resting state,
+not a failure, and a later turn resumes from it.
 
-Only `BLOCKING` findings return to the planner. Each retry states the failed authority, evidence, and a
-changed strategy; cap at three attempts, then block. Scores, warnings, and suggestions never trigger a
-retry.
+Once something is presented, it is still. Do not revise or re-critique the presented artifacts while
+parked or after approval. A later revision returns to the gate only when it materially changes what
+was approved.
 
-When refinement materially interprets value, scope, or a load-bearing noun, summarize the plan diff and
-requirements in plain language for maintainer approval. Park as `awaiting-human-review` if approval is
-unavailable. Skip this extra gate when no refinement artifact or material requirement choice exists.
+## State
 
-### 3. Concept and architecture
+Each item lives in `.pipeline/work/<id>/`; its track registry and dependency graph live in
+`.pipeline/<track>.md`. Repository behavior comes from `pipeline.config.yml` — `verify`, `vcs`,
+`paths`, `designSystem`, `engineering.tier`, optional `worktree` and `checks` settings, and the
+`rules` slots, whose files live under `.pipeline/rules/` and are read-only to every phase.
 
-Run `/design` only for a UI decision not already determined by an approved pattern and only when a design
-system is configured. Run `/architecture` for the technical decisions needed by the WP; a trivial change
-may produce a correspondingly small plan.
+`progress.json` holds what machines read: phase, status, the dials, agreed gates and which have been
+passed, verdicts, the artifact registry — what exists for this item, where, and what each is for —
+and each round's `since` pointer. Artifact writes advance the delta pointer; re-entries read what
+changed since it, never the whole briefing again. Written state must let a cold agent resume without
+session memory.
 
-Use fresh `/design-critique` and `/architecture-critique` reviewers for artifacts that exist. Retry only
-blocking findings, with the same three-attempt discipline, completing each loop before the concept gate.
-Non-blocking defects and notes are retained for visibility but are not assigned automatically.
+Structure is agreed per item and recorded in the plan; the registry is how tooling finds it. Never
+read or mutate another item's folder except a declared dependency.
 
-The concept gate is mandatory: no build starts until the maintainer approves the design and architecture
-together. Summarize the product/UX choices, contracts, trade-offs, end-to-end evidence plan, and open
-blockers in plain language; do not present rubric scores. For UI, render the reviewed design so the
-maintainer reviews the surface rather than prose. Park as `awaiting-human-review` when approval is
-unavailable; do not revise or re-critique the presented artifacts while parked or after approval. Never
-auto-approve, and never treat "routine" or "backend-only" as a skip reason.
+## Isolation
 
-A later revision returns to the gate only when it materially changes the approved concept — user-visible
-surface, public contract, dependency, or an approved trade-off. A confined amendment re-runs its critique
-and returns to build.
+- **Enter the worktree before reading the item.** Create it with the configured workflow, cut from the
+  current remote default branch — a stale local base hides registered work and reintroduces reverted
+  code.
+- **Bootstrap only when the worktree is new or stale**, using the configured command.
+- **Run the configured contamination and cleanup checks** before any commit or removal. Never invent a
+  cleanup command.
+- **Preserve an unrelated dirty tree**, and stop if safe isolation or required bootstrap is impossible.
+- **Item IDs stay inside `.pipeline/**`.** Derive worktree, branch, commit and PR names from the
+  domain title.
 
-### 4. Build
+## Roles and dispatch
 
-Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`. Where a new
-automated test would be disproportionate, other reliable evidence stands in only if `architecture.md` or
-`{{rules.testing}}` names it. The build must produce the end-to-end evidence named in `architecture.md`.
-Run `/write-docs` only for an explicit docs deliverable or authoritative docs made false by the change.
+Conduct the interviews yourself; they are how you learn enough to act for the maintainer later.
 
-Default to one builder subagent. When `architecture.md` names multiple leaves, decide sequential vs
-parallel and the subagent count for that wave — do not fan out by habit. Each parallel leaf gets an
-isolated bootstrapped worktree, explicit owned writes, start commit, dependency receipts, and focused
-verification. No leaf writes shared surfaces without ownership. Without per-writer isolation, run the
-same leaves sequentially. Integrate complete leaves in dependency order; never integrate partial work.
-If an upstream amendment invalidates descendants, mark and replay them rather than reusing stale
-receipts. Verify real cross-leaf seams.
+Everything else is dispatched. **Spawn a subagent to keep work out of your context, not because a
+task feels like someone else's job** — a planner reads widely and reports back, a builder writes
+tests, code, docs and fixes, a reviewer evaluates and never repairs its own findings.
 
-Resume an interrupted builder from its last task commit — assess the working tree and continue rather
-than restarting the phase. Where the host supports skill-load hooks, mechanical check results arrive
-injected at skill load (`hooks/skill-load-inject`); where it does not, run the checks once before a
-retry round and inject the results into the brief. On repository/plan contradiction, return to the
-owning phase. Do not let the builder redesign or let the orchestrator create scope.
+Every spawn carries a brief and nothing else: item id, role, the exact reading list, the output
+contract, and — for a retry — only the blocking findings plus what changed since. No conversation
+history, no re-narration of earlier attempts. Every output contract also asks for whatever the plan
+left unclear; fold that into `## Confusions`. Order the brief stable content first.
+Where the host injects context when an agent starts, that is how state arrives; otherwise put the
+snapshot digest in the brief yourself. Say so in the run summary when a host cannot inject, rather
+than giving every host the weaker treatment.
 
-### 5. Implementation review
+**Fan out only for homogeneous work** — the same thing done many times, sharing one topic and
+context. Run anything heterogeneous sequentially. Parallel leaves need isolated worktrees,
+explicit owned writes, dependency receipts, and focused verification; without per-writer isolation,
+run them sequentially regardless.
 
-Where the host supports skill-load hooks, check results (`checks.preSpawn` or `{{verify}}`) and the WP
-diff arrive injected at skill load; where it does not, run the checks once before spawning the reviewer
-and inject the results with the snapshot digest. The reviewer judges injected results instead of
-re-running them. Before review, choose its runtime shape as deliberately as a build wave: one
-reviewer, sequential reviewers, or parallel reviewers. Default to one fresh reviewer over the complete
-integrated diff because one reviewer can follow behavior across seams. Split only when distinct risk
-areas justify independent attention. Split reviewers work independently; finish with one reviewer
-assessing the complete integrated change and combined findings.
+Freshness belongs at phase boundaries, continuity within a loop: keep the same builder across its
+retries and the same reviewer across its evaluations when the host lets you resume one. When it does
+not, start the next attempt from the previous attempt's delta rather than a cold reconstitution.
 
-`DONE` requires every AC to pass and no blocking finding. Send only blocking findings to the builder,
-then run focused verification and fresh review. Non-blocking findings never enter retry, and the
-orchestrator may not upgrade them to blocking — a new concern needs a new evaluation with new evidence.
-Count completed evaluations, not sessions or interrupted runs.
-Each retry must use a changed strategy. After three unsuccessful evaluations the orchestrator adjudicates:
-keep building with a changed strategy, or return to `/architecture` (and `/design` when the surface is
-implicated) with the findings as evidence, re-run its critique, and rebuild. Each adjudication resets the
-evaluation count. Adjudicate at most twice, then park as `awaiting-human-review` with the standing
-findings, both adjudications, and the decision needed.
+## Running an item
 
-After `DONE`, summarize delivered outcomes, AC evidence, material trade-offs, and non-blocking
-limitations — including carried-forward defects and follow-ups from earlier rounds — for final human
-approval. Park until approved; never auto-approve the built result.
+**Preflight.** Resolve targets and dependency order. Confirm the registry entry, a seed with the
+dials estimated, `pipeline.config.yml` with the rule files its slots name present, and an isolated
+bootstrapped worktree. Skip an item already done. A blocked dependency blocks its descendants.
 
-### 6. Retro and ship
+**Agree the shape.** Run `/refine` when what is wanted is unresolved, and `/program-design` when the
+approach is not obvious — either, both, or neither, on ambiguity. Then agree with the maintainer how
+this item will be worked and where the gates are, and write it into the plan.
 
-Run `/retro` after final approval. Retro is the final mutable observation phase. Then run `/ship`, which
-commits all intended state, verifies from a clean tree, opens/updates the PR, and waits for required CI.
-Any later mutation explicitly re-enters ship and repeats final verification. Stop at a CI-green
-merge-ready PR; a human merges.
+**Optional rounds.** Run `/design` only for a user-facing decision not already settled by an approved
+pattern, and only when a design system is configured. Run `/architecture` only where scope and
+complexity make contracts, types and schemas genuinely necessary — the technical interpretation of a
+plan that already exists, not a substitute for one. Where ambiguity is high, dispatch planner
+subagents into these rounds to bring evidence back; treat a poor result as a bad brief to fix, not an
+answer to accept.
+
+**Build.** Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`. Run
+`/write-docs` only for an explicit docs deliverable or authoritative docs the change makes false.
+Default to one builder; fan out only under the homogeneity rule. Integrate complete leaves in
+dependency order and verify real seams. Resume an interrupted builder from its last commit. On a
+contradiction between plan and repository, return to the maintainer, not to invention.
+
+**Review depth is agreed with the gates and written into the plan**, not chosen later by whoever
+reviews:
+
+| complexity × exposure | review |
+|---|---|
+| bugfix, internal detail | none |
+| bugfix on a user-facing surface, or a feature internally | you review it yourself |
+| feature or larger, or anything touching a public contract | one fresh reviewer over the integrated diff |
+| suite or product | reviewed in phases |
+
+Where the dials disagree, take the deeper row. Send only blocking findings back. Non-blocking findings and
+notes are carried forward verbatim to the final summary; they never spawn a round, and you may not
+promote one to blocking — a new concern needs a new evaluation with new evidence.
+
+**Retro and ship.** Run `/retro` after the maintainer approves the result, then `/ship`, which
+commits, verifies from a clean tree, opens or updates the PR, and waits for CI. Any later mutation
+re-enters ship. Stop at a CI-green merge-ready PR; a human merges.
+
+## Critique
+
+Spawn a critique — `/architecture-critique` for architecture, a fresh reviewer for code — when a
+decision is worth challenging. Skip it for low-exposure work. After a scope-bearing change, re-spawn
+one over the delta alone; leave everything it already judged as judged.
+
+**When an attempt fails for the same reason as the one before it, stop attempting.** Raise ambiguity,
+add a gate to the plan, and take what you have to the maintainer. Never try again with the same
+understanding.
+
+## When the plan changes
+
+The maintainer may change the plan at any time, including while work is in flight. What happens to
+that work is a discussion, scaled to the change: sometimes the worker and its output are abandoned,
+sometimes a little code is adjusted. Decide it with them. Never silently continue against a plan that
+no longer exists, and never respond by discarding work products wholesale.
 
 ## Failure and completion
 
-Use precise states such as `blocked`, `awaiting-human-review`, `not-done`, and `done`, with evidence and
-the smallest action needed to resume. Lack of a human is a parked state, not approval and not failure.
+Use precise states — `in-progress`, `blocked`, `awaiting-human-review`, `done` — each with evidence
+and the smallest action needed to resume. Always return a concise outcome summary: what completed,
+skipped or blocked, delivered behavior, verification, PR and CI state, and decisions needed. Carry
+forward the non-blocking findings. Do not create cleanup work from observations.
 
-Always return a concise outcome summary: completed/skipped/blocked WPs, delivered behavior, verification,
-PR/CI state, and decisions needed. Do not create cleanup work from non-blocking observations.
-
-After several completed WPs, `/compound` may analyze accumulated retros. It proposes changes for human
-approval and never mutates pipeline policy automatically.
+After several completed items, `/compound` may analyze accumulated retros and propose changes for
+maintainer approval. It never mutates pipeline policy automatically.
 
 ## Target
 

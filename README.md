@@ -156,7 +156,7 @@ Do not choose `critical` merely because software is deployed or stores real user
 
 ### Injected evidence at skill load
 
-Where the host supports skill-load hooks ([`hooks/skill-load-inject.mjs`](hooks/skill-load-inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
+Where the host supports skill-load hooks ([`hooks/inject.mjs`](hooks/inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
 
 **This runs `checks.preSpawn` (or `verify`) as a shell command.** A hook executes directly, so it is not covered by the host's tool-permission prompts: whatever that line contains runs when a pipeline skill loads. Point it only at commands the repository owns, and review changes to it as you would a CI workflow.
 
@@ -166,7 +166,7 @@ Where the host supports skill-load hooks ([`hooks/skill-load-inject.mjs`](hooks/
 | `PIPELINE_CHECK_TIMEOUT_MS` | `45000` | check-command timeout; on timeout the last cached result is injected, marked `STALE` |
 | `PIPELINE_INJECT_MAX_LINES` | `300` | per-section truncation for checks, diff, and injected artifacts |
 
-Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a skill load never breaks on this hook. See [`docs/host-capabilities.md`](docs/host-capabilities.md) for per-host support.
+Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a spawn never breaks on this hook.
 
 ### Steer skills with project rules
 
@@ -176,7 +176,7 @@ The skills are deliberately generic — repo-specific knowledge (test layout, wh
 rules:
   code: .pipeline/rules/typescript.md       # → write-code, architecture, architecture-critique, review
   testing: .pipeline/rules/testing.md       # → write-tests, architecture, architecture-critique, review, pipeline
-  design-system: .pipeline/rules/design.md  # → design, design-critique, write-code, review
+  design-system: .pipeline/rules/design.md  # → design, write-code, review
   security: .pipeline/rules/security.md     # → architecture, architecture-critique, write-code, review
 ```
 
@@ -187,10 +187,11 @@ Rule files live under `.pipeline/rules/` so every host reads the same ones — n
 | `code` | write-code, architecture, architecture-critique, review | language / type / style conventions |
 | `testing` | write-tests, architecture, architecture-critique, review, pipeline | what counts as a test, layout, lanes/fixtures |
 | `architecture` | architecture, architecture-critique, write-code, review | architecture invariants & conventions |
-| `design-system` | design, design-critique, write-code, review | component budget, tokens, reuse-before-build, promotion |
-| `frontend` | design, design-critique, write-code, review | client / UI conventions |
-| `visual` | design, design-critique, review | visual fidelity / regression policy |
-| `aesthetics` | design, design-critique | aesthetic quality bar |
+| `taste` | refine, program-design, pipeline | standing conventions for how this repo likes things done |
+| `design-system` | design, write-code, review | component budget, tokens, reuse-before-build, promotion |
+| `frontend` | design, write-code, review | client / UI conventions |
+| `visual` | design, review | visual fidelity / regression policy |
+| `aesthetics` | design | aesthetic quality bar |
 | `security` | architecture, architecture-critique, write-code, review | security policy / threat model |
 | `docs` | write-docs, review | documentation voice & conventions |
 
@@ -198,7 +199,7 @@ This is how one repo makes `/review` enforce its own reuse-before-build rule, or
 
 ## The skills
 
-`refine` · `design` · `architecture` · `refine-critique` · `design-critique` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
+`refine` · `program-design` · `design` · `architecture` · `architecture-critique` · `write-tests` · `write-code` · `write-docs` · `review` · `retro` · `ship` · `compound` · `lore` · `setup` · `work-planning` · `pipeline`
 
 Run a whole work package through every applicable phase with `/pipeline <id>`. After several work packages, run `/compound` to mine the retro log for recurring patterns and propose process fixes. Use `/lore` anytime to capture or surface tribal knowledge.
 

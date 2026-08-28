@@ -22,7 +22,6 @@
     "scripts/install-opencode.sh",
     "scripts/pipeline-snapshot.mjs",
     "pipeline.config.example.yml",
-    "docs/host-capabilities.md",
     "README.md",
     "LICENSE"
   ],

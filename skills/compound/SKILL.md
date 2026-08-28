@@ -9,12 +9,12 @@ user-invocable: true
 
 # Compound
 
-Read the candidate tracker at `.pipeline/compound-candidates.md` — the durable memory of prior patterns —
-before reading every `.pipeline/work/*/retro.jsonl`. Create the tracker empty if it does not exist. Group
-observations only when they describe the same behavioral mechanism. Three independent occurrences qualify
-a pattern for consideration; they do not prove the diagnosis or authorize a change.
+Read the candidate tracker at `.pipeline/compound-candidates.md` before reading the cross-item archive `.pipeline/retro.jsonl` (shipped items) and every
+`.pipeline/work/*/retro.jsonl` still present (in flight). A pattern spanning both is one pattern. If the tracker does not exist, create it with a title and no rows. Group
+observations only when they describe the same behavioral mechanism. Three independent occurrences qualify a pattern for consideration; they do not prove the
+diagnosis.
 
-Classify patterns as emerging, confirmed, contradicted, or resolved. For each confirmed pattern report:
+Classify patterns as emerging, confirmed, contradicted, or resolved. Report each confirmed pattern to the maintainer with:
 
 - occurrences and evidence;
 - likely mechanism and competing explanation;
@@ -22,8 +22,11 @@ Classify patterns as emerging, confirmed, contradicted, or resolved. For each co
 - one smallest proposed process/skill change;
 - expected benefit, regression risk, and how to validate it.
 
-Propose; never apply. Do not delete history, convert anecdotes into mandates, bundle unrelated changes,
-or optimize a metric without checking downstream quality. Update tracker state and retain contradiction
+Recurring `divergence` observations propose an amendment to the `taste` rule slot rather than a skill
+change; quote the corrections it would have prevented. Never propose one from a single correction.
+
+Propose; never apply. Do not delete history, convert anecdotes into mandates, or bundle unrelated
+changes. Update tracker state and retain contradiction
 and resolution evidence. Human approval is required before any policy mutation.
 
 ## Target

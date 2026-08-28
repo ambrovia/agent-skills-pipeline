@@ -1,6 +1,6 @@
 ---
 name: work-planning
-description: "Create and register an outcome-level work-package spec in `.pipeline/`. Maintainer-only. Use when a maintainer asks to add, split, or reshape a work package under a track. Do not use during an active pipeline run or for implementation planning."
+description: "Register a work item under a track and seed its interview. Maintainer-only. Use when a maintainer asks to add, split, or reshape a work item. Does not write the plan — the plan is written with the maintainer during refinement."
 phase: 0
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
@@ -10,30 +10,31 @@ user-invocable: true
 
 # Work planning
 
-Create the smallest independently valuable work package the pipeline can execute. Define what must
-become true and why; leave design and implementation decisions to later phases.
+Register the smallest independently valuable item the pipeline can execute, and leave it ready for
+the interview that writes its plan. Establish that the work is worth doing and where it sits in the
+track; decide nothing about how it will be done.
 
 ## Authority boundary
 
 Only a maintainer may invoke this skill. `/pipeline` and pipeline-spawned agents must never create or
-expand work-package scope. During a pipeline run, missing or unstable scope is a blocker requiring
-maintainer input, not permission to invoke `/work-planning`.
+expand item scope. During a run, missing or unstable scope is a blocker requiring maintainer input,
+not permission to invoke `/work-planning`.
 
-The approved `plan.md` owns the work package's required outcomes, acceptance criteria, scope, and
-intent. Later artifacts may explain or constrain an in-scope solution, but may not add required
-outcomes silently. A new outcome requires an approved plan amendment or a separate work package.
+This skill does not write the plan's content. It creates `plan.md` with its headings and a seed under
+the first; `/refine` and `/program-design` fill it with the maintainer. Leave enough for the interview
+to start from and nothing that pre-empts it.
 
 ## Before registering
 
-Confirm the pipeline itself is configured before registering work against it: `pipeline.config.yml`
-exists with a working `verify`, `paths`, `vcs`, and `engineering.tier`, and every rule slot it declares
-points at a file that is actually present. If setup was never run, or a slot this work will depend on is
-empty without a recorded decision, say so and offer `/setup` first.
+Confirm the pipeline is configured before registering work against it: `pipeline.config.yml` exists
+with `verify`, `paths`, `vcs` and `engineering.tier` set, and every rule slot it declares pointing at
+a file that is present. If the config is missing, or a slot this work will depend on is empty with no
+comment saying that is deliberate, say so and offer `/setup` first.
 
-Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`, and
-enough source to understand the existing capability. Ask only questions whose answers would materially
-change the outcome, boundary, or acceptance criteria. Offer an evidence-based read for the maintainer to
-confirm or correct.
+Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`,
+and enough source to understand the existing capability. Ask only questions whose answers would
+change whether this item should exist or where it sits. Offer an evidence-based read for the
+maintainer to confirm or correct.
 
 Confirm:
 
@@ -43,125 +44,81 @@ Confirm:
    rebuild an existing capability. Use focused exploration when the answer is not readily visible.
 3. **Stable frame:** The track's shared strategic boundary or load-bearing primitive is established in
    configured project documentation. If it is missing or contested, stop for maintainer resolution.
-   A WP-specific detail may instead be marked for refinement.
-4. **Tier:** Confirm the customer-based engineering tier from `pipeline.config.yml` `engineering.tier`:
-   `prototype`, `mvp`, `production`, or `critical`. Deployment or real data alone does not imply
-   `critical`. Record an explicit reason for any WP override of the project or track tier.
-5. **Dependencies:** Keep only dependencies that make this WP impossible to implement or verify before
-   the dependency is done. Related work is not automatically a dependency.
-6. **Identity:** Use a valid track and a unique WP ID. Exact and derived WP IDs must remain inside
+4. **Dependencies:** Keep only dependencies that make this item impossible to implement or verify
+   before the dependency is done. Related work is not automatically a dependency.
+5. **Identity:** Use a valid track and a unique item ID. Exact and derived IDs must remain inside
    `.pipeline/**`, including in VCS and PR metadata.
 
-Do not register research, exploration, or findings as the deliverable. Perform enough investigation to
-scope the observable change, then register the work that acts on it. A code-health WP is valid only when
-it names an observable system or engineering outcome and has verifiable ACs.
+Do not register research, exploration, or findings as the deliverable. Investigate enough to scope
+the observable change, then register the work that acts on it.
 
-## Choose a workable size
+## Estimate the dials
 
-Size describes scheduling cost, not importance:
+The three per-item dials start here and are re-questioned throughout the run. Estimate them with the
+maintainer, default to the shallow end, and record them as provisional.
 
-| Size | Typical shape | Scheduling default |
+| dial | ask | shallow ← → deep |
 |---|---|---|
-| `S` | Focused change, normally one subsystem and at most three ACs | May batch with nearby `S` work |
-| `M` | One substantial outcome or contract, normally completed in a focused session/day | Run alone |
-| `L` | Multi-day or genuinely cross-system outcome | Run alone; consider splitting |
+| complexity | how big is the work? | bugfix · feature · suite · product |
+| ambiguity | how clear is the topic? | established context · new context, little knowledge · we do not yet know what we want |
+| exposure | how far does it reach? | internal detail · user-facing surface · public contract |
 
-Prefer the smallest package that remains independently observable and valuable. Split when outcomes can
-ship independently, when dependencies differ, or when the package cannot be reviewed coherently. Do not
-split merely to satisfy a bullet count, and do not call work `S` merely to make it batchable.
+`engineering.tier` comes from `pipeline.config.yml` and applies to every item in the repository.
 
-## Write the plan
+## Seed the plan
 
-Create `.pipeline/work/<id>/plan.md` with exactly these top-level sections:
+Create `.pipeline/work/<id>/plan.md` with the five headings the run will fill, and write the seed
+under the first:
 
 ```markdown
 # <ID> — <Title>
 
-## Work package
+## What we need
 
-**Outcome.** <Who can observe what new result, and why it matters.>
+**Why this exists.** <Who benefits, what improves, the cost of not doing it.>
 
-**Why this matters.** <Beneficiary, value, and cost of not doing it.>
+**What exists today.** <Relevant current capability.>
 
-**What exists today.** <Relevant current capability; concise for small changes.>
+**Missing delta.** <The specific gap this item closes.>
 
-**Missing delta.** <The specific gap this WP closes.>
+**Depends on.** <Item IDs with one-sentence blocker reasons, or None.>
 
-**Depends on.** <WP IDs with one-sentence blocker reasons, or None.>
+**Dials (provisional).** complexity: … · ambiguity: … · exposure: …
 
-**Complexity.** S | M | L
+## How it works
 
-**Engineering tier.** prototype | mvp | production | critical
+## How we work on this
 
-**Pre-build.** <Refinement/design needed, with a concrete trigger; otherwise Not required.>
+## Confusions
 
-**Constraints.** <Approved hard boundaries the solution must honor, or None.>
-
-**Out of scope.** <Plausible adjacent outcomes explicitly excluded.>
-
-## Acceptance criteria
-
-- <Observable condition that must be true.>
-
-## Validation scenarios
-
-- Given <context>, when <action>, then <observable result>.
+## Proposed items
 ```
 
-Keep the seed proportional. Small, already-understood changes should have short plans. Add detail only
-when it removes a real ambiguity about scope or observable behavior.
+The four headings after the seed stay empty; refinement, program design and the run fill them. Write
+no acceptance criteria and no plan for which phases will run. Keep the seed short.
 
-### Acceptance criteria
+## Register
 
-Each AC must be independently decidable as pass or fail and must describe an outcome, not a preferred
-implementation. Avoid file paths, types, schemas, libraries, component layouts, migration steps, and
-other solution choices unless the maintainer explicitly approves one as a hard compatibility constraint.
+1. Write the seed to `.pipeline/work/<id>/plan.md`.
+2. Add the item to `.pipeline/<track>.md` with type, dependencies, and `planned` status, and add
+   dependency-graph edges. If the maintainer is deliberately creating a new track, create its
+   standard coordination file first.
+3. Commit the seed and coordination update together with `plan: register work item — <title>`. Never
+   include the item ID in commit metadata.
 
-Collectively, the ACs define the complete required outcome; prose, examples, scenarios, downstream
-artifacts, and tests do not create additional requirements. For compound behavior, make each required
-condition visible rather than hiding it behind words such as "complete", "robust", or "best practice".
-
-Validation scenarios clarify representative behavior. Use as many as needed for ambiguity and no more.
-Every AC needs reliable evidence downstream, but this skill does not prescribe one new automated test
-per AC or a particular evidence format.
-
-### Applicability of later phases
-
-Record a pre-build phase only when its trigger exists:
-
-- **Refinement:** the goal or a load-bearing WP-specific noun is unresolved.
-- **Design:** the WP changes a user-facing surface and the design is not already determined by an
-  approved existing pattern. A routine extension may need only a light design pass.
-- **Neither:** backend, infrastructure, or trivial pattern-following work whose requirements are clear.
-
-Human approval policy belongs to the orchestrator. Do not duplicate a universal gate count here. Record
-only WP-specific reasons that a concept decision needs explicit maintainer review.
-
-## Register the work package
-
-1. Create `.pipeline/work/<id>/plan.md`.
-2. Add the WP to `.pipeline/<track>.md`, including type, size, dependencies, and `planned` status. Add
-   dependency-graph edges. If the maintainer is deliberately creating a new track, create its standard
-   coordination file first.
-3. Run `{{verify}}` and any cheaper configured coordination check. Fix only failures caused by this
-   registration; report unrelated pre-existing failures accurately.
-4. Commit the plan and coordination update together with `plan: register work package — <title>`.
-   Never include the WP ID in commit metadata.
-
-After registration, return control to the maintainer. Do not invoke refinement, design, architecture,
-or the pipeline unless separately requested.
+Then return control to the maintainer. Do not invoke refinement, program design, or the pipeline
+unless separately requested.
 
 ## Stop without registering when
 
-- The outcome, beneficiary, or missing delta is not credible.
-- The strategic frame or tier needs a maintainer decision.
+- The beneficiary or missing delta is not credible.
+- The strategic frame needs a maintainer decision.
 - The proposed deliverable is investigation rather than an observable change.
-- The ACs cannot be separated from unresolved design or implementation choices.
-- The WP duplicates existing behavior, creates a dependency cycle, or cannot be made independently
+- The item duplicates existing behavior, creates a dependency cycle, or cannot be made independently
   coherent without reshaping scope.
 
-State what is unresolved and the smallest decision or investigation needed to continue. Do not invent
-the answer to make registration succeed.
+State what is unresolved and the smallest decision needed to continue. Do not invent the answer to
+make registration succeed.
 
 ## Target
 
