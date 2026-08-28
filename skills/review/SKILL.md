@@ -73,8 +73,8 @@ surface, or subsystem nobody asked for blocks and comes out. Judge it by what th
 style — local verbosity is a non-blocking defect.
 
 Return `DONE` only when all ACs pass and no blocking finding remains; otherwise `NOT DONE`. Write the
-findings, AC table, and verdict to `.pipeline/work/<id>/review.md` when the run persists state, or return
-them for the orchestrator to persist. Send only blocking findings to the builder. Report positive evidence
+findings, AC table, and verdict to `.pipeline/work/<id>/review.md` when that folder exists; otherwise
+return them to whoever asked. Send only blocking findings to the builder. Report positive evidence
 too. Never edit code or turn optional hardening, polish, adjacent cleanup, or personal preference into a
 finding.
 

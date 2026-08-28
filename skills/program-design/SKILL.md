@@ -12,7 +12,7 @@ user-invocable: true
 Work out with the maintainer how the thing actually works — what happens, in what order, and why
 that way rather than another. Like `/refine`, this is a conversation you conduct yourself.
 
-Its output is the second half of `plan.md`: an explanation someone could read once and understand.
+Its output is the `## How it works` section of the item's plan: an explanation someone could read once and understand.
 
 Plain words only. If a sentence could not be said out loud to someone who knows the domain but not
 the codebase, it belongs in `/architecture`, not here.

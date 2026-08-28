@@ -35,7 +35,7 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
 2. Ensure the retro (when an item ran) and every intended change are present. Stage deliberately —
    inspect the worktree, commit intended changes with domain-based messages, revert unintended ones, and
    never stage the whole tree blindly. Never put an item ID in branch, commit, or PR metadata.
-3. When pipeline state exists, update it consistently and commit it before final verification.
+3. Bring `progress.json` up to date and commit it before final verification.
 4. Reconcile the target branch using the project's non-destructive VCS workflow. Never force-push shared
    history. On semantic conflict, return to implementation/review rather than improvising a fix here.
 5. Run `{{verify}}` from a clean committed tree and wait for it to finish — an interrupted, backgrounded,
@@ -44,9 +44,10 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
 6. If `{{vcs}}` is `none`, ship ends here — the work is committed and verified, with no PR or CI.
    Otherwise push and open or update a non-draft PR using `{{vcs}}`. Summarize outcome, evidence, and
    known non-blocking limitations without internal item identifiers.
-7. Wait for required CI. If CI fails, diagnose from the failing check's log, return to the owning phase,
-   and re-enter ship with a changed strategy; any mutation repeats verification from step 5. After three
-   failed attempts, stop and record the work blocked.
+7. Wait for required CI. If CI fails, diagnose from the failing check's log, hand the failure back to
+   whoever owns it — the builder for code, the maintainer for anything the plan got wrong — and
+   re-enter ship with a changed strategy; any mutation repeats verification from step 5. After three
+   failed attempts, stop and report the item blocked with the failing check and what you tried.
 
 Stop at a CI-green merge-ready PR. A human decides whether to merge. Tag or release only when
 explicitly requested and configured.

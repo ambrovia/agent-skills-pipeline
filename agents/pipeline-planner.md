@@ -52,7 +52,7 @@ Everything for a WP lives under `.pipeline/work/<id>/`. Read the approved artifa
 phases and write only the artifact owned by the active skill. Update `plan.md` only through an explicit
 scope, AC, tier, or intent change.
 
-Plans must explain the decisions a cold builder needs without transcribing implementation. Design must
+What you write must explain the decisions a cold builder needs without transcribing implementation. Design must
 resolve consequential user experience without specifying unreachable states or optional polish as
 requirements. Architecture must define necessary contracts, dependencies, ownership, and verification
 without turning every possible concern into work.

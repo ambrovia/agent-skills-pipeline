@@ -20,16 +20,16 @@ Only a maintainer may invoke this skill. `/pipeline` and pipeline-spawned agents
 expand item scope. During a run, missing or unstable scope is a blocker requiring maintainer input,
 not permission to invoke `/work-planning`.
 
-This skill does not write the plan. `plan.md` is written with the maintainer in `/refine` and
-`/program-design`, and it is theirs. What this skill leaves behind is a seed: enough for the
-interview to start from, and nothing that pre-empts it.
+This skill does not write the plan's content. It creates `plan.md` with its headings and a seed under
+the first; `/refine` and `/program-design` fill it with the maintainer. Leave enough for the interview
+to start from and nothing that pre-empts it.
 
 ## Before registering
 
 Confirm the pipeline is configured before registering work against it: `pipeline.config.yml` exists
-with a working `verify`, `paths`, `vcs`, and `engineering.tier`, and every rule slot it declares
-points at a file that is present. If setup was never run, or a slot this work will depend on is empty
-without a recorded decision, say so and offer `/setup` first.
+with `verify`, `paths`, `vcs` and `engineering.tier` set, and every rule slot it declares pointing at
+a file that is present. If the config is missing, or a slot this work will depend on is empty with no
+comment saying that is deliberate, say so and offer `/setup` first.
 
 Read the relevant track file, `pipeline.config.yml`, the project documentation under `{{paths.docs}}`,
 and enough source to understand the existing capability. Ask only questions whose answers would
@@ -94,9 +94,8 @@ under the first:
 ## Proposed items
 ```
 
-Leave the four empty headings empty; refinement, program design and the run fill them. Write no
-acceptance criteria and no plan for which phases will run — those come out of the interview. Keep the
-seed short.
+The four headings after the seed stay empty; refinement, program design and the run fill them. Write
+no acceptance criteria and no plan for which phases will run. Keep the seed short.
 
 ## Register
 

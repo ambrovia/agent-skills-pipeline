@@ -35,7 +35,7 @@ Obtain user approval before modifying code.
 
 ## Index
 
-List current lore by kind and location, including contradictions, stale entries, and any that have
+List current lore by kind — constraint, workaround, hazard, trade-off — and location, including contradictions, stale entries, and any that have
 grown past a line or two. Terse entries; no conversational framing. Do not edit — report.
 
 Missing lore blocks an item only when a non-obvious invariant would otherwise be lost as its working

@@ -13,7 +13,7 @@ Find out what the maintainer actually wants, and record it well enough that you 
 later when they are not in the room. This is a conversation, not a handoff — you conduct it yourself
 and you do not spawn an agent to have it for you.
 
-Its output is the user-needs half of `plan.md`, in the maintainer's own language.
+Its output is the `## What we need` section of the item's plan, in the maintainer's own language.
 
 ## When it runs
 
@@ -21,8 +21,8 @@ Ambiguity decides. Run when the goal, the boundary, the beneficiary, or a load-b
 unresolved. Skip when the seed already answers those; a bugfix in an established context needs no
 interview.
 
-Read the seed in `.pipeline/work/<id>/plan.md`, the track's strategic frame, the project truth under
-`{{paths.docs}}` it cites, and enough current behavior to ask informed questions.
+Read the seed in `.pipeline/work/<id>/plan.md`, the track's strategic frame in the project
+documentation under `{{paths.docs}}`, and enough current behavior to ask informed questions.
 
 ## How to interview
 

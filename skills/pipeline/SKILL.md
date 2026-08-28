@@ -56,7 +56,7 @@ round is likewise proposed, not decided.
 
 | dial | governs |
 |---|---|
-| **complexity** — bugfix · feature · suite · product | orchestration: how work is broken down, how many agents, how waves and slices are staged |
+| **complexity** — bugfix · feature · suite · product | orchestration: how the work is broken into pieces, how many agents run, and in what order |
 | **ambiguity** — established context · new context · not yet knowing what we want | ceremony: how much interview, whether design and architecture rounds run at all |
 | **exposure** — internal detail · user-facing surface · public contract | scrutiny: how independent review is and how deep it goes |
 
@@ -105,7 +105,8 @@ and each round's `since` pointer. Artifact writes advance the delta pointer; re-
 changed since it, never the whole briefing again. Written state must let a cold agent resume without
 session memory.
 
-Structure is agreed per item and recorded in the plan; the registry is how tooling finds it. Never read or mutate another item's folder except a declared dependency.
+Structure is agreed per item and recorded in the plan; the registry is how tooling finds it. Never
+read or mutate another item's folder except a declared dependency.
 
 ## Isolation
 
@@ -131,9 +132,9 @@ Every spawn carries a brief and nothing else: item id, role, the exact reading l
 contract, and — for a retry — only the blocking findings plus what changed since. No conversation
 history, no re-narration of earlier attempts. Every output contract also asks for whatever the plan
 left unclear; fold that into `## Confusions`. Order the brief stable content first.
-Where the host injects context at spawn, that is how state arrives; otherwise put the digest in the
-brief. Prefer the cheapest injection mechanic the host supports; record a missing capability as a gap
-rather than downgrading every host to it.
+Where the host injects context when an agent starts, that is how state arrives; otherwise put the
+snapshot digest in the brief yourself. Say so in the run summary when a host cannot inject, rather
+than giving every host the weaker treatment.
 
 **Fan out only for homogeneous work** — the same thing done many times, sharing one topic and
 context. Run anything heterogeneous sequentially. Parallel leaves need isolated worktrees,
@@ -141,8 +142,8 @@ explicit owned writes, dependency receipts, and focused verification; without pe
 run them sequentially regardless.
 
 Freshness belongs at phase boundaries, continuity within a loop: keep the same builder across its
-retries and the same reviewer across its evaluations where the host keeps sessions warm; where it
-does not, the next round starts from the previous round's delta, not a cold reconstitution.
+retries and the same reviewer across its evaluations when the host lets you resume one. When it does
+not, start the next attempt from the previous attempt's delta rather than a cold reconstitution.
 
 ## Running an item
 
@@ -164,7 +165,7 @@ answer to accept.
 **Build.** Assign `/write-tests` where automated red evidence is appropriate, then `/write-code`. Run
 `/write-docs` only for an explicit docs deliverable or authoritative docs the change makes false.
 Default to one builder; fan out only under the homogeneity rule. Integrate complete leaves in
-dependency order and verify real seams. Resume an interrupted builder from its last task commit. On a
+dependency order and verify real seams. Resume an interrupted builder from its last commit. On a
 contradiction between plan and repository, return to the maintainer, not to invention.
 
 **Review depth is agreed with the gates and written into the plan**, not chosen later by whoever

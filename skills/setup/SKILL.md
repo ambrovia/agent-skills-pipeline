@@ -22,7 +22,7 @@ pipeline run may not edit them.
 voice, not a derived best practice. Seed it from what they tell you, never from what the codebase
 implies. Empty is a good starting state.
 
-On a first run, propose the slots most repositories need rather than only the ones asked for: `code`,
+When `pipeline.config.yml` does not exist yet, propose the slots most repositories need rather than only the ones asked for: `code`,
 `testing`, and `security` at minimum, plus `design-system` and `frontend` wherever a UI exists. Reason
 each one from current best practice for this stack and what the repository already does. Leaving a slot
 `null` is a legitimate answer, but it should be a recorded maintainer decision — an empty slot quietly
@@ -35,7 +35,7 @@ patterns. Distinguish:
 - a future policy the maintainer may choose;
 - conditional guidance or a generic suggestion.
 
-For an established repository, also inspect available retros, compound candidates, and lore. For each
+Where retros, compound candidates, or lore already exist, inspect those too. For each
 recurring lesson, identify whether the generic pipeline already handles it, it should become a repository
 rule, or it is no longer applicable. Never promote a historical observation automatically.
 
