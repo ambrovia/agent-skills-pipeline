@@ -40,7 +40,7 @@ There is no fixed sequence. How much ceremony an item gets is set by three dials
 | [`personas/`](personas/) | Persona source of truth; [`scripts/generate-agents.mjs`](scripts/generate-agents.mjs) renders every host format below |
 | [`agents/`](agents/) | Claude-format `pipeline-planner` / `pipeline-reviewer` / `pipeline-builder` personas (generated) |
 | [`agents-cursor/`](agents-cursor/) | Cursor-format personas (`model: inherit`, generated) |
-| [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards and skill-load evidence injection (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
+| [`hooks/`](hooks/) | Session-start + edit-streak + thrash guards, and spawn-time evidence injection (Claude, Cursor, Gemini, Copilot, Codex, opencode) |
 | [`.claude-plugin/`](.claude-plugin/) | Claude Code plugin + marketplace |
 | [`.cursor-plugin/`](.cursor-plugin/) | Cursor plugin + Team Marketplace |
 | [`.codex-plugin/`](.codex-plugin/) | Codex plugin (+ [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)) |
@@ -94,7 +94,7 @@ scripts/install-cursor.sh /path/to/project  # or --project: copy into .cursor/
 
 ### Codex — plugin
 
-[`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) + [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Plugin install gives skills, `agents/openai.yaml`, and silent Codex hook wrappers in `hooks/hooks.json`.
+[`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) + [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Plugin install gives skills, `agents/openai.yaml`, and the Codex hook wiring in `hooks/hooks.json`.
 
 ```text
 codex plugin marketplace add ambrovia/agent-skills-pipeline
@@ -164,19 +164,37 @@ The **engineering tier** is load-bearing and is chosen by customer, not by aspir
 
 Do not choose `critical` merely because software is deployed or stores real user data. Feature flags, audit systems, elaborate observability, formal rollback machinery, exhaustive fallbacks, and speculative abstractions require a concrete customer, regulatory, contractual, or blast-radius need. At every tier, build only what the current acceptance criteria and known risks require. `engineering.tier` is set once for the repository and describes the product, not the item.
 
-### Injected evidence at skill load
+### Injected evidence when an agent starts
 
-Where the host supports skill-load hooks ([`hooks/inject.mjs`](hooks/inject.mjs)), loading a pipeline skill appends the work-package state digest — and, for `/review`, `/write-code`, `/write-tests`, fresh check results and the WP diff — to the skill result, so an agent starts with evidence instead of fetching it.
+A fresh agent should not spend its first ten tool calls working out where it is. Where the host
+supports it ([`hooks/inject.mjs`](hooks/inject.mjs)), a spawned agent's context already contains the
+item's state digest — and, by role, fresh mechanical check results and the diff.
 
-**This runs `checks.preSpawn` (or `verify`) as a shell command.** A hook executes directly, so it is not covered by the host's tool-permission prompts: whatever that line contains runs when a pipeline skill loads. Point it only at commands the repository owns, and review changes to it as you would a CI workflow.
+`SubagentStart` is the primary event: it exists on both Claude Code and Codex, and it injects into
+the *subagent's* context rather than the parent's. Claude Code additionally fires `PostToolUse` for
+the `Skill` tool, so skill-load injection works there as a supplement; Codex has no skill lifecycle
+event at all.
+
+| spawned as | receives |
+|---|---|
+| `pipeline-planner` | the state digest |
+| `pipeline-builder` | digest + check results, marked as a pre-edit baseline |
+| `pipeline-reviewer` | digest + check results + the item diff |
+
+**This runs `checks.preSpawn` (or `verify`) as a shell command.** A hook executes directly, so it is
+not covered by the host's tool-permission prompts: whatever that line contains runs when an agent
+starts. Point it only at commands the repository owns, and review changes to it as you would a CI
+workflow.
 
 | Env var | Default | Effect |
 |---|---|---|
 | `PIPELINE_SKILL_INJECT` | unset | `off` disables injection entirely — no check run, no diff, no digest |
 | `PIPELINE_CHECK_TIMEOUT_MS` | `45000` | check-command timeout; on timeout the last cached result is injected, marked `STALE` |
-| `PIPELINE_INJECT_MAX_LINES` | `300` | per-section truncation for checks, diff, and injected artifacts |
+| `PIPELINE_INJECT_MAX_LINES` | `300` | per-section truncation (60 on Codex, which truncates injected context at roughly 1k tokens) |
 
-Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a spawn never breaks on this hook.
+Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a
+pre-edit baseline from a completion gate. Every failure degrades to silence — a spawn never breaks
+on this hook.
 
 ### Steer skills with project rules
 
