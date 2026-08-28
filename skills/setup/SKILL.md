@@ -53,7 +53,7 @@ Present evidence, proposed rule text, applicability, blocking force, and trade-o
 to approve or revise it. Write only approved rules and wire only real paths; `null` deliberately means
 no repository-specific rule for that slot.
 
-Rules govern how in-scope changes are made. They do not expand work-package outcomes or retroactively
+Rules govern how in-scope changes are made. They do not expand item outcomes or retroactively
 require unrelated infrastructure. Include concrete triggers and skip conditions so consumers know when
 a rule applies. Validate configured paths and references after writing.
 

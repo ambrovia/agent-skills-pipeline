@@ -1,6 +1,6 @@
 ---
 name: write-code
-description: "Implement an approved work package or its assigned technical leaf with the smallest clear solution that satisfies its evidence and contracts. Use after requirements are approved and verification targets are known."
+description: "Implement an agreed item or its assigned technical leaf with the smallest clear solution that satisfies its evidence and contracts. Use after the plan is agreed and verification targets are known."
 phase: 4
 persona: pipeline-builder
 applies-to: [frontend, backend, application, framework, infra]
@@ -34,7 +34,7 @@ paths, perform adjacent cleanup, add speculative capability, or redesign around 
 Raise a blocker with evidence when new scope or a changed structural decision is required.
 
 Finish only when required evidence is green — including `{{verify}}` and the end-to-end evidence named in
-`architecture.md` — change-caused regressions are fixed, and the diff contains no unrelated work or WP-ID
+`architecture.md` — change-caused regressions are fixed, and the diff contains no unrelated work or item-ID
 leakage. Report pre-existing failures separately.
 
 ## Target

@@ -120,12 +120,17 @@ session memory.
 The markdown is not schema-bound. Structure is agreed per item and recorded in the plan; the registry
 is how tooling finds it. Never read or mutate another item's folder except a declared dependency.
 
-Item IDs stay inside `.pipeline/**`. Derive worktree, branch, commit and PR names from the domain
-title. Before reading the item, enter or create the correct isolated worktree using the configured
-workflow, cut from the current remote default branch rather than a possibly stale local checkout. Run
-configured bootstrap only when the worktree is new or stale. Run configured contamination and cleanup
-checks before commit or removal; never invent cleanup commands. Preserve an unrelated dirty tree, and
-stop if safe isolation or required bootstrap is impossible.
+## Isolation
+
+- **Enter the worktree before reading the item.** Create it with the configured workflow, cut from the
+  current remote default branch — a stale local base hides registered work and reintroduces reverted
+  code.
+- **Bootstrap only when the worktree is new or stale**, using the configured command.
+- **Run the configured contamination and cleanup checks** before any commit or removal. Never invent a
+  cleanup command.
+- **Preserve an unrelated dirty tree**, and stop if safe isolation or required bootstrap is impossible.
+- **Item IDs stay inside `.pipeline/**`.** Derive worktree, branch, commit and PR names from the
+  domain title.
 
 ## Roles and dispatch
 

@@ -38,8 +38,12 @@ Obtain user approval before modifying code.
 List current lore by kind and location, including contradictions or stale entries. Terse entries; no
 conversational framing. Do not edit.
 
-Missing lore blocks a WP only when an approved non-obvious invariant would otherwise be lost after its
-temporary artifacts leave active context.
+Missing lore blocks an item only when a non-obvious invariant would otherwise be lost as its working
+material is deleted at ship.
+
+Length is the whole discipline. An entry that has grown into a paragraph has stopped being lore and
+become documentation nobody asked for — cut it back to the constraint, or move it somewhere that
+wants prose.
 
 ## Target
 

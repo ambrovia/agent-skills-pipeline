@@ -1,6 +1,6 @@
 ---
 name: retro
-description: "Record concrete successes and friction after a work package, session, or pipeline run. Observe from artifacts and trajectories without fixing, assigning work, or changing process."
+description: "Record concrete successes and friction after an item, session, or pipeline run. Observe from artifacts and trajectories without fixing, assigning work, or changing process."
 phase: 6
 persona: any
 applies-to: [frontend, backend, application, framework, infra]
@@ -11,7 +11,7 @@ user-invocable: true
 
 Read available progress state, plan/coordination artifacts, VCS history, verification/review output,
 lore, and session trajectories. Append terse JSONL observations to `.pipeline/work/<id>/retro.jsonl` —
-one log per work package, never a shared file, so parallel runs append without conflicting.
+one log per item, never a shared file, so parallel runs append without conflicting.
 
 Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, or
 `divergence`), concrete observation, evidence, and optional related known pattern. One observation per
@@ -24,8 +24,8 @@ silent. These are the raw material for the `taste` rule slot: a divergence that 
 standing convention nobody has written down yet. Record it as an observation — do not write the rule
 yourself, and do not treat one maintainer correction as a convention.
 
-Close each work package with one `cost` entry: phases run, critique and review rounds, retry attempts,
-and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was
+Close each item with one `cost` entry: what ran, how many critiques and reviews, how much was
+re-done, and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was
 proportionate is only visible in aggregate, and `/compound` cannot see it otherwise.
 
 Check `.pipeline/compound-candidates.md` before writing a new free-text observation: reuse the matching
