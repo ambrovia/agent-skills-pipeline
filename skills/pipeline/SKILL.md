@@ -148,9 +148,14 @@ not, start the next attempt from the previous attempt's delta rather than a cold
 
 ## Running an item
 
-**Preflight.** Resolve targets and dependency order. Confirm the registry entry, a seed with the
-dials estimated, `pipeline.config.yml` with the rule files its slots name present, and an isolated
-bootstrapped worktree. Skip an item already done. A blocked dependency blocks its descendants.
+**Preflight.** Resolve targets and dependency order. Confirm the registry entry,
+`pipeline.config.yml` with the rule files its slots name present, and an isolated bootstrapped
+worktree. Skip an item already done. A blocked dependency blocks its descendants.
+
+An item registered before this shape existed is not blocked by it. A plan with no dials gets them
+estimated with the maintainer before the first dispatch; a plan missing the five headings gets them
+added, with whatever it already says folded under `## What we need`. Adopt it and move on — do not
+send the maintainer back to `/work-planning` to re-register work that already exists.
 
 **Agree the shape.** Run `/refine` when what is wanted is unresolved, and `/program-design` when the
 approach is not obvious — either, both, or neither, on ambiguity. Then agree with the maintainer how
