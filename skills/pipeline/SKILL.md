@@ -131,7 +131,8 @@ contract, and — for a retry — only the blocking findings plus what changed s
 history, no re-narration of prior rounds. Every output contract also asks for whatever the plan left
 unclear; fold that into `## Confusions`. Order the brief stable content first so prefix caches hit.
 Where the host injects context at spawn, that is how state arrives; otherwise put the digest in the
-brief. Prefer the cheapest mechanic the host supports per `<plugin-root>/docs/host-capabilities.md`.
+brief. Prefer the cheapest injection mechanic the host supports; record a missing capability as a gap
+rather than downgrading every host to it.
 
 **Fan out only for homogeneous work** — the same thing done many times, sharing one topic and
 context. Unrelated topics returning at random make you incoherent; you work best focused or fully

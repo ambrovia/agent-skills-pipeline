@@ -166,7 +166,7 @@ Where the host supports skill-load hooks ([`hooks/inject.mjs`](hooks/inject.mjs)
 | `PIPELINE_CHECK_TIMEOUT_MS` | `45000` | check-command timeout; on timeout the last cached result is injected, marked `STALE` |
 | `PIPELINE_INJECT_MAX_LINES` | `300` | per-section truncation for checks, diff, and injected artifacts |
 
-Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a skill load never breaks on this hook. See [`docs/host-capabilities.md`](docs/host-capabilities.md) for per-host support.
+Check results are stamped with the commit (and dirty flag) they ran on, so an agent can tell a pre-edit baseline from a completion gate. Every failure degrades to silence — a spawn never breaks on this hook.
 
 ### Steer skills with project rules
 

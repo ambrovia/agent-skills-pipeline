@@ -43,10 +43,6 @@ rule, or it is no longer applicable. Never promote a historical observation auto
 Configure worktree bootstrap, cleanup, and forbidden-artifact checks only from commands and hazards the
 repository already owns or the maintainer approves. Leave absent lifecycle settings unset; never guess.
 
-Confirm the host capability inventory (`<plugin-root>/docs/host-capabilities.md`) for the hosts the
-repository uses, and record newly observed capabilities or gaps there — pipeline mechanics pick the
-cheapest mechanic each host supports.
-
 Present evidence, proposed rule text, applicability, blocking force, and trade-offs. Ask the maintainer
 to approve or revise it. Write only approved rules and wire only real paths; `null` deliberately means
 no repository-specific rule for that slot.
