@@ -11,7 +11,9 @@ user-invocable: true
 
 Read available progress state, plan/coordination artifacts, VCS history, verification/review output,
 lore, and session trajectories. Append terse JSONL observations to `.pipeline/work/<id>/retro.jsonl` —
-one log per item, never a shared file, so parallel runs append without conflicting.
+one log per item, never a shared file, so parallel runs append without conflicting. At ship the log
+is appended to the cross-item archive `.pipeline/retro.jsonl` and the item's copy is deleted with the
+rest of its working material — write every observation as though the item folder will not exist.
 
 Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, or
 `divergence`), concrete observation, evidence, and optional related known pattern. One observation per
