@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Structured, multi-agent software development pipeline for Cursor \u2014 skills, subagents, and lifecycle hooks.",
-    "version": "0.8.0"
+    "version": "0.8.1"
   },
   "plugins": [
     {
       "name": "pipeline",
       "source": ".",
       "description": "An interview with the orchestrator produces a plan you own; three dials \u2014 complexity, ambiguity, exposure \u2014 decide how much planning, orchestration and review each item gets; you place the gates. 16 skills + 3 personas. Includes session/edit hooks.",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "author": {
         "name": "Ambrovia"
       },

@@ -10,12 +10,12 @@ user-invocable: false
 
 Read available progress state, plan/coordination artifacts, VCS history, verification/review output,
 lore, and session trajectories. Append terse JSONL observations to `.pipeline/work/<id>/retro.jsonl` —
-one log per item, never a shared file. At ship it is appended to the cross-item archive
-`.pipeline/retro.jsonl` and the item's copy is deleted — write every observation as though the item
-folder will not exist.
+one log per item, never a shared file — parallel runs must never write the same path. It survives
+ship beside `plan.md` as the item's permanent record.
 
-Each entry records date, scope/item where permitted, source, kind (`success`, `friction`, `divergence`, or `cost`), concrete observation, evidence, and optional related known pattern. One observation per
-line. Record what worked so later cleanup does not remove it.
+Each entry records date, scope/item where permitted, source, kind (`success`, `friction`,
+`divergence`, or `cost`), concrete observation, evidence, and optionally a related known pattern.
+One observation per line. Record what worked so later cleanup does not remove it.
 
 A `divergence` entry records where the agent's choice was not what the maintainer wanted — read them
 out of the plan's `## Confusions`, the gate discussions, and anything they asked to be changed or
@@ -23,11 +23,13 @@ simplified. Record the choice, what they wanted instead, and where the plan was 
 the `taste` rule yourself, and never treat one correction as a convention.
 
 Close each item with one `cost` entry: what ran, how many critiques and reviews, how much was
-re-done, and how much of the effort went to rework or infrastructure rather than the outcome. Whether a run was proportionate is only visible in aggregate.
+re-done, and how much of the effort went to rework or infrastructure rather than the outcome.
+Whether a run was proportionate is only visible in aggregate.
 
-Check `.pipeline/compound-candidates.md` before writing a new free-text observation: reuse the matching
-candidate's identifier when the same behavior recurs, and only write free text for friction with no
-matching row. If no tracker exists, append free text — `/compound` clusters it later.
+Read `.pipeline/compound-candidates.md` before writing a new free-text observation and reuse the
+matching candidate's identifier when the same behaviour recurs; write free text only for friction
+with no matching row. Read it, never write it — `/compound` owns that file. If it does not exist,
+write free text and let `/compound` cluster it later.
 
 Observe only. Do not diagnose beyond evidence, fix code or prompts, assign follow-up work, inflate one
 event into a pattern, or duplicate an existing observation without new evidence.
