@@ -11,10 +11,15 @@
 // and an inline manifest object were both tried on Claude and neither fires —
 // so the two hosts share one envelope.
 //
-// Codex gates hooks on a hash of that file and an untrusted hook stalls
-// `codex exec` indefinitely rather than being skipped. Any edit to hooks.json
-// therefore costs the maintainer one re-approval, and a spawn that hangs after
-// an upgrade means untrusted, not broken.
+// Codex fires SessionStart but not SubagentStart — verified with hooks trusted:
+// codex prints `hook: SessionStart` and never `hook: SubagentStart`, and nothing
+// reaches the subagent. Declaring it is inert there, not harmful.
+//
+// Codex gates hooks on a hash of hooks.json AND of the script it runs, and an
+// untrusted hook stalls `codex exec` rather than being skipped. Any edit to
+// either costs the maintainer one re-approval, and a spawn that hangs after an
+// upgrade means untrusted, not broken. Editing the installed copy to debug it
+// breaks trust and produces exactly the symptom you were chasing.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
@@ -99,7 +104,7 @@ function readPayload() {
 function resolveTarget(format) {
   const hint = process.argv[3] ?? '';
   if (format === 'opencode') {
-    const name = normalizeSkill(hint);
+    const name = normalizeName(hint);
     return name ? { kind: 'skill', name } : null;
   }
   const payload = readPayload();
@@ -111,19 +116,20 @@ function resolveTarget(format) {
   // keys hook trust on that file's hash, so editing it revokes consent.
   const noPayload = Object.keys(payload).length === 0;
   if (hint === 'spawn' || noPayload || /^subagent[_-]?start$/i.test(event)) {
-    const name = String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? '').toLowerCase();
+    const name = normalizeName(String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? ''));
     return { kind: 'agent', name: name || DEFAULT_AGENT };
   }
 
   const tool = String(pick(payload, ['tool_name', 'toolName', 'tool']) ?? '');
   if (!SKILL_TOOL.test(tool)) return null;
   const input = pick(payload, ['tool_input', 'toolInput', 'parameters', 'input']) ?? {};
-  const name = normalizeSkill(String(pick(input, ['skill', 'name', 'command']) ?? ''));
+  const name = normalizeName(String(pick(input, ['skill', 'name', 'command']) ?? ''));
   return name ? { kind: 'skill', name } : null;
 }
 
-function normalizeSkill(raw) {
-  // Hosts name a plugin skill "pipeline:review"; the tables here key on "review".
+// Hosts qualify plugin-provided names — "pipeline:review", "pipeline:pipeline-reviewer".
+// The routing tables key on the bare name.
+function normalizeName(raw) {
   return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase().replace(/^[a-z0-9_-]+:/, '');
 }
 
