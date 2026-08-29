@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
   "description": "Multi-agent development driven by a plan you own. An interview with the orchestrator produces the plan; three dials \u2014 complexity, ambiguity, exposure \u2014 decide how much planning, orchestration and review each item gets; you place the gates.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "author": {
     "name": "Ambrovia"
   },
@@ -17,7 +17,6 @@
     "work-packages"
   ],
   "skills": "./skills",
-  "hooks": "./hooks/codex-hooks.json",
   "interface": {
     "displayName": "Pipeline",
     "shortDescription": "Plan-centred multi-agent development: interview, four dials, gates you place.",

@@ -3,14 +3,15 @@
 // diff and critiqued artifacts into an agent's context at the moment it starts,
 // so it begins with evidence instead of spending round trips fetching it.
 //
-// Primary event is SubagentStart, which injects into the SUBAGENT's context
-// rather than the parent's. Verified working on Claude Code 2.1.247.
+// Claude injects at skill load (PostToolUse, matcher `Skill`); codex has no
+// skill lifecycle event and gets none.
 //
-// Codex cannot run it. Tested on 0.150.1 (2026-08-29) with the hook trusted: a
-// sentinel wired to SubagentStart never executes, this script is never invoked,
-// and the spawn hangs — 7 minutes against 12 seconds with the event removed. So
-// codex gets its own envelope, hooks/codex-hooks.json, that does not declare it.
-// Restore it there once codex supports the event, and re-test the spawn timing.
+// SubagentStart would be the better moment and works on Claude, but it cannot
+// ship: Claude reads hooks only from hooks/hooks.json — not a path in the
+// manifest, not inline — and codex reads the same file, where declaring that
+// event hangs every subagent spawn. Measured on codex 0.150.1 with the hook
+// trusted: 7 minutes against 12 seconds without it, and inject.mjs never
+// invoked. Re-test that timing before putting the event back.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
@@ -119,7 +120,8 @@ function resolveTarget(format) {
 }
 
 function normalizeSkill(raw) {
-  return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase();
+  // Hosts name a plugin skill "pipeline:review"; the tables here key on "review".
+  return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase().replace(/^[a-z0-9_-]+:/, '');
 }
 
 // Minimal scalar read: a quoted value keeps every character (commands contain
