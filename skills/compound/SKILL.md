@@ -11,11 +11,18 @@ user-invocable: true
 
 Read the candidate tracker at `.pipeline/compound-candidates.md`, then every
 `.pipeline/work/*/retro.jsonl` — shipped items keep theirs beside `plan.md`, so one glob covers the
-whole history. If the tracker does not exist, create it with a title and no rows. Group
-observations only when they describe the same behavioral mechanism. Three independent occurrences qualify a pattern for consideration; they do not prove the
-diagnosis.
+whole history. If the tracker does not exist, create it with a title and no rows.
 
-Classify patterns as emerging, confirmed, contradicted, or resolved. Report each confirmed pattern to the maintainer with:
+You are the only writer of that tracker, and you run at maintainer cadence — after several items,
+never inside a run. That is what makes a single shared file safe here: everything a run writes is
+per-item, so concurrent branches never touch the same path. The tracker carries the classification
+forward so this skill does not re-derive every pattern from scratch each time.
+
+Group observations only when they describe the same behavioural mechanism. Three independent
+occurrences qualify a pattern for consideration; they do not prove the diagnosis.
+
+Classify patterns as emerging, confirmed, contradicted, or resolved. Report each confirmed pattern to
+the maintainer with:
 
 - occurrences and evidence;
 - likely mechanism and competing explanation;
@@ -29,8 +36,8 @@ and propose one only when it holds across the repository — per-item preference
 plans, and the slot stays short enough to read.
 
 Propose; never apply. Do not delete history, convert anecdotes into mandates, or bundle unrelated
-changes. Update tracker state and retain contradiction
-and resolution evidence. Human approval is required before any policy mutation.
+changes. Update tracker state and retain contradiction and resolution evidence. Human approval is
+required before any policy mutation.
 
 ## Target
 
