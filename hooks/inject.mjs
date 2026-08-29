@@ -3,10 +3,15 @@
 // diff and critiqued artifacts into an agent's context at the moment it starts,
 // so it begins with evidence instead of spending round trips fetching it.
 //
-// Primary event is SubagentStart: it exists on claude and codex, and it injects
-// into the SUBAGENT's context rather than the parent's (verified on both,
-// 2026-08-27). Skill load is a claude-only supplement — codex has no skill
-// lifecycle event at all.
+// Primary event is SubagentStart, which injects into the SUBAGENT's context
+// rather than the parent's. Verified working on Claude Code 2.1.247.
+//
+// Codex does NOT run plugin-declared SubagentStart hooks (tested 0.150.1,
+// 2026-08-29): a sentinel command wired to that event never executes, and the
+// spawn stalls waiting on a trust decision `codex exec` cannot prompt for —
+// `--dangerously-bypass-hook-trust` does not help. Approving the hook once in
+// interactive `codex` (`/hooks`) is what registers it. Until then codex gets no
+// spawn injection, and every path here degrades to silence rather than hanging.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
@@ -43,7 +48,12 @@ const AGENT_EXTRA = {
   'pipeline-reviewer': { checks: true, diff: true },
   'pipeline-builder': { checks: true, checksNote: 'baseline, ran before this agent started' },
   'pipeline-planner': {},
+  // Some hosts fire the spawn event without naming the role. Everything an agent
+  // gets here is useful whatever it turns out to be: state, plus checks it would
+  // otherwise re-run. The diff is reviewer-specific and stays out.
+  '': { checks: true, checksNote: 'baseline, ran before this agent started' },
 };
+const DEFAULT_AGENT = '';
 
 const EXTRA = {
   review: { checks: true, diff: true },
@@ -65,18 +75,31 @@ function pick(payload, keys) {
   return undefined;
 }
 
+function readPayload() {
+  // Codex fires SubagentStart with nothing on stdin, and a blocking read there
+  // hangs the spawn. Absent or unparseable input is normal, not an error.
+  try {
+    const raw = readFileSync(0, 'utf8');
+    return raw.trim() ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 // -> { kind: 'agent'|'skill', name } | null
 function resolveTarget(format) {
+  const hint = process.argv[3] ?? '';
   if (format === 'opencode') {
-    const name = normalizeSkill(process.argv[3] ?? '');
+    const name = normalizeSkill(hint);
     return name ? { kind: 'skill', name } : null;
   }
-  const payload = JSON.parse(readFileSync(0, 'utf8'));
+  const payload = readPayload();
   const event = String(pick(payload, ['hook_event_name', 'hookEventName', 'event']) ?? '');
 
-  if (/^subagentstart$/i.test(event)) {
+  // The event comes from argv where the host does not put it on stdin.
+  if (hint === 'spawn' || /^subagent[_-]?start$/i.test(event)) {
     const name = String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? '').toLowerCase();
-    return name ? { kind: 'agent', name } : null;
+    return { kind: 'agent', name: name || DEFAULT_AGENT };
   }
 
   const tool = String(pick(payload, ['tool_name', 'toolName', 'tool']) ?? '');
@@ -230,7 +253,8 @@ function buildInjection(format) {
   const wpDir = join(root, '.pipeline', 'work', wpId);
   lastEvent = target.kind;
   // No leading bracket: codex discards stdout that looks like JSON but is not.
-  const sections = [`pipeline injection — ${target.kind}: ${target.name}, item: ${wpId}`];
+  const label = target.name || 'spawn';
+  const sections = [`pipeline injection — ${target.kind}: ${label}, item: ${wpId}`];
 
   const state = digest(root, wpId);
   if (state) sections.push('## state', state);
