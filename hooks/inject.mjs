@@ -3,15 +3,18 @@
 // diff and critiqued artifacts into an agent's context at the moment it starts,
 // so it begins with evidence instead of spending round trips fetching it.
 //
-// Claude injects at skill load (PostToolUse, matcher `Skill`); codex has no
-// skill lifecycle event and gets none.
+// Two entry points: SubagentStart, which reaches the spawned agent rather than
+// its parent, and skill load (PostToolUse, matcher `Skill`) on hosts that
+// dispatch skills as a tool call. Claude has both; codex has no skill event.
 //
-// SubagentStart would be the better moment and works on Claude, but it cannot
-// ship: Claude reads hooks only from hooks/hooks.json — not a path in the
-// manifest, not inline — and codex reads the same file, where declaring that
-// event hangs every subagent spawn. Measured on codex 0.150.1 with the hook
-// trusted: 7 minutes against 12 seconds without it, and inject.mjs never
-// invoked. Re-test that timing before putting the event back.
+// Both hosts read hooks only from hooks/hooks.json — a manifest `hooks` path
+// and an inline manifest object were both tried on Claude and neither fires —
+// so the two hosts share one envelope.
+//
+// Codex gates hooks on a hash of that file and an untrusted hook stalls
+// `codex exec` indefinitely rather than being skipped. Any edit to hooks.json
+// therefore costs the maintainer one re-approval, and a spawn that hangs after
+// an upgrade means untrusted, not broken.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
