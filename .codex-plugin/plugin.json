@@ -1,7 +1,7 @@
 {
   "name": "pipeline",
   "description": "Multi-agent development driven by a plan you own. An interview with the orchestrator produces the plan; three dials \u2014 complexity, ambiguity, exposure \u2014 decide how much planning, orchestration and review each item gets; you place the gates.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "author": {
     "name": "Ambrovia"
   },
@@ -19,8 +19,8 @@
   "skills": "./skills",
   "interface": {
     "displayName": "Pipeline",
-    "shortDescription": "Run work packages through planning, critique, build, review, retro, and ship.",
-    "longDescription": "Pipeline packages a structured multi-agent software delivery workflow for Codex. It provides skills for work planning, refinement, design, architecture, TDD implementation, review, documentation, retro, and shipping, with explicit pipeline-planner/pipeline-reviewer/pipeline-builder separation.",
+    "shortDescription": "Plan-centred multi-agent development: interview, four dials, gates you place.",
+    "longDescription": "An interview with the orchestrator produces a plan you own. Three per-item dials \u2014 complexity, ambiguity and exposure \u2014 decide how much planning, orchestration and review each item gets, and you place the gates. Skills cover refinement, program design, design, architecture, implementation, review, documentation, retro and shipping.",
     "developerName": "Ambrovia",
     "category": "Productivity",
     "capabilities": [
@@ -30,9 +30,9 @@
     ],
     "websiteURL": "https://github.com/ambrovia/agent-skills-pipeline",
     "defaultPrompt": [
-      "Run /pipeline for this work package.",
-      "Review this change with the pipeline.",
-      "Plan a new pipeline work package."
+      "Run /pipeline for this item.",
+      "Register a new work item.",
+      "Review this change with the pipeline."
     ],
     "brandColor": "#2563EB"
   }

@@ -3,10 +3,15 @@
 // diff and critiqued artifacts into an agent's context at the moment it starts,
 // so it begins with evidence instead of spending round trips fetching it.
 //
-// Primary event is SubagentStart: it exists on claude and codex, and it injects
-// into the SUBAGENT's context rather than the parent's (verified on both,
-// 2026-08-27). Skill load is a claude-only supplement — codex has no skill
-// lifecycle event at all.
+// Claude injects at skill load (PostToolUse, matcher `Skill`); codex has no
+// skill lifecycle event and gets none.
+//
+// SubagentStart would be the better moment and works on Claude, but it cannot
+// ship: Claude reads hooks only from hooks/hooks.json — not a path in the
+// manifest, not inline — and codex reads the same file, where declaring that
+// event hangs every subagent spawn. Measured on codex 0.150.1 with the hook
+// trusted: 7 minutes against 12 seconds without it, and inject.mjs never
+// invoked. Re-test that timing before putting the event back.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
@@ -43,7 +48,12 @@ const AGENT_EXTRA = {
   'pipeline-reviewer': { checks: true, diff: true },
   'pipeline-builder': { checks: true, checksNote: 'baseline, ran before this agent started' },
   'pipeline-planner': {},
+  // Some hosts fire the spawn event without naming the role. Everything an agent
+  // gets here is useful whatever it turns out to be: state, plus checks it would
+  // otherwise re-run. The diff is reviewer-specific and stays out.
+  '': { checks: true, checksNote: 'baseline, ran before this agent started' },
 };
+const DEFAULT_AGENT = '';
 
 const EXTRA = {
   review: { checks: true, diff: true },
@@ -65,18 +75,41 @@ function pick(payload, keys) {
   return undefined;
 }
 
+// -> parsed payload, {} when the host sent nothing, or null when it sent something
+// unreadable. Absent input is a fact about the host; broken input is not ours to guess at.
+function readPayload() {
+  let raw = '';
+  try {
+    raw = readFileSync(0, 'utf8');
+  } catch {
+    return {};
+  }
+  if (!raw.trim()) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 // -> { kind: 'agent'|'skill', name } | null
 function resolveTarget(format) {
+  const hint = process.argv[3] ?? '';
   if (format === 'opencode') {
-    const name = normalizeSkill(process.argv[3] ?? '');
+    const name = normalizeSkill(hint);
     return name ? { kind: 'skill', name } : null;
   }
-  const payload = JSON.parse(readFileSync(0, 'utf8'));
+  const payload = readPayload();
+  if (payload === null) return null;
   const event = String(pick(payload, ['hook_event_name', 'hookEventName', 'event']) ?? '');
 
-  if (/^subagentstart$/i.test(event)) {
+  // Empty stdin means the host named no event. Inferring the spawn here rather
+  // than passing a flag keeps hooks.json byte-identical, which matters — codex
+  // keys hook trust on that file's hash, so editing it revokes consent.
+  const noPayload = Object.keys(payload).length === 0;
+  if (hint === 'spawn' || noPayload || /^subagent[_-]?start$/i.test(event)) {
     const name = String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? '').toLowerCase();
-    return name ? { kind: 'agent', name } : null;
+    return { kind: 'agent', name: name || DEFAULT_AGENT };
   }
 
   const tool = String(pick(payload, ['tool_name', 'toolName', 'tool']) ?? '');
@@ -87,7 +120,8 @@ function resolveTarget(format) {
 }
 
 function normalizeSkill(raw) {
-  return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase();
+  // Hosts name a plugin skill "pipeline:review"; the tables here key on "review".
+  return raw.replace(/^\//, '').split(/\s/)[0].toLowerCase().replace(/^[a-z0-9_-]+:/, '');
 }
 
 // Minimal scalar read: a quoted value keeps every character (commands contain
@@ -230,7 +264,8 @@ function buildInjection(format) {
   const wpDir = join(root, '.pipeline', 'work', wpId);
   lastEvent = target.kind;
   // No leading bracket: codex discards stdout that looks like JSON but is not.
-  const sections = [`pipeline injection — ${target.kind}: ${target.name}, item: ${wpId}`];
+  const label = target.name || 'spawn';
+  const sections = [`pipeline injection — ${target.kind}: ${label}, item: ${wpId}`];
 
   const state = digest(root, wpId);
   if (state) sections.push('## state', state);
