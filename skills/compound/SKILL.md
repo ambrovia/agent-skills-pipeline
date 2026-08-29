@@ -9,8 +9,9 @@ user-invocable: true
 
 # Compound
 
-Read the candidate tracker at `.pipeline/compound-candidates.md` before reading the cross-item archive `.pipeline/retro.jsonl` (shipped items) and every
-`.pipeline/work/*/retro.jsonl` still present (in flight). A pattern spanning both is one pattern. If the tracker does not exist, create it with a title and no rows. Group
+Read the candidate tracker at `.pipeline/compound-candidates.md`, then every
+`.pipeline/work/*/retro.jsonl` — shipped items keep theirs beside `plan.md`, so one glob covers the
+whole history. If the tracker does not exist, create it with a title and no rows. Group
 observations only when they describe the same behavioral mechanism. Three independent occurrences qualify a pattern for consideration; they do not prove the
 diagnosis.
 

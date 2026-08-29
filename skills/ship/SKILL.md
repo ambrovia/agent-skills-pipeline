@@ -18,19 +18,21 @@ identifier leaks outside `.pipeline/**`. Stop rather than repairing product work
 
 ## Sequence
 
-1. When an item ran, reduce `.pipeline/work/<id>/` to **exactly one file: `plan.md`**. Everything
-   else is working material and does not survive the merge — `design/`, `architecture.md`,
-   `feasibility.md`, `probes/`, `receipts/`, `integration.json`, `review.md`, `checks-latest.log`,
-   `progress.json`. Delete the plan's `## Confusions` and `## Proposed items` sections too, once
-   `/retro` has recorded the first and the maintainer has seen the second.
+1. When an item ran, reduce `.pipeline/work/<id>/` to **`plan.md` and `retro.jsonl`** — what was
+   agreed, and what was learned. Everything else is working material and does not survive the merge:
+   `design/`, `architecture.md`, `feasibility.md`, `probes/`, `receipts/`, `integration.json`,
+   `review.md`, `checks-latest.log`, `progress.json`. Delete the plan's `## Confusions` and
+   `## Proposed items` sections too, once `/retro` has recorded the first and the maintainer has seen
+   the second.
+
+   The retro stays where it was written. Never merge it into a shared log — one file per item is what
+   keeps concurrent branches from colliding, and `/compound` reads across the work folders.
 
    **Do not otherwise rewrite `plan.md`.** Never fold an as-built architecture into it.
 
-   Move these out before deleting anything:
-
-   - **`retro.jsonl`** — append it to `.pipeline/retro.jsonl`.
-   - **Durable knowledge** — write it as `@lore` next to the code it concerns: an accepted
-     limitation, a residual risk, a non-obvious constraint the next person will trip over.
+   **Durable knowledge goes to `@lore`** before the rest is deleted — an accepted limitation, a
+   residual risk, a non-obvious constraint the next person will trip over. A deferral recorded only
+   in a deleted artifact is a deferral nobody will ever act on.
 2. Ensure the retro (when an item ran) and every intended change are present. Stage deliberately —
    inspect the worktree, commit intended changes with domain-based messages, revert unintended ones, and
    never stage the whole tree blindly. Never put an item ID in branch, commit, or PR metadata.
