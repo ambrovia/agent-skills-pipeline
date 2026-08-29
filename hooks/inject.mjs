@@ -6,12 +6,11 @@
 // Primary event is SubagentStart, which injects into the SUBAGENT's context
 // rather than the parent's. Verified working on Claude Code 2.1.247.
 //
-// Codex does NOT run plugin-declared SubagentStart hooks (tested 0.150.1,
-// 2026-08-29): a sentinel command wired to that event never executes, and the
-// spawn stalls waiting on a trust decision `codex exec` cannot prompt for —
-// `--dangerously-bypass-hook-trust` does not help. Approving the hook once in
-// interactive `codex` (`/hooks`) is what registers it. Until then codex gets no
-// spawn injection, and every path here degrades to silence rather than hanging.
+// Codex cannot run it. Tested on 0.150.1 (2026-08-29) with the hook trusted: a
+// sentinel wired to SubagentStart never executes, this script is never invoked,
+// and the spawn hangs — 7 minutes against 12 seconds with the event removed. So
+// codex gets its own envelope, hooks/codex-hooks.json, that does not declare it.
+// Restore it there once codex supports the event, and re-test the spawn timing.
 //
 // Usage: inject.mjs <claude|cursor|gemini|copilot|codex|opencode> [skill-name]
 // Envelope formats read the event payload on stdin; opencode takes the skill
@@ -75,14 +74,20 @@ function pick(payload, keys) {
   return undefined;
 }
 
+// -> parsed payload, {} when the host sent nothing, or null when it sent something
+// unreadable. Absent input is a fact about the host; broken input is not ours to guess at.
 function readPayload() {
-  // Codex fires SubagentStart with nothing on stdin, and a blocking read there
-  // hangs the spawn. Absent or unparseable input is normal, not an error.
+  let raw = '';
   try {
-    const raw = readFileSync(0, 'utf8');
-    return raw.trim() ? JSON.parse(raw) : {};
+    raw = readFileSync(0, 'utf8');
   } catch {
     return {};
+  }
+  if (!raw.trim()) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }
 
@@ -94,10 +99,14 @@ function resolveTarget(format) {
     return name ? { kind: 'skill', name } : null;
   }
   const payload = readPayload();
+  if (payload === null) return null;
   const event = String(pick(payload, ['hook_event_name', 'hookEventName', 'event']) ?? '');
 
-  // The event comes from argv where the host does not put it on stdin.
-  if (hint === 'spawn' || /^subagent[_-]?start$/i.test(event)) {
+  // Empty stdin means the host named no event. Inferring the spawn here rather
+  // than passing a flag keeps hooks.json byte-identical, which matters — codex
+  // keys hook trust on that file's hash, so editing it revokes consent.
+  const noPayload = Object.keys(payload).length === 0;
+  if (hint === 'spawn' || noPayload || /^subagent[_-]?start$/i.test(event)) {
     const name = String(pick(payload, ['agent_type', 'agentType', 'subagent_type']) ?? '').toLowerCase();
     return { kind: 'agent', name: name || DEFAULT_AGENT };
   }
